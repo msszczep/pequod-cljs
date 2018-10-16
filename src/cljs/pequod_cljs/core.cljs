@@ -29,7 +29,10 @@
          :threshold-met            false
          :pdlist                   []
          :delta-delay              0
-         :price-deltas             []}))
+         :price-deltas             []
+         :price-delta              0
+         :wcs                      []
+         :ccs                      []}))
 
 (defn standardize-prices [t]
   (assoc t
@@ -50,23 +53,36 @@
         inputs (t :inputs)
         resources (t :resources)
         labor (t :labors)]
-   (assoc t
-     :final-prices (repeat finals (t :init-final-price))
-     :input-prices (repeat inputs (t :init-intermediate-price))
-     :nature-prices (repeat resources (t :init-nature-price))
-     :labor-prices (repeat labor (t :init-labor-price))
-     :price-deltas (repeat 4 0.05)
-     :pdlist (repeat (+ finals inputs resources labor) 0.05))))
+    (assoc t
+      :final-prices (repeat finals (t :init-final-price))
+      :input-prices (repeat inputs (t :init-intermediate-price))
+      :nature-prices (repeat resources (t :init-nature-price))
+      :labor-prices (repeat labor (t :init-labor-price))
+      :price-deltas (repeat 4 0.05)
+      :pdlist (repeat (+ finals inputs resources labor) 0.05))))
+
+(defn create-ccs [consumer-councils workers-per-council finals]
+  (let [effort 1
+        cz (/ 0.5 finals)]
+    (repeat consumer-councils
+            {:num-workers workers-per-council
+             :effort effort
+             :income (* 500 effort workers-per-council)
+             :cy (+ 6 (rand 9))
+             :utility-exponents (take finals (repeatedly #(+ cz (rand cz))))
+             :final-demands (repeat 5 0)})))
 
 (defn setup [t]
-  (initialize-prices t)
-  (assoc t 
-    :price-delta 0.1
-    :delta-delay 5
-    :final-goods (range 1 (inc (t :finals)))
-    :intermediate-inputs (range 1 (inc (t :inputs)))
-    :nature-types (range 1 (inc (t :resources)))
-    :labor-types (range 1 (inc (t :labors)))))
+  (-> t
+      initialize-prices
+      (assoc
+        :price-delta 0.1
+        :delta-delay 5
+        :final-goods (range 1 (inc (t :finals)))
+        :intermediate-inputs (range 1 (inc (t :inputs)))
+        :nature-types (range 1 (inc (t :resources)))
+        :labor-types (range 1 (inc (t :labors)))
+        :ccs (create-ccs 100 10 4))))
 
 ;; -------------------------
 ;; Views-
@@ -75,11 +91,16 @@
   [:input {:type "button" :value "Setup"
            :on-click #(swap! globals setup globals)}])
 
-; TODO: Show globals in a more organized way
+
 (defn show-globals []
-  [:div " " @globals
+  [:div " "
+    (setup-button)
     [:p]
-    (setup-button)])
+    [:table
+     (map (fn [x] [:tr [:td (str (first x))] 
+                       [:td (str (second x))]]) 
+          (sort @globals))]
+    [:p]])
 
 (defn home-page []
   [:div [:h2 "Welcome to pequod-cljs"]
