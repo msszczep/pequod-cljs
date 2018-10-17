@@ -31,6 +31,8 @@
          :delta-delay              0
          :price-deltas             []
          :price-delta              0
+         :lorenz-points            0
+         :gini-index-reserve       0
          :wcs                      []
          :ccs                      []}))
 
@@ -72,17 +74,67 @@
              :utility-exponents (take finals (repeatedly #(+ cz (rand cz))))
              :final-demands (repeat 5 0)})))
 
+(defn create-wcs [worker-councils goods industry]
+  (->> goods
+       (map #(repeat (/ worker-councils 2 (count goods))
+                     {:industry industry :product %}))
+       flatten))
+
+(defn continue-setup-wcs [intermediate-inputs nature-types labor-types wc]
+  "Assumes wc is a map"
+  (letfn [(get-random-subset [input-seq]
+            (->> input-seq
+                 shuffle
+                 (take (rand-nth input-seq))
+                 sort))]
+    (let [production-inputs (vector (get-random-subset intermediate-inputs)
+                                    (get-random-subset nature-types)
+                                    (get-random-subset labor-types))
+          input-exponents (when (pos? (count (first production-inputs)))
+                            (let [xz (/ 0.2 (count (first production-inputs)))]
+                              (take (count (first production-inputs))
+                                    (repeatedly #(+ xz (rand xz))))))
+          nature-exponents (let [rz (/ 0.2 (count (second production-inputs)))]
+                             (take (count (second production-inputs))
+                                   (repeatedly #(+ 0.05 rz (rand rz)))))
+          labor-exponents (let [lz (/ 0.2 (count (last production-inputs)))]
+                            (take (count (last production-inputs))
+                                  (repeatedly #(+ 0.05 lz (rand lz)))))]
+      (merge wc {:production-inputs production-inputs
+                 :xe 0.05
+                 :c 0.05
+                 :input-exponents input-exponents
+                 :nature-exponents nature-exponents
+                 :labor-exponents labor-exponents
+                 :cq 0.25
+                 :ce 1
+                 :du 7
+                 :S 1
+                 :A 0.25
+                 :effort 0.5
+                 :output 0
+                 :labor-quantities [0]}))))
+
 (defn setup [t]
-  (-> t
-      initialize-prices
-      (assoc
-        :price-delta 0.1
-        :delta-delay 5
-        :final-goods (range 1 (inc (t :finals)))
-        :intermediate-inputs (range 1 (inc (t :inputs)))
-        :nature-types (range 1 (inc (t :resources)))
-        :labor-types (range 1 (inc (t :labors)))
-        :ccs (create-ccs 100 10 4))))
+  (let [intermediate-inputs (range 1 (inc (t :inputs)))
+        nature-types (range 1 (inc (t :resources)))
+        labor-types (range 1 (inc (t :labors)))]
+   (-> t
+       initialize-prices
+       (assoc
+           :price-delta 0.1
+           :delta-delay 5
+           :final-goods (range 1 (inc (t :finals)))
+           :intermediate-inputs intermediate-inputs
+           :nature-types nature-types
+           :labor-types labor-types
+           :ccs (create-ccs 100 10 4)
+           :wcs (->> (create-wcs 80 [1 2 3 4] 1)
+                     (map (partial continue-setup-wcs
+                                   intermediate-inputs
+                                   nature-types
+                                   labor-types)))
+           ))))
 
 ;; -------------------------
 ;; Views-
