@@ -31,10 +31,11 @@
          :delta-delay              0
          :price-deltas             []
          :price-delta              0
-         :lorenz-points            0
-         :gini-index-reserve       0
+         :lorenz-points            []
+         :gini-index-reserve       []
          :wcs                      []
-         :ccs                      []}))
+         :ccs                      []
+         :iteration                0}))
 
 (defn standardize-prices [t]
   (assoc t
@@ -115,21 +116,55 @@
                  :output 0
                  :labor-quantities [0]}))))
 
+(defn calculate-consumer-utility [cc]
+  (let [final-demands (:final-demands cc)
+        utility-exponents (:utility-exponents cc)
+        cy (:cy cc)]
+    (->> (interleave final-demands utility-exponents)
+         (partition 2)
+         (map #(Math/pow (first %) (last %)))
+         (reduce *)
+         (* cy))))
+
+; Resume work with implementing update-lorenz-and-gini in setup
+#_(defn update-lorenz-and-gini [ccs]
+  (let [num-people (count ccs)
+        sorted-wealths (mapv calculate-consumer-utility ccs)
+        total-wealth (reduce + sorted-wealths)]
+    (when (pos? total-wealth)
+      (loop [wealth-sum-so-far 0
+             index 0
+             gini-index-reserve 0
+             lorenz-points []
+             num-people-counter 0]
+        (if (= num-people num-people-counter)
+          lorenz-points
+          (recur (+ wealth-sum-so-far (get sorted-wealths index))
+                 (inc index)
+                 (+ gini-index-reserve
+                    (/ index num-people)
+                    (- (/ wealth-sum-so-far total-wealth)))
+                 (cons (* (/ wealth-sum-so-far total-wealth) 100) lorenz-points)
+                 (inc num-people-counter)))))))
+
 (defn setup [t]
   (let [intermediate-inputs (range 1 (inc (t :inputs)))
         nature-types (range 1 (inc (t :resources)))
-        labor-types (range 1 (inc (t :labors)))]
+        labor-types (range 1 (inc (t :labors)))
+        final-goods (range 1 (inc (t :finals)))]
    (-> t
        initialize-prices
        (assoc
            :price-delta 0.1
            :delta-delay 5
-           :final-goods (range 1 (inc (t :finals)))
+           :final-goods final-goods
            :intermediate-inputs intermediate-inputs
            :nature-types nature-types
            :labor-types labor-types
            :ccs (create-ccs 100 10 4)
-           :wcs (->> (create-wcs 80 [1 2 3 4] 1)
+           :wcs (->> (merge (create-wcs 80 final-goods 0)
+                            (create-wcs 80 intermediate-inputs 1))
+                     flatten
                      (map (partial continue-setup-wcs
                                    intermediate-inputs
                                    nature-types
