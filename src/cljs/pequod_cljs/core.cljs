@@ -31,8 +31,7 @@
          :delta-delay              0
          :price-deltas             []
          :price-delta              0
-         :lorenz-points            []
-         :gini-index-reserve       []
+         :lorenz-gini-tuple        [] ; both lorenz-points and gini-index-reserve
          :wcs                      []
          :ccs                      []
          :iteration                0}))
@@ -126,32 +125,33 @@
          (reduce *)
          (* cy))))
 
-; Resume work with implementing update-lorenz-and-gini in setup
-#_(defn update-lorenz-and-gini [ccs]
+(defn update-lorenz-and-gini [ccs]
   (let [num-people (count ccs)
         sorted-wealths (mapv calculate-consumer-utility ccs)
         total-wealth (reduce + sorted-wealths)]
-    (when (pos? total-wealth)
+    (if (pos? total-wealth)
       (loop [wealth-sum-so-far 0
              index 0
              gini-index-reserve 0
              lorenz-points []
              num-people-counter 0]
         (if (= num-people num-people-counter)
-          lorenz-points
+          [lorenz-points gini-index-reserve]
           (recur (+ wealth-sum-so-far (get sorted-wealths index))
                  (inc index)
                  (+ gini-index-reserve
                     (/ index num-people)
                     (- (/ wealth-sum-so-far total-wealth)))
                  (cons (* (/ wealth-sum-so-far total-wealth) 100) lorenz-points)
-                 (inc num-people-counter)))))))
+                 (inc num-people-counter))))
+      [[] 0])))
 
 (defn setup [t]
   (let [intermediate-inputs (range 1 (inc (t :inputs)))
         nature-types (range 1 (inc (t :resources)))
         labor-types (range 1 (inc (t :labors)))
-        final-goods (range 1 (inc (t :finals)))]
+        final-goods (range 1 (inc (t :finals)))
+        ccs (create-ccs 100 10 4)]
    (-> t
        initialize-prices
        (assoc
@@ -161,7 +161,7 @@
            :intermediate-inputs intermediate-inputs
            :nature-types nature-types
            :labor-types labor-types
-           :ccs (create-ccs 100 10 4)
+           :ccs ccs
            :wcs (->> (merge (create-wcs 80 final-goods 0)
                             (create-wcs 80 intermediate-inputs 1))
                      flatten
@@ -169,7 +169,8 @@
                                    intermediate-inputs
                                    nature-types
                                    labor-types)))
-           ))))
+           :lorenz-gini-tuple (update-lorenz-and-gini ccs)))))
+
 
 ;; -------------------------
 ;; Views-
