@@ -31,7 +31,8 @@
          :delta-delay              0
          :price-deltas             []
          :price-delta              0
-         :lorenz-gini-tuple        [] ; both lorenz-points and gini-index-reserve
+         :lorenz-gini-tuple        [] 
+           ; both lorenz-points and gini-index-reserve
          :wcs                      []
          :ccs                      []
          :iteration                0}))
@@ -65,14 +66,18 @@
 
 (defn create-ccs [consumer-councils workers-per-council finals]
   (let [effort 1
-        cz (/ 0.5 finals)]
-    (repeat consumer-councils
-            {:num-workers workers-per-council
-             :effort effort
-             :income (* 500 effort workers-per-council)
-             :cy (+ 6 (rand 9))
-             :utility-exponents (take finals (repeatedly #(+ cz (rand cz))))
-             :final-demands (repeat 5 0)})))
+        cz (/ 0.5 finals)
+        utility-exponents (->> #(+ cz (rand cz))
+                               repeatedly
+                               (take (* finals consumer-councils))
+                               (partition finals))]
+    (map #(hash-map :num-workers workers-per-council
+                    :effort effort
+                    :income (* 500 effort workers-per-council)
+                    :cy (+ 6 (rand 9))
+                    :utility-exponents %
+                    :final-demands (repeat 5 0))
+         utility-exponents)))
 
 (defn create-wcs [worker-councils goods industry]
   (->> goods
@@ -152,25 +157,41 @@
         labor-types (range 1 (inc (t :labors)))
         final-goods (range 1 (inc (t :finals)))
         ccs (create-ccs 100 10 4)]
-   (-> t
-       initialize-prices
-       (assoc
-           :price-delta 0.1
-           :delta-delay 5
-           :final-goods final-goods
-           :intermediate-inputs intermediate-inputs
-           :nature-types nature-types
-           :labor-types labor-types
-           :ccs ccs
-           :wcs (->> (merge (create-wcs 80 final-goods 0)
-                            (create-wcs 80 intermediate-inputs 1))
-                     flatten
-                     (map (partial continue-setup-wcs
-                                   intermediate-inputs
-                                   nature-types
-                                   labor-types)))
-           :lorenz-gini-tuple (update-lorenz-and-gini ccs)))))
+    (-> t
+        initialize-prices
+        (assoc :price-delta 0.1
+               :delta-delay 5
+               :final-goods final-goods
+               :intermediate-inputs intermediate-inputs
+               :nature-types nature-types
+               :labor-types labor-types
+               :ccs ccs
+               :wcs (->> (merge (create-wcs 80 final-goods 0)
+                                (create-wcs 80 intermediate-inputs 1))
+                         flatten
+                         (map (partial continue-setup-wcs
+                                       intermediate-inputs
+                                       nature-types
+                                       labor-types)))
+               :lorenz-gini-tuple (update-lorenz-and-gini ccs)))))
 
+(defn consume [final-goods final-prices cc]
+  (let [utility-exponents (cc :utility-exponents)
+        income (cc :income)
+        final-demands (map (fn [final-good]
+                             (/ (nth utility-exponents (dec final-good))
+                                (* (apply + utility-exponents)
+                                   (nth final-prices (dec final-good)))))
+                      final-goods)]
+    (assoc cc :final-demands final-demands)))
+
+(defn process-plan [t]
+  (let [updated-ccs (map (partial consume (t :final-goods) (t :final-prices))
+                         (t :ccs))]
+    (assoc t :ccs updated-ccs)))
+
+(defn iterate-plan [t]
+  (process-plan t))
 
 ;; -------------------------
 ;; Views-
@@ -179,10 +200,15 @@
   [:input {:type "button" :value "Setup"
            :on-click #(swap! globals setup globals)}])
 
+(defn iterate-button []
+  [:input {:type "button" :value "Iterate"
+           :on-click #(swap! globals iterate-plan globals)}])
 
 (defn show-globals []
   [:div " "
     (setup-button)
+    "  "
+    (iterate-button)
     [:p]
     [:table
      (map (fn [x] [:tr [:td (str (first x))] 

@@ -1,6 +1,7 @@
 .body-container {
   font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
-  max-width: 900px;
+  max-width: 90%;
+  #max-width: 900px;
   margin: 0 auto;
   padding-top: 40px;
   -webkit-font-smoothing: antialiased;
@@ -22,6 +23,14 @@ h2 {
 
 h3 {
   font-size: 1.5em
+}
+
+table {
+  border: 1;
+}
+
+td {
+  padding: 5px;
 }
 
 a {
