@@ -1,7 +1,8 @@
 (ns pequod-cljs.core
     (:require [reagent.core :as reagent :refer [atom]]
               [secretary.core :as secretary :include-macros true]
-              [accountant.core :as accountant]))
+              [accountant.core :as accountant]
+              [pequod-cljs.solutions :as solutions]))
 
 ;; Pequod code
 
@@ -177,13 +178,23 @@
 
 (defn consume [final-goods final-prices cc]
   (let [utility-exponents (cc :utility-exponents)
-        income (cc :income)
+        income (cc :income) 
         final-demands (map (fn [final-good]
                              (/ (nth utility-exponents (dec final-good))
                                 (* (apply + utility-exponents)
                                    (nth final-prices (dec final-good)))))
                       final-goods)]
     (assoc cc :final-demands final-demands)))
+
+
+(defn proposal [wc]
+  (letfn [(input-count [w]
+            ((comp count flatten :production-inputs) w))]
+    (let [input-count-r (input-count wc)]
+      (condp = input-count-r
+        1 (solutions.produce-1 wc)
+        2 (solutions.produce-2 wc)
+        (str "unexpected input-count value: " input-count-r)))))
 
 (defn process-plan [t]
   (let [updated-ccs (map (partial consume (t :final-goods) (t :final-prices))
