@@ -13,7 +13,7 @@
                  [compojure "1.6.1"]
                  [hiccup "1.0.5"]
                  [yogthos/config "1.1.1"]
-                 [org.clojure/clojurescript "1.10.339"
+                 [org.clojure/clojurescript "1.10.439"
                   :scope "provided"]
                  [secretary "1.2.3"]
                  [venantius/accountant "0.2.4"
@@ -30,7 +30,6 @@
   :min-lein-version "2.5.0"
   :uberjar-name "pequod-cljs.jar"
   :main pequod-cljs.server
-  :jvm-opts ["--add-modules" "java.xml.bind"]
   :clean-targets ^{:protect false}
   [:target-path
    [:cljsbuild :builds :app :compiler :output-dir]
