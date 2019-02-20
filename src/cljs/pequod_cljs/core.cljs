@@ -196,6 +196,11 @@
                                xs)]
     [input-quantities nature-quantities labor-quantities]))
 
+(defn get-input-quantity [f ii [production-inputs input-quantities]]
+  (->> ii
+       (.indexOf (f production-inputs))
+       (nth input-quantities)))
+
 (defn solution-1 [a s c k ps b λ p-i]
   (let [b1 (first b)
         p1 (first (flatten ps))
@@ -310,6 +315,41 @@
       :input-quantities input-qs
       :nature-quantities nature-qs
       :labor-quantities labor-qs}))
+
+
+; rename this?
+(defn get-input-quantity [f ii [production-inputs input-quantities]]
+  (->> ii
+       (.indexOf (f production-inputs))
+       (nth input-quantities)))
+
+
+(defn planning-bureau-subroutine [type inputs prices J wcs]
+  (loop [inputs inputs
+         prices prices
+         surpluses []
+         J J]
+    (if (empty? inputs)
+      [prices surpluses J]
+      (let [supply (->> wcs
+                        (filter #(and (= 0 (% :industry))
+                                      (= (first inputs) (% :product))))
+                        (map :output)
+                        sum)
+            demand (->> wcs
+                        (map :final-demand)
+                        (map #(nth % inputs))
+                        (apply sum))
+            surplus (- supply demand)
+            delta (nth deltas J)
+            new-price (cond (pos? surplus) (* (- 1 delta) (nth prices inputs))
+                            (neg? surplus) (* (+ 1 delta) (nth prices inputs))
+                            :else (nth prices inputs))]
+        (recur (rest inputs)
+               (assoc prices (dec prices) new-price)
+               (conj surplus surpluses)
+               (inc J))))))
+
 
 (defn proposal [wc]
   (letfn [(input-count [w]
