@@ -324,7 +324,7 @@
        (nth input-quantities)))
 
 
-(defn planning-bureau-subroutine [type inputs prices J wcs]
+(defn planning-bureau-subroutine-1 [type inputs prices J wcs]
   (loop [inputs inputs
          prices prices
          surpluses []
@@ -336,12 +336,96 @@
                                       (= (first inputs) (% :product))))
                         (map :output)
                         sum)
-            demand (->> wcs
+            demand (->> ccs
                         (map :final-demand)
                         (map #(nth % inputs))
                         (apply sum))
             surplus (- supply demand)
             delta (nth deltas J)
+            new-price (cond (pos? surplus) (* (- 1 delta) (nth prices inputs))
+                            (neg? surplus) (* (+ 1 delta) (nth prices inputs))
+                            :else (nth prices inputs))]
+        (recur (rest inputs)
+               (assoc prices (dec prices) new-price)
+               (conj surplus surpluses)
+               (inc J))))))
+
+
+(defn planning-bureau-subroutine-2 [& args]
+  (loop [inputs inputs
+         prices prices
+         surpluses []
+         J J]
+    (if (empty? inputs)
+      [prices surpluses J]
+      (let [supply (->> wcs
+                        (filter #(and (= 1 (% :industry))
+                                      (= (first inputs) (% :product))))
+                        (map :output)
+                        sum)
+            demand (->> wcs
+                        (filter (contains? inputs (first production-inputs)))
+                        (map (juxt :production-inputs :input-quantities))
+                        (map (partial get-input-quantity first inputs))
+                        (apply sum))
+            surplus (- supply demand)
+            delta (last (take-while (partial < 1)
+                                    (iterate #(/ % 2.0)
+                                             (nth deltas J))))
+            new-price (cond (pos? surplus) (* (- 1 delta) (nth prices inputs))
+                            (neg? surplus) (* (+ 1 delta) (nth prices inputs))
+                            :else (nth prices inputs))]
+        (recur (rest inputs)
+               (assoc prices (dec prices) new-price)
+               (conj surplus surpluses)
+               (inc J))))))
+
+(defn planning-bureau-subroutine-3
+  "for nature types, prices, surpluses"
+  [& args]
+  (loop [inputs inputs
+         prices prices
+         surpluses []
+         J J]
+    (if (empty? inputs)
+      [prices surpluses J]
+      (let [supply natural-resources-supply
+            demand (->> wcs
+                        (filter (contains? inputs (second production-inputs)))
+                        (map (juxt :production-inputs :nature-quantities))
+                        (map (partial get-input-quantity second inputs))
+                        (apply sum))
+            surplus (- supply demand)
+            delta (last (take-while (partial < 1)
+                                    (iterate #(/ % 2.0)
+                                             (nth deltas J))))
+            new-price (cond (pos? surplus) (* (- 1 delta) (nth prices inputs))
+                            (neg? surplus) (* (+ 1 delta) (nth prices inputs))
+                            :else (nth prices inputs))]
+        (recur (rest inputs)
+               (assoc prices (dec prices) new-price)
+               (conj surplus surpluses)
+               (inc J))))))
+
+(defn planning-bureau-subroutine-4
+  "for labor types, prices, surpluses"
+  [& args]
+  (loop [inputs inputs
+         prices prices
+         surpluses []
+         J J]
+    (if (empty? inputs)
+      [prices surpluses J]
+      (let [supply labor-supply
+            demand (->> wcs
+                        (filter (contains? inputs (last production-inputs)))
+                        (map (juxt :production-inputs :nature-quantities))
+                        (map (partial get-input-quantity last inputs))
+                        (apply sum))
+            surplus (- supply demand)
+            delta (last (take-while (partial < 1)
+                                    (iterate #(/ % 2.0)
+                                             (nth deltas J))))
             new-price (cond (pos? surplus) (* (- 1 delta) (nth prices inputs))
                             (neg? surplus) (* (+ 1 delta) (nth prices inputs))
                             :else (nth prices inputs))]
