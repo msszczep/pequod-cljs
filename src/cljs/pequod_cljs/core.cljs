@@ -192,7 +192,7 @@
         nature-quantities (->> xs
                                (drop num-input-quantities)
                                (take num-nature-quantities))
-        labor-quantities (drop (+ num-input-quantities num-input-quantities)
+        labor-quantities (drop (+ num-input-quantities num-nature-quantities)
                                xs)]
     [input-quantities nature-quantities labor-quantities]))
 
