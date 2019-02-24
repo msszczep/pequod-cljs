@@ -431,7 +431,7 @@
                (inc J))))))
 
 
-(defn proposal [wc input-prices nature-prices labor-prices]
+(defn proposal [input-prices nature-prices labor-prices wc]
   (letfn [(count-inputs [w]
             ((comp count flatten :production-inputs) w))
           (get-input-prices [[indexes prices]]
@@ -464,7 +464,8 @@
 (defn process-plan [t]
   (let [updated-ccs (map (partial consume (t :final-goods) (t :final-prices))
                          (t :ccs))
-        updated-wcs (map proposal (t :wcs))]
+        updated-wcs (map (partial proposal (t :input-prices) (t :nature-prices) (t :labor-prices))
+                         (t :wcs))]
     (assoc t :ccs updated-ccs
              :wcs updated-wcs)))
 
