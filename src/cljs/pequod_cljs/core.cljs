@@ -196,10 +196,6 @@
                                xs)]
     [input-quantities nature-quantities labor-quantities]))
 
-(defn get-input-quantity [f ii [production-inputs input-quantities]]
-  (->> ii
-       (.indexOf (f production-inputs))
-       (nth input-quantities)))
 
 (defn solution-1 [a s c k ps b λ p-i]
   (let [b1 (first b)
@@ -324,7 +320,7 @@
        (nth input-quantities)))
 
 
-(defn planning-bureau-subroutine-1 [type inputs prices J wcs]
+#_(defn planning-bureau-subroutine-1 [type inputs prices J wcs ccs deltas]
   (loop [inputs inputs
          prices prices
          surpluses []
@@ -335,11 +331,11 @@
                         (filter #(and (= 0 (% :industry))
                                       (= (first inputs) (% :product))))
                         (map :output)
-                        sum)
+                        (apply +))
             demand (->> ccs
                         (map :final-demand)
                         (map #(nth % inputs))
-                        (apply sum))
+                        (apply +))
             surplus (- supply demand)
             delta (nth deltas J)
             new-price (cond (pos? surplus) (* (- 1 delta) (nth prices inputs))
@@ -351,7 +347,7 @@
                (inc J))))))
 
 
-(defn planning-bureau-subroutine-2 [& args]
+#_(defn planning-bureau-subroutine-2 [& args]
   (loop [inputs inputs
          prices prices
          surpluses []
@@ -380,7 +376,7 @@
                (conj surplus surpluses)
                (inc J))))))
 
-(defn planning-bureau-subroutine-3
+#_(defn planning-bureau-subroutine-3
   "for nature types, prices, surpluses"
   [& args]
   (loop [inputs inputs
@@ -407,7 +403,7 @@
                (conj surplus surpluses)
                (inc J))))))
 
-(defn planning-bureau-subroutine-4
+#_(defn planning-bureau-subroutine-4
   "for labor types, prices, surpluses"
   [& args]
   (loop [inputs inputs
@@ -435,19 +431,24 @@
                (inc J))))))
 
 
-(defn proposal [wc]
-  (letfn [(input-count [w]
-            ((comp count flatten :production-inputs) w))]
-    (let [input-count-r (input-count wc)
+(defn proposal [wc input-prices nature-prices labor-prices]
+  (letfn [(count-inputs [w]
+            ((comp count flatten :production-inputs) w))
+          (get-input-prices [[indexes prices]]
+            (map #(nth prices (dec %)) indexes))]
+    (let [prices-and-indexes (->> (vector input-prices nature-prices labor-prices)
+                                  (interleave (wc :production-inputs))
+                                  (partition 2))
+          input-count-r (count-inputs wc)
           a (wc :A)
           s (wc :S)
           c (wc :c)
           k (wc :du)
-          ps (wc :production-inputs) ; FIXME: prices, not production-inputs
+          ps (flatten (map get-input-prices prices-and-indexes))
           b-input (wc :input-exponents)
           b-labor (wc :labor-exponents)
           b-nature (wc :nature-exponents)
-          b (concat b-input b-labor b-nature)
+          b (concat b-input b-nature b-labor)
           λ (first (flatten ps))
           p-i (wc :production-inputs)]
       (condp = input-count-r

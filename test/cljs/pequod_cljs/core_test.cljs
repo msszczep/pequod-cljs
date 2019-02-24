@@ -32,6 +32,9 @@
       (do (println "Not found: " res)
           false))))
 
+(deftest test-my-input-prices
+   
+  (is (= [100 150 150] [100 150 150])))
 
 (deftest test-home
   (with-mounted-component (rc/home-page)
