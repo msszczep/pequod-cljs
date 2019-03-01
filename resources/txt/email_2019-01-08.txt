@@ -1,0 +1,7 @@
+Hi Mitchell
+
+Apologies again for my delayed response. The price used by each wc for their output good is taken from the current global price vector. In other words the output price is exogenous to the worker council agent. The global price vector is adjusted separately in its own procedure called 'planning-bureau' in the price-adjustment.nls inclusion.
+
+The global price vector is the quasi-market-price, which connects the individual agent's solutions together in the model, so the wc agents treat it as global or environmental information.
+
+Hope this helps, let me know if you have further questions

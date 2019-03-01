@@ -1,0 +1,24 @@
+turtle 101
+{:effort 0.5, :cq 0.25, :ce 1, :A 0.25, :labor-exponents (0.3344715806333696), :industry 1, :output 0, :du 7, :c 0.05, :product 2, :labor-quantities [0], :production-inputs [(3) (1) (1)], :input-exponents (0.35704369449641105), :xe 0.05, :S 1, :nature-exponents (0.40775789400671814)}
+
+turtle 110
+{:effort 0.5, :cq 10, :ce 1, :A 10, :labor-exponents [0.2327136009634174], :industry 0, :output 0, :du 2, :c 0.05, :product 2, :labor-quantities [0], :production-inputs [[1 2] [1] [1]], :input-exponents [0.18730943766373953 0.1700289432131638], :xe 0.05, :S 1, :nature-exponents [0.1970497669613798]}
+
+turtle 101
+{:effort 0.5, :cq 10, :ce 1, :A 10, :labor-exponents [0.24925680571914088], :industry 0, :output 0, :du 2, :c 0.05, :product 1, :labor-quantities [0], :production-inputs [[1 2 3] [1] [1]], :input-exponents [0.07540314861302111 0.10098780164832724 0.10718250832816038], :xe 0.05, :S 1, :nature-exponents [0.17057223193493595]}
+
+turtle 113
+{:effort 0.5, :cq 10, :ce 1, :A 10, :labor-exponents [0.15813469104723293], :industry 0, :output 0, :du 2, :c 0.05, :product 2, :labor-quantities [0], :production-inputs [[1 2 3 4] [1] [1]], :input-exponents [0.07136063178539023 0.09705394605246723 0.09837585447317158 0.0516097801370993], :xe 0.05, :S 1, :nature-exponents [0.1978580219892075]}
+
+(sort (proposal [100 100 100 100] [150] [150] wc))
+
+:input-prices	[100 100 100 100]
+:nature-prices  [150]
+:labor-prices   [150]
+
+===
+
+turtle 50  
+{:effort 1, :num-workers 10, :utility-exponents [0.2379038877985112 0.23517856300054907 0.22661946853423187 0.2450284522738656], :final-demands (0 0 0 0 0), :cy 10.037467640470766, :income 5000}
+
+(sort (consume [1 2 3 4] [100 100 100 100] cc)) 

@@ -1,0 +1,43 @@
+effort 7.443216445364972
+output 22.16058842102027
+
+Output:
+(Math/pow Math/E (/ (+ (- (* k (Math/log a))) (- (* b1 k (Math/log b1))) (- (* b2 k (Math/log b2))) (- (* b3 k (Math/log b3))) (- (* b4 k (Math/log b4))) (- (* b5 k (Math/log b5))) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* b4 k (Math/log p4)) (* b5 k (Math/log p5)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log λ))) (- (* b2 k (Math/log λ))) (- (* b3 k (Math/log λ))) (- (* b4 k (Math/log λ))) (- (* b5 k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5))))
+
+E^((-(k*Log[a]) - b1*k*Log[b1] - b2*k*Log[b2] - b3*k*Log[b3] - b4*k*Log[b4] - b5*k*Log[b5] - c*Log[c] + c*Log[k] + b1*k*Log[p1] + b2*k*Log[p2] + b3*k*Log[p3] + b4*k*Log[p4] + b5*k*Log[p5] + c*Log[s] - c*Log[Î»] - b1*k*Log[Î»] - b2*k*Log[Î»] - b3*k*Log[Î»] - b4*k*Log[Î»] - b5*k*Log[Î»])/(c - k + b1*k + b2*k + b3*k + b4*k + b5*k))
+([:A 10]
+ [:S 1]
+ [:c 0.05]
+ [:ce 1]
+ [:cq 10]
+ [:du 2]
+ [:effort 1042807.3042358488]
+ [:industry 0]
+ [:input-exponents
+  [0.07540314861302111 0.10098780164832724 0.10718250832816038]]
+ [:input-quantities
+  (1.6709781420621876 2.237949107872213 2.375227452992942)]
+ [:labor-exponents [0.24925680571914088]]
+ [:labor-quantities (3.6824516551200803)]
+ [:nature-exponents [0.17057223193493595]]
+ [:nature-quantities (2.51998735197663)]
+ [:output 22.160588421020304]
+ [:product 1]
+ [:production-inputs [[1 2 3] [1] [1]]]
+ [:x1 1.6709781420621876]
+ [:x2 2.237949107872213]
+ [:x3 2.375227452992942]
+ [:x4 2.51998735197663] 
+ [:x5 3.6824516551200803] 
+ [:xe 0.05])
+
+(output-5 10 0.07540314861302111 0.10098780164832724 0.10718250832816038 0.17057223193493595 0.24925680571914088 100 100 100 150 150 100 2 0.05 1)
+
+(defn output-5 [a, b1, b2, b3, b4 b5 p1, p2, p3, p4 p5 λ, k, c, s] (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (- (* b1 k (Math/log b1))) (- (* b2 k (Math/log b2))) (- (* b3 k (Math/log b3))) (- (* b4 k (Math/log b4))) (- (* b5 k (Math/log b5))) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* b4 k (Math/log p4)) (* b5 k (Math/log p5)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log λ))) (- (* b2 k (Math/log λ))) (- (* b3 k (Math/log λ))) (- (* b4 k (Math/log λ))) (- (* b5 k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5)))))
+
+
+(output-5 
+Pickup: solution-5: output and effort are wrong.  Fix! 
+
+
+Pickup: effort is still wrong.  Fix!

@@ -1,0 +1,105 @@
+Hi, folks.
+
+Here's the issue in detail that I described in our phone call today.
+
+1.  Open Pequod2, run setup, and select a random worker-council turtle.  Here are the pertinent values for a turtle I chose just now (wc 100):
+
+|a|10|
+|c|0.05|
+|ce|1|
+|cq|10|
+|du|2|
+|effort|0.5|
+|industry|0|
+|input-exponents|[0.3890958281110604]|
+|labor-exponents|[0.21511595104798242]|
+|labor-quantities|[0]|
+|nature-exponents|[0.2266003079961335]|
+|output|0|
+|product|1|
+|production-inputs|[[3] [1] [1]]|
+|s|1|
+|xe|0.05|
+
+I arranged these in alphabetical order of the field name.  The name of the variable is on the left; its value for this turtle is on the right.
+
+2.  I translate this into a Clojure map (a key-value store) which appears as follows:
+
+{:A 10,
+ :S 1,
+ :c 0.05,
+ :ce 1,
+ :cq 10,
+ :du 2,
+ :effort 0.5,
+ :industry 0,
+ :input-exponents (0.3890958281110604),
+ :labor-exponents (0.21511595104798242),
+ :labor-quantities [0],
+ :nature-exponents (0.2266003079961335),
+ :output 0, 
+ :product 1, 
+ :production-inputs [(3) (1) (1)], 
+ :xe 0.05}
+
+3.  I then run Netlogo Pequod one step (one iteration).  The values are now as follows:
+
+|a|10|
+|c|0.05|
+|ce|1|
+|cq|10|
+|du|2|
+|effort|74.79888597572769|
+|industry|0|
+|input-exponents|[0.3890958281110604]|
+|labor-exponents|[0.21511595104798242]|
+|labor-quantities|[0]|
+|nature-exponents|[0.2266003079961335]|
+|output|0|
+|product|1|
+|production-inputs|[[3] [1] [1]]|
+|s|1|
+|x1|870.7767506610646|
+|x2|338.08000607217593|
+|x3|320.945733391346|
+|xe|0.05|
+|z|2237.9493372838656|
+
+The effort values now changes, and variables x1, x2, x3, and z are now included.  Everything else remains the same.
+
+4.  Here is the equivalent when I run it on the Clojurescript side.
+
+{:A 10,
+ :S 1,
+ :c 0.05,
+ :ce 1,
+ :cq 10,
+ :du 2,
+ :effort 4.4952250554942053e+192,
+ :industry 0,
+ :input-exponents (0.3890958281110604),
+ :labor-exponents (0.21511595104798242),
+ :labor-quantities [0],
+ :nature-exponents (0.2266003079961335),
+ :output 122153.86785498938,
+ :product 1,
+ :production-inputs [(3) (1) (1)],
+ :x1 47529.560370006235,
+ :x2 78831.73637344665, 
+ :x3 83040.31223657877, 
+ :xe 0.05}
+
+Here's a side-by-side comparison of the pertient values between the two tech-stacks:
+
+|Variable|Netlogo value|Clojurescript Value|
+|effort|74.79888597572769|4.4952250554942053e+192|
+|x1|870.7767506610646|47529.560370006235|
+|x2|338.08000607217593|78831.73637344665| 
+|x3|320.945733391346|83040.31223657877|
+
+The x1, x2, and x3 values coming back for Clojurescript are considerably _larger_ than their Netlogo equivalents.  The effort value, however, is considerably smaller than its Netlogo equivalent.
+
+The discrepancies at least after a single iteration have me worried.  Should I be?  Should I explore further or should I investigate more as to what's going on with this instance?  I'm eager to hear your feedback.
+
+Thanks.
+-- Mitchell
