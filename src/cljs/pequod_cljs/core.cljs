@@ -175,15 +175,17 @@
                                        labor-types)))
                :lorenz-gini-tuple (update-lorenz-and-gini ccs)))))
 
+
 (defn consume [final-goods final-prices cc]
   (let [utility-exponents (cc :utility-exponents)
         income (cc :income) 
         final-demands (map (fn [final-good]
-                             (/ (nth utility-exponents (dec final-good))
+                             (/ (* income (nth utility-exponents (dec final-good)))
                                 (* (apply + utility-exponents)
                                    (nth final-prices (dec final-good)))))
                       final-goods)]
     (assoc cc :final-demands final-demands)))
+
 
 (defn assign-new-proposal [production-inputs xs]
   (let [num-input-quantities (count (first production-inputs))
