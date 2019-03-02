@@ -213,6 +213,7 @@
      :nature-quantities nature-qs
      :labor-quantities labor-qs}))
 
+
 (defn solution-2 [a s c k ps b λ p-i]
   (let [[b1 b2] b
         [p1 p2] (flatten ps)
@@ -290,6 +291,7 @@
       :nature-quantities nature-qs
       :labor-quantities labor-qs}))
 
+
 (defn solution-6 [a s c k ps b λ p-i]
   (let [[b1 b2 b3 b4 b5 b6] b
         [p1 p2 p3 p4 p5 p6] (flatten ps)
@@ -315,116 +317,64 @@
       :labor-quantities labor-qs}))
 
 
-; rename this?
 (defn get-input-quantity [f ii [production-inputs input-quantities]]
   (->> ii
        (.indexOf (f production-inputs))
        (nth input-quantities)))
 
 
-; rename "planning bureau"
-#_(defn planning-bureau-subroutine-1 [type inputs prices J wcs ccs deltas]
+(defn update-sap
+  "sap = surpluses-and-prices"
+  [sap-type inputs prices deltas J wcs ccs natural-resources-supply labor-supply]
   (loop [inputs inputs
          prices prices
          surpluses []
          J J]
     (if (empty? inputs)
       [prices surpluses J]
-      (let [supply (->> wcs
-                        (filter #(and (= 0 (% :industry))
-                                      (= (first inputs) (% :product))))
-                        (map :output)
-                        (apply +))
-            demand (->> ccs
-                        (map :final-demand)
-                        (map #(nth % inputs))
-                        (apply +))
+      (let [supply (condp = sap-type
+                     "final" (->> wcs
+                                  (filter #(and (= 1 (% :industry))
+                                                (= (first inputs)
+                                                   (% :product))))
+                                  (map :output)
+                                  (apply +))
+                     "intermediate" (->> wcs
+                                         (filter #(and (= 0 (% :industry))
+                                                       (= (first inputs)
+                                                          (% :product))))
+                                         (map :output)
+                                         (apply +))
+                     "nature" natural-resources-supply
+                     "labor"  labor-supply)
+            demand (condp = sap-type
+                     "final" (->> ccs
+                                  (map :final-demand)
+                                  (map #(nth % inputs))
+                                  (apply +))
+                     "intermediate" (->> wcs
+                                         (filter #(contains? (first inputs)
+                                                             (first (:production-inputs %))))
+                                         (map (juxt :production-inputs :input-quantities))
+                                         (map (partial get-input-quantity first inputs))
+                                         (apply +))
+                     "nature" (->> wcs
+                                   (filter #(contains? (first inputs)
+                                                       (second (:production-inputs %))))
+                                   (map (juxt :production-inputs :nature-quantities))
+                                   (map (partial get-input-quantity second inputs))
+                                   (apply +))
+                     "labor" (->> wcs
+                                  (filter #(contains? (first inputs) (last (:production-inputs %))))
+                                  (map (juxt :production-inputs :labor-quantities))
+                                  (map (partial get-input-quantity last inputs))
+                                  (apply +)))
             surplus (- supply demand)
-            delta (nth deltas J)
-            new-price (cond (pos? surplus) (* (- 1 delta) (nth prices inputs))
-                            (neg? surplus) (* (+ 1 delta) (nth prices inputs))
-                            :else (nth prices inputs))]
-        (recur (rest inputs)
-               (assoc prices (dec prices) new-price)
-               (conj surplus surpluses)
-               (inc J))))))
-
-
-#_(defn planning-bureau-subroutine-2 [& args]
-  (loop [inputs inputs
-         prices prices
-         surpluses []
-         J J]
-    (if (empty? inputs)
-      [prices surpluses J]
-      (let [supply (->> wcs
-                        (filter #(and (= 1 (% :industry))
-                                      (= (first inputs) (% :product))))
-                        (map :output)
-                        sum)
-            demand (->> wcs
-                        (filter (contains? inputs (first production-inputs)))
-                        (map (juxt :production-inputs :input-quantities))
-                        (map (partial get-input-quantity first inputs))
-                        (apply sum))
-            surplus (- supply demand)
-            delta (last (take-while (partial < 1)
-                                    (iterate #(/ % 2.0)
-                                             (nth deltas J))))
-            new-price (cond (pos? surplus) (* (- 1 delta) (nth prices inputs))
-                            (neg? surplus) (* (+ 1 delta) (nth prices inputs))
-                            :else (nth prices inputs))]
-        (recur (rest inputs)
-               (assoc prices (dec prices) new-price)
-               (conj surplus surpluses)
-               (inc J))))))
-
-#_(defn planning-bureau-subroutine-3
-  "for nature types, prices, surpluses"
-  [& args]
-  (loop [inputs inputs
-         prices prices
-         surpluses []
-         J J]
-    (if (empty? inputs)
-      [prices surpluses J]
-      (let [supply natural-resources-supply
-            demand (->> wcs
-                        (filter (contains? inputs (second production-inputs)))
-                        (map (juxt :production-inputs :nature-quantities))
-                        (map (partial get-input-quantity second inputs))
-                        (apply sum))
-            surplus (- supply demand)
-            delta (last (take-while (partial < 1)
-                                    (iterate #(/ % 2.0)
-                                             (nth deltas J))))
-            new-price (cond (pos? surplus) (* (- 1 delta) (nth prices inputs))
-                            (neg? surplus) (* (+ 1 delta) (nth prices inputs))
-                            :else (nth prices inputs))]
-        (recur (rest inputs)
-               (assoc prices (dec prices) new-price)
-               (conj surplus surpluses)
-               (inc J))))))
-
-#_(defn planning-bureau-subroutine-4
-  "for labor types, prices, surpluses"
-  [& args]
-  (loop [inputs inputs
-         prices prices
-         surpluses []
-         J J]
-    (if (empty? inputs)
-      [prices surpluses J]
-      (let [supply labor-supply
-            demand (->> wcs
-                        (filter (contains? inputs (last production-inputs)))
-                        (map (juxt :production-inputs :nature-quantities))
-                        (map (partial get-input-quantity last inputs))
-                        (apply sum))
-            surplus (- supply demand)
-            delta (last (take-while (partial < 1)
-                                    (iterate #(/ % 2.0)
-                                             (nth deltas J))))
+            delta (if (= sap-type "final")
+                    (nth deltas J)
+                    (last (take-while (partial < 1)
+                                      (iterate #(/ % 2.0)
+                                               (nth deltas J)))))
             new-price (cond (pos? surplus) (* (- 1 delta) (nth prices inputs))
                             (neg? surplus) (* (+ 1 delta) (nth prices inputs))
                             :else (nth prices inputs))]
