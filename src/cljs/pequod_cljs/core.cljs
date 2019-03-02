@@ -3,8 +3,6 @@
               [secretary.core :as secretary :include-macros true]
               [accountant.core :as accountant]))
 
-;; Pequod code
-
 (def globals
   (atom {:init-final-price        100
          :init-intermediate-price 100
@@ -35,7 +33,9 @@
            ; both lorenz-points and gini-index-reserve
          :wcs                      []
          :ccs                      []
-         :iteration                0}))
+         :iteration                0
+         :natural-resources-supply 0
+         :labor-supply             0}))
 
 (defn standardize-prices [t]
   (assoc t
@@ -57,12 +57,12 @@
         resources (t :resources)
         labor (t :labors)]
     (assoc t
-      :final-prices (repeat finals (t :init-final-price))
-      :input-prices (repeat inputs (t :init-intermediate-price))
-      :nature-prices (repeat resources (t :init-nature-price))
-      :labor-prices (repeat labor (t :init-labor-price))
-      :price-deltas (repeat 4 0.05)
-      :pdlist (repeat (+ finals inputs resources labor) 0.05))))
+      :final-prices (vec (repeat finals (t :init-final-price)))
+      :input-prices (vec (repeat inputs (t :init-intermediate-price)))
+      :nature-prices (vec (repeat resources (t :init-nature-price)))
+      :labor-prices (vec (repeat labor (t :init-labor-price)))
+      :price-deltas (vec (repeat 4 0.05))
+      :pdlist (vec (repeat (+ finals inputs resources labor) 0.05)))))
 
 (defn create-ccs [consumer-councils workers-per-council finals]
   (let [effort 1
@@ -76,13 +76,13 @@
                     :income (* 500 effort workers-per-council)
                     :cy (+ 6 (rand 9))
                     :utility-exponents %
-                    :final-demands (repeat 5 0))
+                    :final-demands (vec (repeat 5 0)))
          utility-exponents)))
 
 (defn create-wcs [worker-councils goods industry]
   (->> goods
-       (map #(repeat (/ worker-councils 2 (count goods))
-                     {:industry industry :product %}))
+       (map #(vec (repeat (/ worker-councils 2 (count goods))
+                          {:industry industry :product %})))
        flatten))
 
 (defn continue-setup-wcs [intermediate-inputs nature-types labor-types wc]
@@ -161,6 +161,8 @@
         initialize-prices
         (assoc :price-delta 0.1
                :delta-delay 5
+               :natural-resources-supply 1000
+               :labor-supply 1000
                :final-goods final-goods
                :intermediate-inputs intermediate-inputs
                :nature-types nature-types
@@ -323,15 +325,14 @@
        (nth input-quantities)))
 
 
-(defn update-sap
-  "sap = surpluses-and-prices"
+(defn update-surpluses-prices
   [sap-type inputs prices deltas J wcs ccs natural-resources-supply labor-supply]
   (loop [inputs inputs
          prices prices
          surpluses []
          J J]
     (if (empty? inputs)
-      [prices surpluses J]
+      {:prices prices :surpluses surpluses :J J}
       (let [supply (condp = sap-type
                      "final" (->> wcs
                                   (filter #(and (= 1 (% :industry))
@@ -350,7 +351,7 @@
             demand (condp = sap-type
                      "final" (->> ccs
                                   (map :final-demand)
-                                  (map #(nth % inputs))
+                                  (map #(nth % (first inputs)))
                                   (apply +))
                      "intermediate" (->> wcs
                                          (filter #(contains? (first inputs)
@@ -375,9 +376,9 @@
                     (last (take-while (partial < 1)
                                       (iterate #(/ % 2.0)
                                                (nth deltas J)))))
-            new-price (cond (pos? surplus) (* (- 1 delta) (nth prices inputs))
-                            (neg? surplus) (* (+ 1 delta) (nth prices inputs))
-                            :else (nth prices inputs))]
+            new-price (cond (pos? surplus) (* (- 1 delta) (nth prices (first inputs)))
+                            (neg? surplus) (* (+ 1 delta) (nth prices (first inputs)))
+                            :else (nth prices (first inputs)))]
         (recur (rest inputs)
                (assoc prices (dec prices) new-price)
                (conj surplus surpluses)
@@ -414,17 +415,25 @@
         (str "unexpected input-count value: " input-count-r)))))
 
 
-(defn process-plan [t]
-  (let [updated-ccs (map (partial consume (t :final-goods) (t :final-prices))
-                         (t :ccs))
-        updated-wcs (map (partial proposal (t :input-prices) (t :nature-prices) (t :labor-prices))
-                         (t :wcs))]
-    (assoc t :ccs updated-ccs
-             :wcs updated-wcs)))
-
-
 (defn iterate-plan [t]
-  (process-plan t))
+  (let [t2 (assoc t :ccs (map (partial consume (t :final-goods) (t :final-prices))
+                              (t :ccs))
+                    :wcs (map (partial proposal (t :input-prices) (t :nature-prices) (t :labor-prices))
+                              (t :wcs)))
+;        final-map (update-surpluses-prices "final" (t2 :final-inputs) (t2 :final-prices) (t2 :price-deltas) 0 (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply))
+;        intermediate-map (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :input-prices) (t2 :price-deltas) (:J final-map) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply))
+;        nature-map (update-surpluses-prices "nature" (t2 :nature-types) (t2 :nature-prices) (t2 :price-deltas) (:J intermediate-map) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply))
+;        labor-map (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) (t2 :price-deltas) (:J nature-map) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply))
+        ]
+t2
+    #_(assoc t2 :final-prices (:prices final-map)
+              :final-surpluses (:surpluses final-map)
+              :input-prices (:prices intermediate-map)
+              :input-surpluses (:surpluses intermediate-map)
+              :nature-prices (:prices nature-map)
+              :nature-surpluses (:surpluses nature-map)
+              :labor-prices (:prices labor-map)
+              :labor-surpluses (:surpluses labor-map))))
 
 ;; -------------------------
 ;; Views-
