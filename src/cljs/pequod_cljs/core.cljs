@@ -75,7 +75,7 @@
                     :effort effort
                     :income (* 500 effort workers-per-council)
                     :cy (+ 6 (rand 9))
-                    :utility-exponents %
+                    :utility-exponents (vec %)
                     :final-demands (vec (repeat 5 0)))
          utility-exponents)))
 
@@ -91,20 +91,21 @@
             (->> input-seq
                  shuffle
                  (take (rand-nth input-seq))
-                 sort))]
+                 sort
+                 vec))]
     (let [production-inputs (vector (get-random-subset intermediate-inputs)
                                     (get-random-subset nature-types)
                                     (get-random-subset labor-types))
           input-exponents (when (pos? (count (first production-inputs)))
                             (let [xz (/ 0.2 (count (first production-inputs)))]
-                              (take (count (first production-inputs))
-                                    (repeatedly #(+ xz (rand xz))))))
+                              (vec (take (count (first production-inputs))
+                                     (repeatedly #(+ xz (rand xz)))))))
           nature-exponents (let [rz (/ 0.2 (count (second production-inputs)))]
-                             (take (count (second production-inputs))
-                                   (repeatedly #(+ 0.05 rz (rand rz)))))
+                             (vec (take (count (second production-inputs))
+                                    (repeatedly #(+ 0.05 rz (rand rz))))))
           labor-exponents (let [lz (/ 0.2 (count (last production-inputs)))]
-                            (take (count (last production-inputs))
-                                  (repeatedly #(+ 0.05 lz (rand lz)))))]
+                            (vec (take (count (last production-inputs))
+                                   (repeatedly #(+ 0.05 lz (rand lz))))))]
       (merge wc {:production-inputs production-inputs
                  :xe 0.05
                  :c 0.05
@@ -152,10 +153,10 @@
       [[] 0])))
 
 (defn setup [t]
-  (let [intermediate-inputs (range 1 (inc (t :inputs)))
-        nature-types (range 1 (inc (t :resources)))
-        labor-types (range 1 (inc (t :labors)))
-        final-goods (range 1 (inc (t :finals)))
+  (let [intermediate-inputs (vec (range 1 (inc (t :inputs))))
+        nature-types (vec (range 1 (inc (t :resources))))
+        labor-types (vec (range 1 (inc (t :labors))))
+        final-goods (vec (range 1 (inc (t :finals))))
         ccs (create-ccs 100 10 4)]
     (-> t
         initialize-prices
@@ -326,14 +327,14 @@
 
 
 (defn update-surpluses-prices
-  [sap-type inputs prices deltas J wcs ccs natural-resources-supply labor-supply]
+  [type inputs prices deltas J wcs ccs natural-resources-supply labor-supply]
   (loop [inputs inputs
          prices prices
          surpluses []
          J J]
     (if (empty? inputs)
       {:prices prices :surpluses surpluses :J J}
-      (let [supply (condp = sap-type
+      (let [supply (condp = type
                      "final" (->> wcs
                                   (filter #(and (= 1 (% :industry))
                                                 (= (first inputs)
@@ -348,10 +349,10 @@
                                          (apply +))
                      "nature" natural-resources-supply
                      "labor"  labor-supply)
-            demand (condp = sap-type
+            demand (condp = type
                      "final" (->> ccs
-                                  (map :final-demand)
-                                  (map #(nth % (first inputs)))
+                                  (map :final-demands)
+                                  (map #(nth % (dec (first inputs))))
                                   (apply +))
                      "intermediate" (->> wcs
                                          (filter #(contains? (first inputs)
@@ -371,17 +372,17 @@
                                   (map (partial get-input-quantity last inputs))
                                   (apply +)))
             surplus (- supply demand)
-            delta (if (= sap-type "final")
+            delta (if (= type "final")
                     (nth deltas J)
                     (last (take-while (partial < 1)
                                       (iterate #(/ % 2.0)
                                                (nth deltas J)))))
-            new-price (cond (pos? surplus) (* (- 1 delta) (nth prices (first inputs)))
-                            (neg? surplus) (* (+ 1 delta) (nth prices (first inputs)))
-                            :else (nth prices (first inputs)))]
+            new-price (cond (pos? surplus) (* (- 1 delta) (nth prices (dec (first inputs))))
+                            (neg? surplus) (* (+ 1 delta) (nth prices (dec (first inputs))))
+                            :else (nth prices (dec (first inputs))))]
         (recur (rest inputs)
-               (assoc prices (dec prices) new-price)
-               (conj surplus surpluses)
+               (assoc prices J new-price)
+               (conj surpluses surplus)
                (inc J))))))
 
 
@@ -420,13 +421,11 @@
                               (t :ccs))
                     :wcs (map (partial proposal (t :input-prices) (t :nature-prices) (t :labor-prices))
                               (t :wcs)))
-;        final-map (update-surpluses-prices "final" (t2 :final-inputs) (t2 :final-prices) (t2 :price-deltas) 0 (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply))
-;        intermediate-map (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :input-prices) (t2 :price-deltas) (:J final-map) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply))
-;        nature-map (update-surpluses-prices "nature" (t2 :nature-types) (t2 :nature-prices) (t2 :price-deltas) (:J intermediate-map) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply))
-;        labor-map (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) (t2 :price-deltas) (:J nature-map) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply))
-        ]
-t2
-    #_(assoc t2 :final-prices (:prices final-map)
+        final-map (update-surpluses-prices "final" (t2 :final-goods) (t2 :final-prices) (t2 :price-deltas) 0 (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply))
+        intermediate-map (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :input-prices) (t2 :price-deltas) 0 (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply))
+        nature-map (update-surpluses-prices "nature" (t2 :nature-types) (t2 :nature-prices) (t2 :price-deltas) 0 (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply))
+        labor-map (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) (t2 :price-deltas) 0 (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply))]
+    (assoc t2 :final-prices (:prices final-map)
               :final-surpluses (:surpluses final-map)
               :input-prices (:prices intermediate-map)
               :input-surpluses (:surpluses intermediate-map)
