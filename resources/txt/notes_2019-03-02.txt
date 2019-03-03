@@ -1,0 +1,14 @@
+(def ccs [{:effort 1, :num-workers 10, :utility-exponents [0.12905472011736055 0.13487903726693998 0.2092378540515457 0.18384940551044823], :final-demands [0 0 0 0 0], :cy 11.678346411205911, :income 5000} {:effort 1, :num-workers 10, :utility-exponents [0.18943709664507352 0.15987328283343907 0.2348474434356657 0.16649791524846919], :final-demands [0 0 0 0 0], :cy 10.442728175323222, :income 5000} {:effort 1, :num-workers 10, :utility-exponents [0.147270098749183 0.20497468021060922 0.17345060299894682 0.2306054546907305], :final-demands [0 0 0 0 0], :cy 10.95709370561636, :income 5000} ])
+
+(def wcs [{:effort 0.5, :cq 0.25, :ce 1, :A 0.25, :labor-exponents [0.2909782402425999], :industry 0, :output 0, :du 7, :c 0.05, :product 4, :labor-quantities [0], :production-inputs [[1 2 3] [1] [1]], :input-exponents [0.1014479862710144 0.06963260544444128 0.09209594674678476], :xe 0.05, :S 1, :nature-exponents [0.385886973809502]} {:effort 0.5, :cq 0.25, :ce 1, :A 0.25, :labor-exponents [0.282872465112054], :industry 0, :output 0, :du 7, :c 0.05, :product 4, :labor-quantities [0], :production-inputs [[1 2 4] [1] [1]], :input-exponents [0.11240018259097334 0.12777349529655357 0.06947384128921258], :xe 0.05, :S 1, :nature-exponents [0.2989525525631761]} {:effort 0.5, :cq 0.25, :ce 1, :A 0.25, :labor-exponents [0.4081240124578396], :industry 0, :output 0, :du 7, :c 0.05, :product 4, :labor-quantities [0], :production-inputs [[4] [1] [1]], :input-exponents [0.270054545540664], :xe 0.05, :S 1, :nature-exponents [0.31584042219407277]} ])
+
+
+ [type inputs prices deltas J wcs ccs natural-resources-supply labor-supply]
+(update-surpluses-prices "final" [1 2 3 4] [100 100 100 100] [0.05 0.05 0.05 0.05] 0 wcs ccs 1000 1000)
+
+ (->> wcs
+      (filter #(and (= 1 (% :industry))
+                    (= (first [1 2 3 4])
+                       (% :product))))
+      (map :output)
+      (apply +))
