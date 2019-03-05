@@ -16,7 +16,18 @@
 	  (rest csv-data)))
 
 
-(def data-as-map
-  (csv-data->maps data-to-use))
+(def pequod-as-map
+  (csv-data->maps pequod-turtles))
 
+(def ccs (filter #(= "{breed ccs}" (:breed %)) pequod-as-map))
 
+(def wcs (filter #(= "{breed wcs}" (:breed %)) pequod-as-map))
+
+(defn get-cc-keys [m]
+  (select-keys m [:cy :effort :final-demands :income :num-workers :utility-exponents]))
+
+(defn get-wc-keys [m]
+  (select-keys m [:a :s :c :ce :cq :du :effort :industry :input-exponents :labor-exponents :labor-quantities :nature-exponents :output :product :production-inputs :xe]))
+
+; TODO: Convert string into Clojure data and data structures
+; TODO: Output as text
