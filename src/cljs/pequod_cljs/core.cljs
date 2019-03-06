@@ -1,7 +1,8 @@
 (ns pequod-cljs.core
     (:require [reagent.core :as reagent :refer [atom]]
               [secretary.core :as secretary :include-macros true]
-              [accountant.core :as accountant]))
+              [accountant.core :as accountant]
+              [pequod-cljs.ex001data :as ex001]))
 
 (def globals
   (atom {:init-final-price        100

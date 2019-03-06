@@ -43,4 +43,7 @@
                           convert-str-to-clj
                           (into {})))))
 
-; TODO: Output as text
+;(spit "ccs.clj" ccs)
+;(spit "wcs.clj" wcs)
+
+
