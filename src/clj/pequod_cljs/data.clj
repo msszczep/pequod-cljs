@@ -29,5 +29,7 @@
 (defn get-wc-keys [m]
   (select-keys m [:a :s :c :ce :cq :du :effort :industry :input-exponents :labor-exponents :labor-quantities :nature-exponents :output :product :production-inputs :xe]))
 
+; (read-string "23")
+
 ; TODO: Convert string into Clojure data and data structures
 ; TODO: Output as text
