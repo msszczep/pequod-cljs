@@ -153,7 +153,7 @@
                  (inc num-people-counter))))
       [[] 0])))
 
-(defn setup [t]
+(defn setup [t button-type]
   (let [intermediate-inputs (vec (range 1 (inc (t :inputs))))
         nature-types (vec (range 1 (inc (t :resources))))
         labor-types (vec (range 1 (inc (t :labors))))
@@ -169,14 +169,15 @@
                :intermediate-inputs intermediate-inputs
                :nature-types nature-types
                :labor-types labor-types
-               :ccs ccs
-               :wcs (->> (merge (create-wcs 80 final-goods 0)
-                                (create-wcs 80 intermediate-inputs 1))
-                         flatten
-                         (map (partial continue-setup-wcs
-                                       intermediate-inputs
-                                       nature-types
-                                       labor-types)))
+               :ccs (if (= button-type "random") ccs ex001/ccs)
+               :wcs (if (= button-type "ex001") ex001/wcs
+                      (->> (merge (create-wcs 80 final-goods 0)
+                                 (create-wcs 80 intermediate-inputs 1))
+                          flatten
+                          (map (partial continue-setup-wcs
+                                        intermediate-inputs
+                                        nature-types
+                                        labor-types))))
                :lorenz-gini-tuple (update-lorenz-and-gini ccs)))))
 
 
@@ -437,9 +438,13 @@
 ;; -------------------------
 ;; Views-
 
-(defn setup-button []
-  [:input {:type "button" :value "Setup"
-           :on-click #(swap! globals setup globals)}])
+(defn setup-random-button []
+  [:input {:type "button" :value "Setup Random"
+           :on-click #(swap! globals setup globals "random")}])
+
+(defn setup-ex001-button []
+  [:input {:type "button" :value "Setup Ex001"
+           :on-click #(swap! globals setup globals "ex001")}])
 
 (defn iterate-button []
   [:input {:type "button" :value "Iterate"
@@ -447,7 +452,9 @@
 
 (defn show-globals []
   [:div " "
-    (setup-button)
+    (setup-random-button)
+    "  "
+    (setup-ex001-button)
     "  "
     (iterate-button)
     [:p]
