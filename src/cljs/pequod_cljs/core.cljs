@@ -329,6 +329,7 @@
        (.indexOf (f production-inputs))
        (nth input-quantities)))
 
+; [1.1711822475769802 0.946264744475001 1.0697825975193174 1.0577280521347088] price-deltas netlogo
 
 (defn update-surpluses-prices
   [type inputs prices deltas J wcs ccs natural-resources-supply labor-supply]
@@ -340,13 +341,13 @@
       {:prices prices :surpluses surpluses :J J}
       (let [supply (condp = type
                      "final" (->> wcs
-                                  (filter #(and (= 1 (% :industry))
+                                  (filter #(and (= 0 (% :industry))
                                                 (= (first inputs)
                                                    (% :product))))
                                   (map :output)
                                   (apply +))
                      "intermediate" (->> wcs
-                                         (filter #(and (= 0 (% :industry))
+                                         (filter #(and (= 1 (% :industry))
                                                        (= (first inputs)
                                                           (% :product))))
                                          (map :output)
