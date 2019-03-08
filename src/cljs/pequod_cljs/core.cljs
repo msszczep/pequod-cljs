@@ -329,10 +329,13 @@
        (.indexOf (f production-inputs))
        (nth input-quantities)))
 
-; [1.1711822475769802 0.946264744475001 1.0697825975193174 1.0577280521347088] price-deltas netlogo
+(defn get-deltas [J price-delta pdlist]
+  (letfn [(abs [n] (max n (- n)))]
+    (max 0.001 (min price-delta (abs (* price-delta (nth pdlist J)))))))
+
 
 (defn update-surpluses-prices
-  [type inputs prices deltas J wcs ccs natural-resources-supply labor-supply]
+  [type inputs prices J wcs ccs natural-resources-supply labor-supply price-delta pdlist]
   (loop [inputs inputs
          prices prices
          surpluses []
@@ -377,7 +380,7 @@
                                   (map (partial get-input-quantity last inputs))
                                   (apply +)))
             surplus (- supply demand)
-            delta (nth deltas J)
+            delta (get-deltas J price-delta pdlist)
             new-delta (if (or (<= delta 1) (= type "final")) delta
                           (last (take-while (partial < 1)
                                             (iterate #(/ % 2.0) delta))))
@@ -425,10 +428,10 @@
                               (t :ccs))
                     :wcs (map (partial proposal (t :input-prices) (t :nature-prices) (t :labor-prices))
                               (t :wcs)))
-        final-map (update-surpluses-prices "final" (t2 :final-goods) (t2 :final-prices) (t2 :price-deltas) 0 (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply))
-        intermediate-map (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :input-prices) (t2 :price-deltas) 0 (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply))
-        nature-map (update-surpluses-prices "nature" (t2 :nature-types) (t2 :nature-prices) (t2 :price-deltas) 0 (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply))
-        labor-map (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) (t2 :price-deltas) 0 (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply))]
+        final-map (update-surpluses-prices "final" (t2 :final-goods) (t2 :final-prices) 0 (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
+        intermediate-map (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :input-prices) 0 (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
+        nature-map (update-surpluses-prices "nature" (t2 :nature-types) (t2 :nature-prices) 0 (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
+        labor-map (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) 0 (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))]
     (assoc t2 :final-prices (:prices final-map)
               :final-surpluses (:surpluses final-map)
               :input-prices (:prices intermediate-map)
