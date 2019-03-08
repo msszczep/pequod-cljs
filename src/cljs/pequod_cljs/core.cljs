@@ -116,8 +116,8 @@
                  :cq 0.25
                  :ce 1
                  :du 7
-                 :S 1
-                 :A 0.25
+                 :s 1
+                 :a 0.25
                  :effort 0.5
                  :output 0
                  :labor-quantities [0]}))))
@@ -169,17 +169,19 @@
                :intermediate-inputs intermediate-inputs
                :nature-types nature-types
                :labor-types labor-types
-               :ccs (if (= button-type "random") ccs ex001/ccs)
-               :wcs (if (= button-type "ex001") ex001/wcs
-                      (->> (merge (create-wcs 80 final-goods 0)
-                                 (create-wcs 80 intermediate-inputs 1))
-                          flatten
-                          (map (partial continue-setup-wcs
-                                        intermediate-inputs
-                                        nature-types
-                                        labor-types))))
+               :ccs ex001/ccs
+                    #_(if (= button-type "random") ccs ex001/ccs)
+               :wcs ex001/wcs
+               #_(if (= button-type "ex001") ex001/wcs
+                   (->> (merge (create-wcs 80 final-goods 0)
+                               (create-wcs 80 intermediate-inputs 1))
+                        flatten
+                        (map (partial continue-setup-wcs
+                                      intermediate-inputs
+                                      nature-types
+                                      labor-types))))
                :lorenz-gini-tuple (update-lorenz-and-gini ccs)))))
-
+; TODO Get buttons to work as intended
 
 (defn consume [final-goods final-prices cc]
   (let [utility-exponents (cc :utility-exponents)
@@ -396,8 +398,8 @@
                                   (interleave (wc :production-inputs))
                                   (partition 2))
           input-count-r (count-inputs wc)
-          a (wc :A)
-          s (wc :S)
+          a (wc :a)
+          s (wc :s)
           c (wc :c)
           k (wc :du)
           ps (flatten (map get-input-prices prices-and-indexes))
