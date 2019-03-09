@@ -367,21 +367,18 @@
                      "intermediate" (->> wcs
                                          (filter #(contains? (set (first (:production-inputs %)))
                                                              (first inputs)))
-                                         #_(filter #(contains? (first inputs) (first (:production-inputs %))))
                                          (map (juxt :production-inputs :input-quantities))
                                          (map (partial get-input-quantity first inputs))
                                          (apply +))
                      "nature" (->> wcs
                                    (filter #(contains? (set (second (:production-inputs %)))
                                                        (first inputs)))
-                                   #_(filter #(contains? (first inputs) (first (:production-inputs %))))
                                    (map (juxt :production-inputs :nature-quantities))
                                    (map (partial get-input-quantity second inputs))
                                    (apply +))
                      "labor" (->> wcs
                                   (filter #(contains? (set (last (:production-inputs %)))
                                                       (first inputs)))
-                                  #_(filter #(contains? (first inputs) (last (:production-inputs %))))
                                   (map (juxt :production-inputs :labor-quantities))
                                   (map (partial get-input-quantity last inputs))
                                   (apply +)))
