@@ -1,0 +1,20 @@
+{:effort 8.736716759574726, :cq 10, :ce 1, :labor-exponents [0.18342764020305757], :industry 1, :x4 4.628494065033711, :output 30.532087894814154, :s 1, :nature-quantities (4.628494065033711), :du 2, :c 0.05, :x3 4.051417123068284, :product 4, :labor-quantities (3.7336192220120745), :production-inputs [[1 2 3] [1] [1]], :input-exponents [0.0970428945954598 0.1070141928789416 0.13269374623267782], :xe 0.05, :x1 2.9629221873557583, :input-quantities (2.9629221873557583 3.2673667429724387 4.051417123068284), :x5 3.7336192220120745, :x2 3.2673667429724387, :nature-exponents [0.22739162554061015], :a 10}
+
+(defn get-input-quantity [f ii [production-inputs input-quantities]]
+  (->> ii
+       (.indexOf (f production-inputs))
+       (nth input-quantities)))
+
+(->> ii
+     first
+     (.indexOf (f production-inputs))
+     (nth input-quantities))
+
+(partial get-input-quantity first inputs)
+
+first 
+production-inputs [[1 2 3] [1] [1]] 
+intermediate-inputs [1 2 3 4]
+input-quantities [2.9629221873557583 3.2673667429724387 4.051417123068284]
+
+(get-input-quantity first [1 2 3 4] [[[1 2 3] [1] [1]] [2.9629221873557583 3.2673667429724387 4.051417123068284]])

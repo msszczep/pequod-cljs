@@ -326,16 +326,16 @@
 
 (defn get-input-quantity [f ii [production-inputs input-quantities]]
   (->> ii
+       first
        (.indexOf (f production-inputs))
        (nth input-quantities)))
+
 
 (defn get-deltas [J price-delta pdlist]
   (letfn [(abs [n] (max n (- n)))]
     (max 0.001 (min price-delta (abs (* price-delta (nth pdlist J)))))))
 
-; [-3659.383202318372 -474.5687202392619 -809.2899304621644 -549.1329900812796] netlogo input-surpluses
-; [808.3964206510301 1562.2503026323645 393.9958247826109 293.4387354891415] my input-surpluses
-; PICKUP: Figure out why intermediate surpluses don't match
+
 (defn update-surpluses-prices
   [type inputs prices wcs ccs natural-resources-supply labor-supply price-delta pdlist]
   (loop [inputs inputs
@@ -367,18 +367,21 @@
                      "intermediate" (->> wcs
                                          (filter #(contains? (set (first (:production-inputs %)))
                                                              (first inputs)))
+                                         #_(filter #(contains? (first inputs) (first (:production-inputs %))))
                                          (map (juxt :production-inputs :input-quantities))
                                          (map (partial get-input-quantity first inputs))
                                          (apply +))
                      "nature" (->> wcs
                                    (filter #(contains? (set (second (:production-inputs %)))
                                                        (first inputs)))
+                                   #_(filter #(contains? (first inputs) (first (:production-inputs %))))
                                    (map (juxt :production-inputs :nature-quantities))
                                    (map (partial get-input-quantity second inputs))
                                    (apply +))
                      "labor" (->> wcs
                                   (filter #(contains? (set (last (:production-inputs %)))
                                                       (first inputs)))
+                                  #_(filter #(contains? (first inputs) (last (:production-inputs %))))
                                   (map (juxt :production-inputs :labor-quantities))
                                   (map (partial get-input-quantity last inputs))
                                   (apply +)))
