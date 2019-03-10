@@ -350,38 +350,38 @@
                                                 (= (first inputs)
                                                    (% :product))))
                                   (map :output)
-                                  (apply +))
+                                  (reduce +))
                      "intermediate" (->> wcs
                                          (filter #(and (= 1 (% :industry))
                                                        (= (first inputs)
                                                           (% :product))))
                                          (map :output)
-                                         (apply +))
+                                         (reduce +))
                      "nature" natural-resources-supply
                      "labor"  labor-supply)
             demand (condp = type
                      "final" (->> ccs
                                   (map :final-demands)
                                   (map #(nth % (dec (first inputs))))
-                                  (apply +))
+                                  (reduce +))
                      "intermediate" (->> wcs
                                          (filter #(contains? (set (first (:production-inputs %)))
                                                              (first inputs)))
                                          (map (juxt :production-inputs :input-quantities))
                                          (map (partial get-input-quantity first inputs))
-                                         (apply +))
+                                         (reduce +))
                      "nature" (->> wcs
                                    (filter #(contains? (set (second (:production-inputs %)))
                                                        (first inputs)))
                                    (map (juxt :production-inputs :nature-quantities))
                                    (map (partial get-input-quantity second inputs))
-                                   (apply +))
+                                   (reduce +))
                      "labor" (->> wcs
                                   (filter #(contains? (set (last (:production-inputs %)))
                                                       (first inputs)))
                                   (map (juxt :production-inputs :labor-quantities))
                                   (map (partial get-input-quantity last inputs))
-                                  (apply +)))
+                                  (reduce +)))
             surplus (- supply demand)
             delta (get-deltas J price-delta pdlist)
             new-delta (if (or (<= delta 1) (= type "final")) delta
@@ -426,23 +426,42 @@
         (str "unexpected input-count value: " input-count-r)))))
 
 
+(defn price-change [supply-list demand-list surplus-list i]
+  (letfn [(mean [L] (/ (reduce + L) (count L)))]
+    (let [supply-list-means (map mean supply-list)
+          demand-list-means (map mean demand-list)
+          averaged-s-and-d (->> (interleave supply-list-means
+                                            demand-list-means)
+                                (partition 2)
+                                (map #(/ (+ %1 %2) 2)))]
+      (->> (interleave (map mean surplus-list) averaged-s-and-d)
+           (partition 2)
+           (map #(/ %1 %2))
+           #(get % i)
+           Math/abs))))
+
+;(defn get-supply-list [t])
+
 (defn iterate-plan [t]
   (let [t2 (assoc t :ccs (map (partial consume (t :final-goods) (t :final-prices))
                               (t :ccs))
                     :wcs (map (partial proposal (t :input-prices) (t :nature-prices) (t :labor-prices))
                               (t :wcs)))
-        final-map (update-surpluses-prices "final" (t2 :final-goods) (t2 :final-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
-        intermediate-map (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :input-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
-        nature-map (update-surpluses-prices "nature" (t2 :nature-types) (t2 :nature-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
-        labor-map (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))]
-    (assoc t2 :final-prices (:prices final-map)
-              :final-surpluses (:surpluses final-map)
-              :input-prices (:prices intermediate-map)
-              :input-surpluses (:surpluses intermediate-map)
-              :nature-prices (:prices nature-map)
-              :nature-surpluses (:surpluses nature-map)
-              :labor-prices (:prices labor-map)
-              :labor-surpluses (:surpluses labor-map))))
+        {final-prices :prices, final-surpluses :surpluses} (update-surpluses-prices "final" (t2 :final-goods) (t2 :final-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
+        {input-prices :prices, input-surpluses :surpluses} (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :input-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
+        {nature-prices :prices, nature-surpluses :surpluses} (update-surpluses-prices "nature" (t2 :nature-types) (t2 :nature-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
+        {labor-prices :prices, labor-surpluses :surpluses} (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
+        surplus-list (vector final-surpluses input-surpluses nature-surpluses labor-surpluses)]
+    (assoc t2 :final-prices final-prices
+              :final-surpluses final-surpluses
+              :input-prices input-prices
+              :input-surpluses input-surpluses
+              :nature-prices nature-prices
+              :nature-surpluses nature-surpluses
+              :labor-prices labor-prices
+              :labor-surpluses labor-surpluses
+;              :pdlist (mapv #(partial price-change supply-list demand-list surplus-list) (range 3)
+              )))
 
 ;; -------------------------
 ;; Views-
