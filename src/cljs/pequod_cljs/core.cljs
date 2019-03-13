@@ -441,6 +441,23 @@
            Math/abs))))
 
 
+(defn get-demand-list [t]
+  (letfn [(get-demand [func quant] (->> t
+                                        quant
+                                        (filter #(contains? (set (func (:production-inputs %))) (:wcs t)))
+                                        (mapv (juxt :production-inputs :input-quantities))
+                                        (mapv (partial get-input-quantity func (quant t)))
+                                        (mapv (partial reduce +))))]
+    (let [final-demands (->> t
+                             :final-goods
+                             (mapv (fn [i] (mapv #(nth (:final-demands %) (dec i)) (:ccs t))))
+                             (mapv (partial reduce +)))
+          input-quantity (get-demand first :intermediate-inputs)
+          nature-quantity (get-demand second :nature-types)
+          labor-quantity (get-demand last :labor-types)]
+     [final-demands input-quantity nature-quantity labor-quantity])))
+
+
 (defn get-supply-list [t]
   (letfn [(get-producers [t industry product]
             (->> t
@@ -468,7 +485,8 @@
         {nature-prices :prices, nature-surpluses :surpluses} (update-surpluses-prices "nature" (t2 :nature-types) (t2 :nature-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
         {labor-prices :prices, labor-surpluses :surpluses} (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
         surplus-list (vector final-surpluses input-surpluses nature-surpluses labor-surpluses)
-        supply-list (get-supply-list t2)]
+        supply-list (get-supply-list t2)
+        demand-list (get-demand-list t2)]
     (assoc t2 :final-prices final-prices
               :final-surpluses final-surpluses
               :input-prices input-prices
@@ -477,8 +495,8 @@
               :nature-surpluses nature-surpluses
               :labor-prices labor-prices
               :labor-surpluses labor-surpluses
-;              :supply-list supply-list
-;              :pdlist (mapv #(partial price-change supply-list demand-list surplus-list) (range 3)
+              :demand-list demand-list
+      ;        :pdlist (mapv (partial price-change supply-list demand-list surplus-list) (range 3))
               )))
 
 ;; -------------------------
