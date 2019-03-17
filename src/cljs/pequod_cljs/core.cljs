@@ -425,20 +425,30 @@
         6 (merge wc (solution-6 a s c k ps b λ p-i))
         (str "unexpected input-count value: " input-count-r)))))
 
+(defn mean [L]
+  (/ (reduce + L) (count L)))
 
-(defn price-change [supply-list demand-list surplus-list i]
-  (letfn [(mean [L] (/ (reduce + L) (count L)))]
-    (let [supply-list-means (map mean supply-list)
-          demand-list-means (map mean demand-list)
-          averaged-s-and-d (->> (interleave supply-list-means
-                                            demand-list-means)
-                                (partition 2)
-                                (map #(/ (+ %1 %2) 2)))]
-      (->> (interleave (map mean surplus-list) averaged-s-and-d)
-           (partition 2)
-           (map #(/ %1 %2))
-           #(get % i)
-           Math/abs))))
+(defn price-change [supply-list demand-list surplus-list]
+  (let [supply-list-means (map mean supply-list)
+        demand-list-means (map mean demand-list)
+        surplus-list-means (map mean surplus-list)
+        averaged-s-and-d (->> (interleave supply-list-means
+                                          demand-list-means)
+                              (partition 2)
+                              (map mean))]
+    (->> (interleave surplus-list-means averaged-s-and-d)
+         (partition 2)
+         (mapv #(Math/abs (/ (first %) (last %)))))))
+
+
+(defn other-price-change [supply-list demand-list surplus-list]
+  (let [averaged-s-and-d (->> (interleave (flatten supply-list)
+                                          (flatten demand-list))
+                              (partition 2)
+                              (map mean))]
+    (->> (interleave (flatten surplus-list) averaged-s-and-d)
+         (partition 2)
+         (map #(/ (first %) (last %))))))
 
 
 (defn get-demand-list [t]
@@ -518,7 +528,8 @@
               :demand-list demand-list
               :surplus-list surplus-list
               :supply-list supply-list
-      ;        :pdlist (mapv (partial price-change supply-list demand-list surplus-list) (range 3))
+              :price-deltas (price-change supply-list demand-list surplus-list)
+              :pdlist (other-price-change supply-list demand-list surplus-list)
               )))
 
 
