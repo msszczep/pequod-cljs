@@ -442,20 +442,40 @@
 
 
 (defn get-demand-list [t]
-  (letfn [(get-demand [func quant] (->> t
-                                        quant
-                                        (filter #(contains? (set (func (:production-inputs %))) (:wcs t)))
-                                        (mapv (juxt :production-inputs :input-quantities))
-                                        (mapv (partial get-input-quantity func (quant t)))
-                                        (mapv (partial reduce +))))]
+  (letfn [(merge-inputs-and-quantities [type ks vs]
+            (map #(hash-map :type type :key (first %) :value (last %))
+                 (partition 2 (interleave ks vs))))
+          (get-inputs-and-quantities [m]
+            [(merge-inputs-and-quantities :input-quantity
+                                          (first (:production-inputs m))
+                                          (:input-quantities m))
+             (merge-inputs-and-quantities :nature-quantity
+                                          (second (:production-inputs m))
+                                          (:nature-quantities m))
+             (merge-inputs-and-quantities :labor-quantity
+                                          (last (:production-inputs m))
+                                          (:labor-quantities m))])
+          (sum-input-quantities [qs pos type]
+            (->> qs
+                 (filter #(and (= pos (:key %)) (= type (:type %))))
+                 (map :value)
+                 (reduce +)))]
     (let [final-demands (->> t
                              :final-goods
                              (mapv (fn [i] (mapv #(nth (:final-demands %) (dec i)) (:ccs t))))
                              (mapv (partial reduce +)))
-          input-quantity (get-demand first :intermediate-inputs)
-          nature-quantity (get-demand second :nature-types)
-          labor-quantity (get-demand last :labor-types)]
-     [final-demands input-quantity nature-quantity labor-quantity])))
+          all-quantities (->> t
+                              :wcs
+                              (map get-inputs-and-quantities)
+                              flatten)
+          input-quantity [(sum-input-quantities all-quantities 1 :input-quantity)
+                          (sum-input-quantities all-quantities 2 :input-quantity)
+                          (sum-input-quantities all-quantities 3 :input-quantity)
+                          (sum-input-quantities all-quantities 4 :input-quantity)]]
+      [final-demands
+       input-quantity
+       [(sum-input-quantities all-quantities 1 :nature-quantity)]
+       [(sum-input-quantities all-quantities 1 :labor-quantity)]])))
 
 
 (defn get-supply-list [t]
@@ -496,8 +516,11 @@
               :labor-prices labor-prices
               :labor-surpluses labor-surpluses
               :demand-list demand-list
+              :surplus-list surplus-list
+              :supply-list supply-list
       ;        :pdlist (mapv (partial price-change supply-list demand-list surplus-list) (range 3))
               )))
+
 
 ;; -------------------------
 ;; Views-
