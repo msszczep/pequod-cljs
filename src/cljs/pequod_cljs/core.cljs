@@ -132,19 +132,20 @@
          (reduce *)
          (* cy))))
 
+
 (defn update-lorenz-and-gini [ccs]
   (let [num-people (count ccs)
-        sorted-wealths (mapv calculate-consumer-utility ccs)
+        sorted-wealths (sort (mapv calculate-consumer-utility ccs))
         total-wealth (reduce + sorted-wealths)]
     (if (pos? total-wealth)
-      (loop [wealth-sum-so-far 0
-             index 0
+      (loop [wealth-sum-so-far (nth sorted-wealths 0)
+             index 1
              gini-index-reserve 0
              lorenz-points []
              num-people-counter 0]
-        (if (= num-people num-people-counter)
-          [lorenz-points gini-index-reserve]
-          (recur (+ wealth-sum-so-far (get sorted-wealths index))
+        (if (= num-people-counter (dec num-people))
+          [(cons (* (/ wealth-sum-so-far total-wealth) 100) lorenz-points) gini-index-reserve]
+          (recur (+ wealth-sum-so-far (nth sorted-wealths index))
                  (inc index)
                  (+ gini-index-reserve
                     (/ index num-people)
@@ -152,6 +153,7 @@
                  (cons (* (/ wealth-sum-so-far total-wealth) 100) lorenz-points)
                  (inc num-people-counter))))
       [[] 0])))
+
 
 (defn setup [t button-type]
   (let [intermediate-inputs (vec (range 1 (inc (t :inputs))))
@@ -516,7 +518,8 @@
         {labor-prices :prices, labor-surpluses :surpluses} (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
         surplus-list (vector final-surpluses input-surpluses nature-surpluses labor-surpluses)
         supply-list (get-supply-list t2)
-        demand-list (get-demand-list t2)]
+        demand-list (get-demand-list t2)
+        new-lorenz-and-gini-tuple (update-lorenz-and-gini (:ccs t2))]
     (assoc t2 :final-prices final-prices
               :final-surpluses final-surpluses
               :input-prices input-prices
@@ -530,7 +533,7 @@
               :supply-list supply-list
               :price-deltas (price-change supply-list demand-list surplus-list)
               :pdlist (other-price-change supply-list demand-list surplus-list)
-              )))
+              :lorenz-gini-tuple new-lorenz-and-gini-tuple)))
 
 
 ;; -------------------------
