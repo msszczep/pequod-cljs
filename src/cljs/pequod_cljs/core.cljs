@@ -122,6 +122,7 @@
                  :output 0
                  :labor-quantities [0]}))))
 
+
 (defn calculate-consumer-utility [cc]
   (let [final-demands (:final-demands cc)
         utility-exponents (:utility-exponents cc)
@@ -171,6 +172,7 @@
                :intermediate-inputs intermediate-inputs
                :nature-types nature-types
                :labor-types labor-types
+               :surplus-threshold 0.02
                :ccs ex001/ccs
                     #_(if (= button-type "random") ccs ex001/ccs)
                :wcs ex001/wcs
@@ -507,6 +509,29 @@
      (vector final-producers input-producers natural-resources-supply labor-supply))))
 
 
+(defn check-surpluses [t]
+  (letfn [(check-producers [surpluses producers inputs]
+            (some #(> (Math/abs (nth surpluses (dec %)))
+                      (* (:surplus-threshold t)
+                         (reduce + (map :output producers))))
+                  inputs))
+          (check-supplies [surpluses supply inputs]
+            (some #(> (Math/abs (nth surpluses (dec %)))
+                      (* (:surplus-threshold t) supply))
+                  inputs))
+          (get-producers [wcs industry]
+            (filter #(= industry (% :industry))) wcs)]
+    (let [final-producers (get-producers (:wcs t) 0)
+          input-producers (get-producers (:wcs t) 1)
+          final-goods-check (check-producers (:final-surpluses t) final-producers (:final-goods t))
+          ;im-goods-check (check-producers (:input-surpluses t) input-producers (:intermediate-inputs t))
+          ;nature-check (check-supplies (:nature-surpluses t) (:nature-resources-supply t) (:nature-types t))
+          ;labor-check (check-supplies  (:labor-surplus t) (:labor-supply t) (:labor-types t))
+          ]
+      [final-goods-check]
+      #_(every? nil? [final-goods-check im-goods-check nature-check labor-check]))))
+
+
 (defn iterate-plan [t]
   (let [t2 (assoc t :ccs (map (partial consume (t :final-goods) (t :final-prices))
                               (t :ccs))
@@ -560,11 +585,8 @@
     (iterate-button)
     [:p]
     [:table
-     (map (fn [x] [:tr [:td (str (first x))] 
-                   [:td (str (second x))
-                        #_(if (= ":wcs" (str (first x)))
-                          (str (examine (second x)))
-                          (str (second x)))]]) 
+     (map (fn [x] [:tr [:td (str (first x))]
+                   [:td (str (second x))]])
           (sort @globals))]
     [:p]])
 
