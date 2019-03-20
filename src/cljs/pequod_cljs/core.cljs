@@ -509,29 +509,6 @@
      (vector final-producers input-producers natural-resources-supply labor-supply))))
 
 
-(defn check-surpluses [t]
-  (letfn [(check-producers [surpluses producers inputs]
-            (some #(> (Math/abs (nth surpluses (dec %)))
-                      (* (:surplus-threshold t)
-                         (reduce + (map :output producers))))
-                  inputs))
-          (check-supplies [surpluses supply inputs]
-            (some #(> (Math/abs (nth surpluses (dec %)))
-                      (* (:surplus-threshold t) supply))
-                  inputs))
-          (get-producers [wcs industry]
-            (filter #(= industry (% :industry))) wcs)]
-    (let [final-producers (get-producers (:wcs t) 0)
-          input-producers (get-producers (:wcs t) 1)
-          final-goods-check (check-producers (:final-surpluses t) final-producers (:final-goods t))
-          ;im-goods-check (check-producers (:input-surpluses t) input-producers (:intermediate-inputs t))
-          ;nature-check (check-supplies (:nature-surpluses t) (:nature-resources-supply t) (:nature-types t))
-          ;labor-check (check-supplies  (:labor-surplus t) (:labor-supply t) (:labor-types t))
-          ]
-      [final-goods-check]
-      #_(every? nil? [final-goods-check im-goods-check nature-check labor-check]))))
-
-
 (defn iterate-plan [t]
   (let [t2 (assoc t :ccs (map (partial consume (t :final-goods) (t :final-prices))
                               (t :ccs))
@@ -561,6 +538,33 @@
               :lorenz-gini-tuple new-lorenz-and-gini-tuple)))
 
 
+(defn check-surpluses [t]
+  (letfn [(check-producers [surpluses producers inputs]
+            (some #(> (Math/abs (nth surpluses (dec %)))
+                      (* (:surplus-threshold t)
+                         (reduce + (map :output producers))))
+                  inputs))
+          (check-supplies [surpluses supply inputs]
+            (some #(> (Math/abs (nth surpluses (dec %)))
+                      (* (:surplus-threshold t) supply))
+                  inputs))
+          (get-producers [wcs industry]
+            (filter #(= industry (% :industry))) wcs)]
+    (let [final-producers (get-producers (:wcs t) 0)
+          input-producers (get-producers (:wcs t) 1)
+          final-goods-check (check-producers (:final-surpluses t) final-producers (:final-goods t))
+          im-goods-check (check-producers (:input-surpluses t) input-producers (:intermediate-inputs t))
+          nature-check (check-supplies (:nature-surpluses t) (:nature-resources-supply t) (:nature-types t))
+          labor-check (check-supplies (:labor-surplus t) (:labor-supply t) (:labor-types t))
+          ]
+      [final-goods-check im-goods-check nature-check labor-check]
+      #_(every? nil? [final-goods-check im-goods-check nature-check labor-check]))))
+
+
+(defn rest-of-to-do [t]
+  (assoc t
+    :threshold-met (check-surpluses t)))
+
 ;; -------------------------
 ;; Views-
 
@@ -576,6 +580,10 @@
   [:input {:type "button" :value "Iterate"
            :on-click #(swap! globals iterate-plan globals)}])
 
+(defn threshold-button []
+  [:input {:type "button" :value "Check Threshold"
+           :on-click #(swap! globals rest-of-to-do globals)}])
+
 (defn show-globals []
   [:div " "
     (setup-random-button)
@@ -583,6 +591,8 @@
     (setup-ex001-button)
     "  "
     (iterate-button)
+    "  "
+    (threshold-button)
     [:p]
     [:table
      (map (fn [x] [:tr [:td (str (first x))]
