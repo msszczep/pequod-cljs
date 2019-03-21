@@ -559,10 +559,9 @@
           final-goods-check (check-producers (:final-surpluses t) final-producers (:final-goods t))
           im-goods-check (check-producers (:input-surpluses t) input-producers (:intermediate-inputs t))
           nature-check (check-supplies (:nature-surpluses t) (:nature-resources-supply t) (:nature-types t))
-          labor-check (check-supplies (:labor-surplus t) (:labor-supply t) (:labor-types t))
-          ]
-      [final-goods-check im-goods-check nature-check labor-check]
-      #_(every? nil? [final-goods-check im-goods-check nature-check labor-check]))))
+          labor-check (check-supplies (:labor-surplus t) (:labor-supply t) (:labor-types t))]
+      ;  [final-goods-check im-goods-check nature-check labor-check]
+      (every? nil? [final-goods-check im-goods-check nature-check labor-check]))))
 
 
 (defn total-surplus [surplus-list]
@@ -589,7 +588,6 @@
 
 ;; TODO: Consolidate raise-delta and lower-delta into one function
 
-; TODO: Fix so this works as intended.
 (defn rest-of-to-do [t]
   (let [surplus-total (total-surplus (:surplus-list t))
         threshold (check-surpluses t)
@@ -599,14 +597,14 @@
          delta-delay :delta-delay} (if (and (< total-surplus 100)
                                               (<= delta-delay 0))
                                      (lower-delta price-delta)
-                                     {price-delta :price-delta 
-                                      delta-delay :delta-delay})
+                                     {:price-delta price-delta
+                                      :delta-delay delta-delay})
         {price-delta :price-delta
          delta-delay :delta-delay} (if (and (> total-surplus 100000)
                                               (<= delta-delay 0))
                                      (raise-delta price-delta)
-                                     {price-delta :price-delta
-                                      delta-delay :delta-delay})
+                                     {:price-delta price-delta
+                                      :delta-delay delta-delay})
         delta-delay (if (pos? delta-delay)
                       (dec delta-delay) delta-delay)]
     (assoc t :threshold-met threshold
