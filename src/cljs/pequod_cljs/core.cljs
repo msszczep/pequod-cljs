@@ -2,7 +2,9 @@
     (:require [reagent.core :as reagent :refer [atom]]
               [secretary.core :as secretary :include-macros true]
               [accountant.core :as accountant]
-              [pequod-cljs.ex001data :as ex001]))
+              [pequod-cljs.ex001data :as ex001]
+              [goog.string :as gstring]
+              [goog.string.format]))
 
 (def globals
   (atom {:init-final-price        100
@@ -521,7 +523,8 @@
         surplus-list (vector final-surpluses input-surpluses nature-surpluses labor-surpluses)
         supply-list (get-supply-list t2)
         demand-list (get-demand-list t2)
-        new-lorenz-and-gini-tuple (update-lorenz-and-gini (:ccs t2))]
+        new-lorenz-and-gini-tuple (update-lorenz-and-gini (:ccs t2))
+        iteration (inc (:iteration t2))]
     (assoc t2 :final-prices final-prices
               :final-surpluses final-surpluses
               :input-prices input-prices
@@ -535,7 +538,8 @@
               :supply-list supply-list
               :price-deltas (price-change supply-list demand-list surplus-list)
               :pdlist (other-price-change supply-list demand-list surplus-list)
-              :lorenz-gini-tuple new-lorenz-and-gini-tuple)))
+              :lorenz-gini-tuple new-lorenz-and-gini-tuple
+              :iteration iteration)))
 
 
 (defn check-surpluses [t]
@@ -561,9 +565,53 @@
       #_(every? nil? [final-goods-check im-goods-check nature-check labor-check]))))
 
 
+(defn total-surplus [surplus-list]
+  (->> surplus-list
+       flatten
+       (map Math/abs)
+       (reduce +)))
+
+
+(defn raise-delta [price-delta]
+  (let [pd (->> [0.1 (+ 0.01 price-delta)]
+                (apply min)
+                (gstring/format "%.2f"))]
+   {:price-delta pd
+    :delta-delay 10}))
+
+
+(defn lower-delta [price-delta]
+  (let [pd (->> [0.1 (- price-delta 0.01)]
+                (apply max)
+                (gstring/format "%.2f"))]
+   {:price-delta pd
+    :delta-delay 5}))
+
+;; TODO: Consolidate raise-delta and lower-delta into one function
+
+; TODO: Fix so this works as intended.
 (defn rest-of-to-do [t]
-  (assoc t
-    :threshold-met (check-surpluses t)))
+  (let [surplus-total (total-surplus (:surplus-list t))
+        threshold (check-surpluses t)
+        delta-delay (:delta-delay t)
+        price-delta (:price-delta t)
+        {price-delta :price-delta
+         delta-delay :delta-delay} (if (and (< total-surplus 100)
+                                              (<= delta-delay 0))
+                                     (lower-delta price-delta)
+                                     {price-delta :price-delta 
+                                      delta-delay :delta-delay})
+        {price-delta :price-delta
+         delta-delay :delta-delay} (if (and (> total-surplus 100000)
+                                              (<= delta-delay 0))
+                                     (raise-delta price-delta)
+                                     {price-delta :price-delta
+                                      delta-delay :delta-delay})
+        delta-delay (if (pos? delta-delay)
+                      (dec delta-delay) delta-delay)]
+    (assoc t :threshold-met threshold
+             :price-delta price-delta
+             :delta-delay delta-delay)))
 
 ;; -------------------------
 ;; Views-
