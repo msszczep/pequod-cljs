@@ -560,8 +560,9 @@
           im-goods-check (check-producers (:input-surpluses t) input-producers (:intermediate-inputs t))
           nature-check (check-supplies (:nature-surpluses t) (:nature-resources-supply t) (:nature-types t))
           labor-check (check-supplies (:labor-surplus t) (:labor-supply t) (:labor-types t))]
-      ;  [final-goods-check im-goods-check nature-check labor-check]
-      (every? nil? [final-goods-check im-goods-check nature-check labor-check]))))
+        [final-goods-check im-goods-check nature-check labor-check]
+      ;(every? nil? [final-goods-check im-goods-check nature-check labor-check])
+        )))
 
 
 (defn total-surplus [surplus-list]
@@ -611,6 +612,9 @@
              :price-delta price-delta
              :delta-delay delta-delay)))
 
+(defn proceed [t]
+  (rest-of-to-do (iterate-plan t)))
+
 ;; -------------------------
 ;; Views-
 
@@ -623,28 +627,26 @@
            :on-click #(swap! globals setup globals "ex001")}])
 
 (defn iterate-button []
-  [:input {:type "button" :value "Iterate"
-           :on-click #(swap! globals iterate-plan globals)}])
+  [:input {:type "button" :value "Iterate and check"
+           :on-click #(swap! globals proceed globals)}])
 
-(defn threshold-button []
-  [:input {:type "button" :value "Check Threshold"
-           :on-click #(swap! globals rest-of-to-do globals)}])
 
 (defn show-globals []
-  [:div " "
-    (setup-random-button)
-    "  "
-    (setup-ex001-button)
-    "  "
-    (iterate-button)
-    "  "
-    (threshold-button)
-    [:p]
-    [:table
-     (map (fn [x] [:tr [:td (str (first x))]
-                   [:td (str (second x))]])
-          (sort @globals))]
-    [:p]])
+    (let [keys-to-show [:final-prices :threshold-met :delta-delay :price-delta :iteration :final-surpluses :final-goods :price-deltas :pdlist]
+        ]
+     [:div " "
+           (setup-random-button)
+           "  "
+           (setup-ex001-button)
+           "  "
+           (iterate-button)
+           [:p]
+           [:table
+            (map (fn [x] [:tr [:td (str (first x))]
+                          [:td (str (second x))]])
+                 (sort (select-keys @globals keys-to-show)))]
+           [:p]]))
+
 
 (defn home-page []
   [:div [:h2 "Welcome to pequod-cljs"]
