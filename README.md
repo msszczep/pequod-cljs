@@ -96,3 +96,7 @@ git push heroku master
 
 Your application should now be deployed to Heroku!
 For further instructions see the [official documentation](https://devcenter.heroku.com/articles/clojure).
+
+https://nvbn.github.io/2015/06/08/cljs-test/
+https://github.com/nvbn/cljs-test-example
+.
