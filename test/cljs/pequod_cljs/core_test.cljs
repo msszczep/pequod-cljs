@@ -1,7 +1,8 @@
 (ns pequod-cljs.core-test
   (:require [cljs.test :refer-macros [is are deftest testing use-fixtures]]
             [reagent.core :as reagent :refer [atom]]
-            [pequod-cljs.core :as rc]))
+            [pequod-cljs.core :as rc]
+            [pequod-cljs.ex001data :as ex001]))
 
 
 (def isClient (not (nil? (try (.-document js/window)
@@ -32,9 +33,105 @@
       (do (println "Not found: " res)
           false))))
 
-(deftest test-my-input-prices
-  (is (= [100 150 150] [100 150 150])
-  (is (= 1 1))))
+
+(deftest mean
+  (is (= 4 (rc/mean [1 4 7]))))
+
+(deftest initialize-prices
+    (is (= {:init-nature-price 150,
+	             :labors 1,
+	             :labor-prices [150],
+	             :finals 4,
+	             :pdlist [0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05],
+	             :inputs 4,
+	             :init-intermediate-price 100,
+	             :init-final-price 100,
+	             :price-deltas [0.05 0.05 0.05 0.05],
+	             :nature-prices [150],
+	             :resources 1,
+	             :final-prices [100 100 100 100],
+	             :init-labor-price 150,
+	             :input-prices [100 100 100 100]}
+(rc/initialize-prices {:finals 4 :inputs 4 :resources 1 :labors 1 :init-nature-price 150 :init-intermediate-price 100 :init-final-price 100 :init-labor-price 150}))))
+
+(deftest test-run-ex001
+  (let [wcs ex001/wcs
+        ccs ex001/ccs
+        globals-before @rc/globals
+        globals (rc/setup globals-before "ex001")
+        ]
+    (is (= 100 (count ccs)))
+    (is (= 80 (count wcs)))
+    (is (= {:init-nature-price 150,
+            :delta-delay 0,
+            :old-labor-prices [],
+            :input-surpluses [],
+            :labors 1,
+            :threshold-met false,
+            :labor-supply 0,
+            :natural-resources-supply 0,
+            :lorenz-gini-tuple [],
+            :old-input-prices [],
+            :labor-prices [],
+            :nature-surpluses [],
+            :finals 4,
+            :labor-surpluses [],
+            :iteration 0,
+            :old-final-prices [],
+            :pdlist [],
+            :inputs 4,
+            :init-intermediate-price 100,
+            :init-final-price 100,
+            :price-deltas [],
+            :old-nature-prices [],
+            :price-delta 0,
+            :nature-prices [],
+            :resources 1,
+            :final-surpluses [],
+            :wcs [],
+            :final-prices [],
+            :ccs [],
+            :init-labor-price 150,
+            :input-prices []}
+           globals-before))
+    (is (= {:input-prices [100 100 100 100],
+            :init-labor-price 150,
+            :pdlist [0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05],
+            :inputs 4,
+            :init-intermediate-price 100,
+            :init-final-price 100}
+           (select-keys globals
+                        [:input-prices :init-labor-price :pdlist :inputs
+                         :init-intermediate-price :init-final-price])))
+))
+
+
+;calculate-consumer-utility
+;update-lorenz-and-gini
+;consume
+;assign-new-proposal
+;solution-1
+;solution-2
+;solution-3
+;solution-4
+;solution-5
+;solution-6
+;get-input-quantity
+;get-deltas
+;update-surpluses-prices
+;proposal
+;price-change
+;other-price-change
+;get-demand-list
+;get-supply-list
+;iterate-plan
+;check-surpluses
+;total-surplus
+;raise-delta
+;lower-delta
+;rest-of-to-do
+;proceed
+
 
 ;turtle 101
 ;{:effort 0.5, :cq 0.25, :ce 1, :A 0.25, :labor-exponents (0.3344715806333696), :industry 1, :output 0, :du 7, :c 0.05, :product 2, :lab
