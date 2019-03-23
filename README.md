@@ -99,4 +99,5 @@ For further instructions see the [official documentation](https://devcenter.hero
 
 https://nvbn.github.io/2015/06/08/cljs-test/
 https://github.com/nvbn/cljs-test-example
-.
+npm install karma karma-cljs-test --save-dev
+

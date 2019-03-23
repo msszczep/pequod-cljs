@@ -33,8 +33,8 @@
           false))))
 
 (deftest test-my-input-prices
-   
-  (is (= [100 150 150] [100 150 150])))
+  (is (= [100 150 150] [100 150 150])
+  (is (= 1 1))))
 
 ;turtle 101
 ;{:effort 0.5, :cq 0.25, :ce 1, :A 0.25, :labor-exponents (0.3344715806333696), :industry 1, :output 0, :du 7, :c 0.05, :product 2, :lab

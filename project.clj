@@ -76,7 +76,8 @@
             }
    }
    :doo {:build "test"
-         :alias {:default [:chrome]}}
+         :alias {:default [:firefox]}
+         :paths {:karma "/home/mitchells/Desktop/pequod-v/pequod-cljs/node_modules/karma/bin/karma"}}
 
   :figwheel
   {:http-server-root "public"
