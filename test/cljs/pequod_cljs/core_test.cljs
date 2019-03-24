@@ -37,6 +37,7 @@
 (deftest mean
   (is (= 4 (rc/mean [1 4 7]))))
 
+
 (deftest initialize-prices
   (is (= {:init-nature-price 150,
           :labors 1,
@@ -69,8 +70,7 @@
         wc-6 {:effort 0.5, :cq 10, :ce 1, :a 10, :labor-exponents [0.15813469104723293], :industry 0, :output 0, :du 2, :c 0.05, :product 2, :labor-quantities [0], :production-inputs [[1 2 3 4] [1] [1]], :input-exponents [0.07136063178539023 0.09705394605246723 0.09837585447317158 0.0516097801370993], :xe 0.05, :s 1, :nature-exponents [0.1978580219892075]}
         input-prices [100 100 100 100]
         nature-prices [150]
-        labor-prices [150]
- ]
+        labor-prices [150]]
     (is (= {:effort 40.31122251385122,
             :cq 0.25,
             :ce 1,
@@ -174,15 +174,16 @@
             :x2 1.2701862807916346,
             :nature-exponents [0.1978580219892075],
             :a 10}
-           (rc/proposal input-prices nature-prices labor-prices wc-6)))
-))
+           (rc/proposal input-prices nature-prices labor-prices wc-6)))))
+
 
 (deftest test-run-ex001
   (let [wcs ex001/wcs
         ccs ex001/ccs
         globals-before @rc/globals
         globals (rc/setup globals-before "ex001")
-        iteration01 (rc/iterate-plan globals)]
+        iteration01 (rc/iterate-plan globals)
+        it01-remainder (rc/rest-of-to-do iteration01)]
     (is (= 100 (count ccs)))
     (is (= 80 (count wcs)))
     (is (= {:init-nature-price 150,
@@ -250,6 +251,22 @@
            (:demand-list iteration01)))
     (is (= [99.5 100.49999999999999 100.49999999999999 99.5] 
            (:final-prices iteration01)))
+    (is (= [1.1711822475769802
+            0.9462647444749942
+            1.069782597519318
+            1.0577280521347097] 
+           (:price-deltas iteration01)))
+    (is (= [0.6972760616605689
+            -1.243935726987648
+            -0.8579132858031937
+            1.7008773963001753
+            -1.3871346111519591
+            -0.2637174654438165
+            -1.013334080329513
+            -0.966774530525183
+            -1.069782597519318
+            -1.0577280521347097]
+           (:pdlist iteration01)))
     (is (= ['(100
              97.93423177355632
              96.1931693902596
@@ -351,7 +368,14 @@
              0.8952007157548647
              0.4350188980580932)
             9.163866347527893]
-           (:lorenz-gini-tuple iteration01)))))
+           (:lorenz-gini-tuple iteration01)))
+        (is (= 27591.879630626994
+               (rc/total-surplus (:surplus-list it01-remainder))))
+        (is (= 0.1
+               (:price-delta it01-remainder)))
+        (is (= 4
+               (:delta-delay it01-remainder)))))
+
 
 (deftest consume
   (let [cc {:effort 1, :num-workers 10, :utility-exponents [0.2379038877985112 0.23517856300054907 0.22661946853423187 0.2450284522738656], :final-demands '(0 0 0 0 0), :cy 10.037467640470766, :income 5000}
@@ -370,17 +394,6 @@
             :cy 10.037467640470766,
             :income 5000}
            (rc/consume final-goods final-prices cc)))))
-
-
-
-;proposal
-;price-change
-;other-price-change
-;check-surpluses
-;total-surplus
-;raise-delta
-;lower-delta
-;rest-of-to-do
 
 
 (deftest test-home
