@@ -342,8 +342,11 @@
     (max 0.001 (min price-delta (abs (* price-delta (nth pdlist J)))))))
 
 
+; inputs: [1 2 3 4], prices [99.5, 100.49999999999999, 100.49999999999999, 99.5]
+; nrs: 1000 ; labor-supply: 1000; price-delta: 0.1; pdlist: ?!
 (defn update-surpluses-prices
   [type inputs prices wcs ccs natural-resources-supply labor-supply price-delta pdlist]
+  (console.log pdlist)
   (loop [inputs inputs
          prices prices
          surpluses []
@@ -451,10 +454,10 @@
   (let [averaged-s-and-d (->> (interleave (flatten supply-list)
                                           (flatten demand-list))
                               (partition 2)
-                              (map mean))]
+                              (mapv mean))]
     (->> (interleave (flatten surplus-list) averaged-s-and-d)
          (partition 2)
-         (map #(/ (first %) (last %))))))
+         (mapv #(/ (first %) (last %))))))
 
 
 (defn get-demand-list [t]
@@ -524,7 +527,10 @@
         supply-list (get-supply-list t2)
         demand-list (get-demand-list t2)
         new-lorenz-and-gini-tuple (update-lorenz-and-gini (:ccs t2))
+        new-price-deltas (price-change supply-list demand-list surplus-list)
+        new-pdlist (other-price-change supply-list demand-list surplus-list)
         iteration (inc (:iteration t2))]
+    (console.log new-pdlist)
     (assoc t2 :final-prices final-prices
               :final-surpluses final-surpluses
               :input-prices input-prices
@@ -536,8 +542,8 @@
               :demand-list demand-list
               :surplus-list surplus-list
               :supply-list supply-list
-              :price-deltas (price-change supply-list demand-list surplus-list)
-              :pdlist (other-price-change supply-list demand-list surplus-list)
+              :price-deltas new-price-deltas
+              :pdlist new-pdlist
               :lorenz-gini-tuple new-lorenz-and-gini-tuple
               :iteration iteration)))
 
@@ -632,7 +638,7 @@
 
 
 (defn show-globals []
-    (let [keys-to-show [:final-prices :threshold-met :delta-delay :price-delta :iteration :final-surpluses :price-deltas :pdlist :lorenz-gini-tuple :input-prices :nature-prices :labor-prices :input-surpluses :nature-surpluses :labor-surpluses :threshold-met :lorenz-gini-tuple]
+    (let [keys-to-show [:final-prices :threshold-met :delta-delay :price-delta :iteration :final-surpluses :price-deltas :pdlist :input-prices :nature-prices :labor-prices :input-surpluses :nature-surpluses :labor-surpluses :threshold-met :supply-list :demand-list :surplus-list]
         ]
      [:div " "
            (setup-random-button)

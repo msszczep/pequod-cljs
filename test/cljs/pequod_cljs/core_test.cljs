@@ -176,7 +176,6 @@
             :a 10}
            (rc/proposal input-prices nature-prices labor-prices wc-6)))))
 
-; IT02 PROBLEMS: 
 ; input-prices don't match
 ; input-surpluses don't match
 ; labor-prices don't match
@@ -385,7 +384,24 @@
         (is (= 0.1
                (:price-delta it01-remainder)))
         (is (= 4
-               (:delta-delay it01-remainder)))))
+               (:delta-delay it01-remainder)))
+        (is (= [110.55 103.15036052771042 110.55 110.2160840317781]
+               (:input-prices it02-remainder)))
+        (is (= [-3316.9865085951824 -346.48809252699334 -749.8419302463965 -539.0844309509484]
+               (:input-surpluses it02-remainder)))
+        (is (= [165.825]
+               (:labor-prices it02-remainder)))
+        (is (= [-2043.4963315576038]
+               (:labor-surpluses it02-remainder)))
+        (is (= [165.825]
+               (:nature-prices it02-remainder)))
+        (is (= [-2089.3078897631785]
+               (:nature-surpluses it02-remainder)))
+        (is (= [0.6435769241525859 -1.2405579108180442 -0.8534157447332376 1.6796277920424052 -1.3443413179471868 -0.19953173534130858 -0.9749653569614951 -0.9573192477684649 -1.0218393655285152 -1.0107571091923926]
+               (:pdlist it02-remainder)))
+        (is (= [1.12795916612731 0.8945665182379948 1.0218393655285152 1.0107571091923924]
+               (:price-deltas it02-remainder)))
+))
 
 
 (deftest consume
