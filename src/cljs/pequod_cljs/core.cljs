@@ -147,13 +147,13 @@
              lorenz-points []
              num-people-counter 0]
         (if (= num-people-counter (dec num-people))
-          [(cons (* (/ wealth-sum-so-far total-wealth) 100) lorenz-points) gini-index-reserve]
+          [(conj lorenz-points (* (/ wealth-sum-so-far total-wealth) 100)) gini-index-reserve]
           (recur (+ wealth-sum-so-far (nth sorted-wealths index))
                  (inc index)
                  (+ gini-index-reserve
                     (/ index num-people)
                     (- (/ wealth-sum-so-far total-wealth)))
-                 (cons (* (/ wealth-sum-so-far total-wealth) 100) lorenz-points)
+                 (conj lorenz-points (* (/ wealth-sum-so-far total-wealth) 100))
                  (inc num-people-counter))))
       [[] 0])))
 
@@ -632,7 +632,7 @@
 
 
 (defn show-globals []
-    (let [keys-to-show [:final-prices :threshold-met :delta-delay :price-delta :iteration :final-surpluses :final-goods :price-deltas :pdlist]
+    (let [keys-to-show [:final-prices :threshold-met :delta-delay :price-delta :iteration :final-surpluses :price-deltas :pdlist :lorenz-gini-tuple :input-prices :nature-prices :labor-prices :input-surpluses :nature-surpluses :labor-surpluses :threshold-met :lorenz-gini-tuple]
         ]
      [:div " "
            (setup-random-button)
