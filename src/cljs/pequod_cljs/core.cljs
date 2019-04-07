@@ -437,9 +437,6 @@
           b (concat b-input b-nature b-labor)
           λ (get-lambda-o wc final-prices input-prices)
           p-i (wc :production-inputs)]
-     #_(if (> (wc :id) 110)
-       (console.log "wc id:")
-       (println (wc :id)))
       (condp = input-count-r
         1 (merge wc (solution-1 a s c k ps b λ p-i))
         2 (merge wc (solution-2 a s c k ps b λ p-i))
@@ -528,7 +525,6 @@
          input-producers (mapv (partial get-producers t 1) intermediate-inputs)
          natural-resources-supply (vector (:natural-resources-supply t))
          labor-supply (vector (:labor-supply t))]
-;     (println (->> t :wcs (filter #(and (= 0 (:industry %)) (= 1 (:product %)))) (map (juxt :id (comp count flatten :production-inputs))))) 
      (vector final-producers input-producers natural-resources-supply labor-supply))))
 
 
@@ -655,7 +651,7 @@
 
 
 (defn show-globals []
-    (let [keys-to-show [:iteration :demand-list :pdlist :input-prices :nature-prices :labor-prices :final-prices :supply-list] #_[:final-prices :threshold-met :delta-delay :price-delta :iteration :final-surpluses :price-deltas :pdlist :input-prices :nature-prices :labor-prices :input-surpluses :nature-surpluses :labor-surpluses :threshold-met :supply-list :demand-list :surplus-list]
+    (let [keys-to-show [:iteration :demand-list :pdlist :input-prices :nature-prices :labor-prices :final-prices :supply-list :threshold-met] #_[:final-prices :threshold-met :delta-delay :price-delta :iteration :final-surpluses :price-deltas :pdlist :input-prices :nature-prices :labor-prices :input-surpluses :nature-surpluses :labor-surpluses :threshold-met :supply-list :demand-list :surplus-list]
         ]
      [:div " "
            (setup-random-button)
