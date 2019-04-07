@@ -68,6 +68,7 @@
         wc-4 {:effort 0.5, :cq 10, :ce 1, :a 10, :labor-exponents [0.2327136009634174], :industry 0, :output 0, :du 2, :c 0.05, :product 2, :labor-quantities [0], :production-inputs [[1 2] [1] [1]], :input-exponents [0.18730943766373953 0.1700289432131638], :xe 0.05, :s 1, :nature-exponents [0.1970497669613798]}
         wc-5 {:effort 0.5, :cq 10, :ce 1, :a 10, :labor-exponents [0.24925680571914088], :industry 0, :output 0, :du 2, :c 0.05, :product 1, :labor-quantities [0], :production-inputs [[1 2 3] [1] [1]], :input-exponents [0.07540314861302111 0.10098780164832724 0.10718250832816038], :xe 0.05, :s 1, :nature-exponents [0.17057223193493595]}
         wc-6 {:effort 0.5, :cq 10, :ce 1, :a 10, :labor-exponents [0.15813469104723293], :industry 0, :output 0, :du 2, :c 0.05, :product 2, :labor-quantities [0], :production-inputs [[1 2 3 4] [1] [1]], :input-exponents [0.07136063178539023 0.09705394605246723 0.09837585447317158 0.0516097801370993], :xe 0.05, :s 1, :nature-exponents [0.1978580219892075]}
+        final-prices [100 100 100 100]
         input-prices [100 100 100 100]
         nature-prices [150]
         labor-prices [150]]
@@ -91,8 +92,8 @@
             :input-quantities '(86463176651.9904),
             :x2 65829557864.94286,
             :nature-exponents '(0.40775789400671814),
-            :a 0.25} 
-           (rc/proposal input-prices nature-prices labor-prices wc-3)))
+            :a 0.25}
+           (rc/proposal final-prices input-prices nature-prices labor-prices wc-3)))
     (is (= {:effort 16.30645654793667,
             :cq 10,
             :ce 1,
@@ -115,7 +116,7 @@
             :x2 18.084314116414706,
             :nature-exponents [0.1970497669613798],
             :a 10} 
-           (rc/proposal input-prices nature-prices labor-prices wc-4)))
+           (rc/proposal final-prices input-prices nature-prices labor-prices wc-4)))
     (is (= {:effort 7.443216445365022,
             :cq 10,
             :ce 1,
@@ -143,7 +144,7 @@
             :x2 2.237949107872213,
             :nature-exponents [0.17057223193493595],
             :a 10}
-           (rc/proposal input-prices nature-prices labor-prices wc-5)))
+           (rc/proposal final-prices input-prices nature-prices labor-prices wc-5)))
     (is (= {:effort 5.720014296565836,
             :cq 10,
             :ce 1,
@@ -174,16 +175,8 @@
             :x2 1.2701862807916346,
             :nature-exponents [0.1978580219892075],
             :a 10}
-           (rc/proposal input-prices nature-prices labor-prices wc-6)))))
+           (rc/proposal final-prices input-prices nature-prices labor-prices wc-6)))))
 
-; input-prices don't match
-; input-surpluses don't match
-; labor-prices don't match
-; labor-surpluses don't match
-; nature-prices don't match
-; nature-surpluses don't match
-; pdlist doesn't match
-; price-deltas don't match
 
 (deftest test-run-ex001
   (let [wcs ex001/wcs
@@ -387,19 +380,24 @@
                (:delta-delay it01-remainder)))
         (is (= [110.55 103.15036052771042 110.55 110.2160840317781]
                (:input-prices it02-remainder)))
-        (is (= [-3316.9865085951824 -346.48809252699334 -749.8419302463965 -539.0844309509484]
+        (is (= ;[-3316.9865085951824 -346.48809252699334 -749.8419302463965 -539.0844309509484]
+                [-3316.986508595146 -346.48809252698015 -749.8419302463902 -539.0844309509438]
                (:input-surpluses it02-remainder)))
         (is (= [165.825]
                (:labor-prices it02-remainder)))
-        (is (= [-2043.4963315576038]
+        (is (= ;[-2043.4963315576038] 
+                [-2043.4963315575937]
                (:labor-surpluses it02-remainder)))
         (is (= [165.825]
                (:nature-prices it02-remainder)))
-        (is (= [-2089.3078897631785]
+        (is (= ;[-2089.3078897631785]
+               [-2089.307889763159]
                (:nature-surpluses it02-remainder)))
-        (is (= [0.6435769241525859 -1.2405579108180442 -0.8534157447332376 1.6796277920424052 -1.3443413179471868 -0.19953173534130858 -0.9749653569614951 -0.9573192477684649 -1.0218393655285152 -1.0107571091923926]
+        (is (= ;[0.6435769241525859 -1.2405579108180442 -0.8534157447332376 1.6796277920424052 -1.3443413179471868 -0.19953173534130858 -0.9749653569614951 -0.9573192477684649 -1.0218393655285152 -1.0107571091923926]
+               [0.6435769241525822 -1.240557910818045 -0.8534157447332403 1.6796277920424048 -1.344341317947182 -0.19953173534130186 -0.9749653569614913 -0.9573192477684612 -1.0218393655285103 -1.0107571091923901]
                (:pdlist it02-remainder)))
-        (is (= [1.12795916612731 0.8945665182379948 1.0218393655285152 1.0107571091923924]
+        (is (= ;[1.12795916612731 0.8945665182379948 1.0218393655285152 1.0107571091923924]
+               [1.1279591661273085 0.894566518237989 1.0218393655285103 1.0107571091923901]
                (:price-deltas it02-remainder)))
 ))
 

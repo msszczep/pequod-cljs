@@ -347,18 +347,12 @@
     (max 0.001 (min price-delta (abs (* price-delta (nth pdlist J)))))))
 
 
-; inputs: [1 2 3 4], prices [99.5, 100.49999999999999, 100.49999999999999, 99.5]
-; nrs: 1000 ; labor-supply: 1000; price-delta: 0.1; pdlist: ?!
 (defn update-surpluses-prices
   [type inputs prices wcs ccs natural-resources-supply labor-supply price-delta pdlist]
   (loop [inputs inputs
          prices prices
          surpluses []
          J 0]
- ;   (console.log "type")
- ;   (println type)
- ;   (console.log "inputs")
- ;   (println inputs)
     (if (empty? inputs)
       {:prices prices :surpluses surpluses}
       (let [supply (condp = type
@@ -370,7 +364,7 @@
                                   (reduce +))
                      "intermediate" (->> wcs
                                          (filter #(and (= 1 (% :industry))
-                                                       (= (first inputs)
+                                                      (= (first inputs)
                                                           (% :product))))
                                          (map :output)
                                          (reduce +))
@@ -394,35 +388,24 @@
                                    flatten
                                    (reduce +))
                      "labor" (->> wcs
-                                  (filter #(contains? (set (last (:production-inputs %)))
+                                  #_(filter #(contains? (set (last (:production-inputs %)))
                                                       (first inputs)))
                                   (map (juxt :production-inputs :labor-quantities))
                                   (map (partial get-input-quantity last inputs))
                                   (reduce +)))
+            j-offset (condp = type
+                           "final" 0
+                           "intermediate" 4
+                           "nature" 8
+                           "labor" 9)
             surplus (- supply demand)
-            delta (get-deltas J price-delta pdlist)
+            delta (get-deltas (+ j-offset J) price-delta pdlist)
             new-delta (if (or (<= delta 1) (= type "final")) delta
                           (last (take-while (partial < 1)
                                             (iterate #(/ % 2.0) delta))))
             new-price (cond (pos? surplus) (* (- 1 new-delta) (nth prices (dec (first inputs))))
                             (neg? surplus) (* (+ 1 new-delta) (nth prices (dec (first inputs))))
                             :else (nth prices (dec (first inputs))))]
-;        (console.log "type")
-;        (println type)
-;        (console.log "surplus")
-;        (println surplus)
-;        (console.log "J")
-;        (println J)
-;        (console.log "price-delta")
-;        (println price-delta)
-;        (console.log "pdlist")
-;        (println pdlist)
-;        (console.log "delta")
-;        (println delta)
-;        (console.log "new-delta")
-;        (println new-delta)
-;        (console.log "new-price")
-;        (println new-price)
         (recur (rest inputs)
                (assoc prices J new-price)
                (conj surpluses surplus)
@@ -454,7 +437,7 @@
           b (concat b-input b-nature b-labor)
           λ (get-lambda-o wc final-prices input-prices)
           p-i (wc :production-inputs)]
-     (if (> (wc :id) 110)
+     #_(if (> (wc :id) 110)
        (console.log "wc id:")
        (println (wc :id)))
       (condp = input-count-r
@@ -545,9 +528,7 @@
          input-producers (mapv (partial get-producers t 1) intermediate-inputs)
          natural-resources-supply (vector (:natural-resources-supply t))
          labor-supply (vector (:labor-supply t))]
-;     (console.log "in get-supply-list/map of outputs:")
 ;     (println (->> t :wcs (filter #(and (= 0 (:industry %)) (= 1 (:product %)))) (map (juxt :id (comp count flatten :production-inputs))))) 
-;     (println (map (juxt first (comp (partial map (juxt :output :production-inputs)) second)) (group-by (juxt :industry :product) (:wcs t))))
      (vector final-producers input-producers natural-resources-supply labor-supply))))
 
 
@@ -674,7 +655,7 @@
 
 
 (defn show-globals []
-    (let [keys-to-show [:iteration :demand-list :pdlist :wcs :final-prices :supply-list] #_[:final-prices :threshold-met :delta-delay :price-delta :iteration :final-surpluses :price-deltas :pdlist :input-prices :nature-prices :labor-prices :input-surpluses :nature-surpluses :labor-surpluses :threshold-met :supply-list :demand-list :surplus-list]
+    (let [keys-to-show [:iteration :demand-list :pdlist :input-prices :nature-prices :labor-prices :final-prices :supply-list] #_[:final-prices :threshold-met :delta-delay :price-delta :iteration :final-surpluses :price-deltas :pdlist :input-prices :nature-prices :labor-prices :input-surpluses :nature-surpluses :labor-surpluses :threshold-met :supply-list :demand-list :surplus-list]
         ]
      [:div " "
            (setup-random-button)
