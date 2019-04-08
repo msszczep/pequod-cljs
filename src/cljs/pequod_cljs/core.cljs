@@ -567,18 +567,19 @@
                       (* (:surplus-threshold t)
                          (reduce + (map :output producers))))
                   inputs))
-          (check-supplies [surpluses supply inputs]
+          (check-supplies [surpluses supply inputs surplus-threshold]
             (some #(> (Math/abs (nth surpluses (dec %)))
-                      (* (:surplus-threshold t) supply))
+                      (* surplus-threshold supply))
                   inputs))
           (get-producers [wcs industry]
             (filter #(= industry (% :industry))) wcs)]
-    (let [final-producers (get-producers (:wcs t) 0)
+    (let [surplus-threshold (:surplus-threshold t)
+          final-producers (get-producers (:wcs t) 0)
           input-producers (get-producers (:wcs t) 1)
           final-goods-check (check-producers (:final-surpluses t) final-producers (:final-goods t))
           im-goods-check (check-producers (:input-surpluses t) input-producers (:intermediate-inputs t))
-          nature-check (check-supplies (:nature-surpluses t) (:nature-resources-supply t) (:nature-types t))
-          labor-check (check-supplies (:labor-surplus t) (:labor-supply t) (:labor-types t))]
+          nature-check (check-supplies (:nature-surpluses t) (:natural-resources-supply t) (:nature-types t) surplus-threshold)
+          labor-check (check-supplies (:labor-surplus t) (:labor-supply t) (:labor-types t) surplus-threshold)]
         [final-goods-check im-goods-check nature-check labor-check]
       ;(every? nil? [final-goods-check im-goods-check nature-check labor-check])
         )))
@@ -651,7 +652,7 @@
 
 
 (defn show-globals []
-    (let [keys-to-show [:iteration :demand-list :pdlist :input-prices :nature-prices :labor-prices :final-prices :supply-list :threshold-met] #_[:final-prices :threshold-met :delta-delay :price-delta :iteration :final-surpluses :price-deltas :pdlist :input-prices :nature-prices :labor-prices :input-surpluses :nature-surpluses :labor-surpluses :threshold-met :supply-list :demand-list :surplus-list]
+    (let [keys-to-show [:iteration :demand-list :pdlist :input-prices :nature-prices :labor-prices :final-prices :supply-list :threshold-met :nature-surpluses :natural-resources-supply :nature-types :surplus-threshold] #_[:final-prices :threshold-met :delta-delay :price-delta :iteration :final-surpluses :price-deltas :pdlist :input-prices :nature-prices :labor-prices :input-surpluses :nature-surpluses :labor-surpluses :threshold-met :supply-list :demand-list :surplus-list]
         ]
      [:div " "
            (setup-random-button)
