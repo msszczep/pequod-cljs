@@ -580,9 +580,7 @@
           im-goods-check (check-producers (:input-surpluses t) input-producers (:intermediate-inputs t))
           nature-check (check-supplies (:nature-surpluses t) (:natural-resources-supply t) (:nature-types t) surplus-threshold)
           labor-check (check-supplies (:labor-surplus t) (:labor-supply t) (:labor-types t) surplus-threshold)]
-        [final-goods-check im-goods-check nature-check labor-check]
-      ;(every? nil? [final-goods-check im-goods-check nature-check labor-check])
-        )))
+      (every? nil? [final-goods-check im-goods-check nature-check labor-check]))))
 
 
 (defn total-surplus [surplus-list]
