@@ -158,7 +158,7 @@
       [[] 0])))
 
 
-(defn setup [t button-type]
+(defn setup [t atom-placeholder button-type]
   (let [intermediate-inputs (vec (range 1 (inc (t :inputs))))
         nature-types (vec (range 1 (inc (t :resources))))
         labor-types (vec (range 1 (inc (t :labors))))
@@ -175,10 +175,9 @@
                :nature-types nature-types
                :labor-types labor-types
                :surplus-threshold 0.02
-               :ccs ex001/ccs
-                    #_(if (= button-type "random") ccs ex001/ccs)
-               :wcs ex001/wcs
-               #_(if (= button-type "ex001") ex001/wcs
+               :ccs (if (= button-type "random") ccs ex001/ccs)
+               :wcs
+                 (if (= button-type "ex001") ex001/wcs
                    (->> (merge (create-wcs 80 final-goods 0)
                                (create-wcs 80 intermediate-inputs 1))
                         flatten
@@ -187,7 +186,7 @@
                                       nature-types
                                       labor-types))))
                :lorenz-gini-tuple (update-lorenz-and-gini ccs)))))
-; TODO Get buttons to work as intended
+
 
 (defn consume [final-goods final-prices cc]
   (let [utility-exponents (cc :utility-exponents)
