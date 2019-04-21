@@ -188,6 +188,24 @@
                :lorenz-gini-tuple (update-lorenz-and-gini ccs)))))
 
 
+(defn reset-all-but-prices [t]
+  (assoc t :ccs ex001/ccs
+           :delta-delay 5
+           :demand-list []
+           :final-surpluses []
+           :input-surpluses []
+           :iteration 0
+           :labor-surpluses []
+           :lorenz-gini-tuple [[] 0]
+           :nature-surpluses []
+           :pdlist [0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5]
+           :price-deltas [0.5 0.5 0.5 0.5]
+           :supply-list []
+           :surplus-list []
+           :threshold-met false
+           :wcs ex001/wcs))
+
+
 (defn consume [final-goods final-prices cc]
   (let [utility-exponents (cc :utility-exponents)
         income (cc :income) 
@@ -644,6 +662,10 @@
   [:input {:type "button" :value "Iterate and check"
            :on-click #(swap! globals proceed globals)}])
 
+(defn reset-all-but-prices-button []
+  [:input {:type "button" :value "Reset Ex001: All but prices"
+           :on-click #(swap! globals reset-all-but-prices globals)}])
+
 #_[:iteration :demand-list :pdlist :input-prices :nature-prices :labor-prices :final-prices :supply-list :threshold-met :nature-surpluses :natural-resources-supply :nature-types :surplus-threshold] 
 (defn show-globals []
     (let [keys-to-show [:final-prices :threshold-met :delta-delay :price-delta :iteration :final-surpluses :price-deltas :pdlist :input-prices :nature-prices :labor-prices :input-surpluses :nature-surpluses :labor-surpluses :threshold-met :supply-list :demand-list :surplus-list :threshold :surplus-threshold]
@@ -654,14 +676,25 @@
            (setup-ex001-button)
            "  "
            (iterate-button)
+           "  "
+           (reset-all-but-prices-button)
            [:p]
            [:table
             (map (fn [x] [:tr [:td (str (first x))]
                           [:td (str (second x))]])
                  (sort (select-keys @globals keys-to-show))
-                 )
+                 )]
+           #_[:p]
+           #_ (clojure.string/join " " (sort (keys @globals)))
+           #_ [:p]
+           #_ [:table
+            (map (fn [x] [:tr [:td (str (first x))]
+                          [:td (str (second x))]])
+                 (sort @globals))]
+            [:p]
+      ()
 ]
-           [:p]]))
+))
 
 
 (defn home-page []
