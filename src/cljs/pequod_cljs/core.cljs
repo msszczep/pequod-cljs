@@ -589,22 +589,19 @@
        (reduce +)))
 
 
-(defn raise-delta [price-delta]
-  (let [pd (->> [0.1 (+ 0.01 price-delta)]
-                (apply min)
+(defn adjust-delta [price-delta raise-or-lower]
+  (let [price-delta-adjustment-fn
+         (if (= raise-or-lower "raise") + -)
+        min-or-max-fn
+         (if (= raise-or-lower "raise") min max)
+        delta-delay
+         (if (= raise-or-lower "raise") 10 5)
+        pd (->> [0.1 (price-delta-adjustment-fn price-delta 0.01)]
+                (apply min-or-max-fn)
                 (gstring/format "%.2f"))]
-   {:price-delta pd
-    :delta-delay 10}))
+    {:price-delta pd
+     :delta-delay delta-delay}))
 
-
-(defn lower-delta [price-delta]
-  (let [pd (->> [0.1 (- price-delta 0.01)]
-                (apply max)
-                (gstring/format "%.2f"))]
-   {:price-delta pd
-    :delta-delay 5}))
-
-;; TODO: Consolidate raise-delta and lower-delta into one function
 
 (defn rest-of-to-do [t]
   (let [surplus-total (total-surplus (:surplus-list t))
@@ -614,13 +611,13 @@
         {price-delta :price-delta
          delta-delay :delta-delay} (if (and (< total-surplus 100)
                                               (<= delta-delay 0))
-                                     (lower-delta price-delta)
+                                     (adjust-delta price-delta "lower")
                                      {:price-delta price-delta
                                       :delta-delay delta-delay})
         {price-delta :price-delta
          delta-delay :delta-delay} (if (and (> total-surplus 100000)
                                               (<= delta-delay 0))
-                                     (raise-delta price-delta)
+                                     (adjust-delta price-delta "raise")
                                      {:price-delta price-delta
                                       :delta-delay delta-delay})
         delta-delay (if (pos? delta-delay)
