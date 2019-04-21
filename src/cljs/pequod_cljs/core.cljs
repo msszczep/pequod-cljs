@@ -635,7 +635,7 @@
 ;; -------------------------
 ;; Views-
 
-(defn setup-random-button []
+#_(defn setup-random-button []
   [:input {:type "button" :value "Setup Random"
            :on-click #(swap! globals setup globals "random")}])
 
@@ -651,8 +651,8 @@
 (defn show-globals []
     (let [keys-to-show [:final-prices :threshold-met :delta-delay :price-delta :iteration :final-surpluses :price-deltas :pdlist :input-prices :nature-prices :labor-prices :input-surpluses :nature-surpluses :labor-surpluses :threshold-met :supply-list :demand-list :surplus-list :threshold :surplus-threshold]
         ]
-     [:div " "
-           (setup-random-button)
+     [:div #_" "
+           #_(setup-random-button)
            "  "
            (setup-ex001-button)
            "  "
