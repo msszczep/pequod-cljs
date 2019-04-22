@@ -182,8 +182,7 @@
   (let [wcs ex001/wcs
         ccs ex001/ccs
         globals-before @rc/globals
-        placeholder {}
-        globals (rc/setup globals-before placeholder "ex001")
+        globals (rc/setup globals-before _ "ex001")
         iteration01 (rc/iterate-plan globals)
         it01-remainder (rc/rest-of-to-do iteration01)
         iteration02 (rc/iterate-plan it01-remainder)

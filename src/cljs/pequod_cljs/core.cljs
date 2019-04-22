@@ -102,13 +102,13 @@
           input-exponents (when (pos? (count (first production-inputs)))
                             (let [xz (/ 0.2 (count (first production-inputs)))]
                               (vec (take (count (first production-inputs))
-                                     (repeatedly #(+ xz (rand xz)))))))
+                                         (repeatedly #(+ xz (rand xz)))))))
           nature-exponents (let [rz (/ 0.2 (count (second production-inputs)))]
                              (vec (take (count (second production-inputs))
-                                    (repeatedly #(+ 0.05 rz (rand rz))))))
+                                        (repeatedly #(+ 0.05 rz (rand rz))))))
           labor-exponents (let [lz (/ 0.2 (count (last production-inputs)))]
                             (vec (take (count (last production-inputs))
-                                   (repeatedly #(+ 0.05 lz (rand lz))))))]
+                                       (repeatedly #(+ 0.05 lz (rand lz))))))]
       (merge wc {:production-inputs production-inputs
                  :xe 0.05
                  :c 0.05
@@ -158,7 +158,7 @@
       [[] 0])))
 
 
-(defn setup [t atom-placeholder button-type]
+(defn setup [t _ button-type]
   (let [intermediate-inputs (vec (range 1 (inc (t :inputs))))
         nature-types (vec (range 1 (inc (t :resources))))
         labor-types (vec (range 1 (inc (t :labors))))
@@ -188,7 +188,23 @@
                :lorenz-gini-tuple (update-lorenz-and-gini ccs)))))
 
 
-(defn reset-all-but-prices [t]
+(defn adjust-exponents [wc]
+  (let [adj-input-exponent (rand-nth [0.01 -0.01])
+        adj-nature-exponent (rand-nth [0.01 -0.01])
+        adj-labor-exponent (rand-nth [0.01 -0.01])
+        input-exponents (:input-exponents wc)
+        labor-exponents (:labor-exponents wc)
+        nature-exponents (:nature-exponents wc)]
+    (merge wc
+           {:input-exponents
+              (mapv (partial + adj-input-exponent) input-exponents)
+            :labor-exponents
+              (mapv (partial + adj-labor-exponent) labor-exponents)
+            :nature-exponents
+              (mapv (partial + adj-nature-exponent) nature-exponents)})))
+
+
+(defn reset-all-but-prices [t _ button-type]
   (assoc t :ccs ex001/ccs
            :delta-delay 5
            :demand-list []
@@ -203,7 +219,9 @@
            :supply-list []
            :surplus-list []
            :threshold-met false
-           :wcs ex001/wcs))
+           :wcs (if (= button-type "no-exponent-adjustment")
+                    ex001/wcs
+                    (mapv adjust-exponents ex001/wcs))))
 
 
 (defn consume [final-goods final-prices cc]
@@ -662,9 +680,14 @@
   [:input {:type "button" :value "Iterate and check"
            :on-click #(swap! globals proceed globals)}])
 
-(defn reset-all-but-prices-button []
-  [:input {:type "button" :value "Reset Ex001: All but prices"
-           :on-click #(swap! globals reset-all-but-prices globals)}])
+(defn reset-all-but-prices-button-no-exp []
+  [:input {:type "button" :value "Reset Ex001: All but prices, no exp. adj."
+           :on-click #(swap! globals reset-all-but-prices globals "no-exponent-adjustment")}])
+
+(defn reset-all-but-prices-button-with-exp []
+  [:input {:type "button" :value "Reset Ex001: All but prices, with ex. adj."
+           :on-click #(swap! globals reset-all-but-prices globals "random-exponent-adjustment")}])
+
 
 #_[:iteration :demand-list :pdlist :input-prices :nature-prices :labor-prices :final-prices :supply-list :threshold-met :nature-surpluses :natural-resources-supply :nature-types :surplus-threshold] 
 (defn show-globals []
@@ -677,7 +700,9 @@
            "  "
            (iterate-button)
            "  "
-           (reset-all-but-prices-button)
+           (reset-all-but-prices-button-no-exp)
+           "  "
+           (reset-all-but-prices-button-with-exp)
            [:p]
            [:table
             (map (fn [x] [:tr [:td (str (first x))]
@@ -686,15 +711,13 @@
                  )]
            #_[:p]
            #_ (clojure.string/join " " (sort (keys @globals)))
-           #_ [:p]
-           #_ [:table
+           #_[:p]
+          #_ [:table
             (map (fn [x] [:tr [:td (str (first x))]
                           [:td (str (second x))]])
                  (sort @globals))]
             [:p]
-      ()
-]
-))
+     ]))
 
 
 (defn home-page []
