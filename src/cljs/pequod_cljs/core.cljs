@@ -15,6 +15,7 @@
          :inputs                    4
          :resources                 1
          :labors                    1
+         :public-goods              1
          :final-prices             []
          :input-prices             []
          :labor-prices             []
@@ -67,20 +68,25 @@
       :price-deltas (vec (repeat 4 0.05))
       :pdlist (vec (repeat (+ finals inputs resources labor) 0.05)))))
 
-(defn create-ccs [consumer-councils workers-per-council finals]
+(defn create-ccs [consumer-councils workers-per-council finals public-goods]
   (let [effort 1
         cz (/ 0.5 finals)
         utility-exponents (->> #(+ cz (rand cz))
                                repeatedly
                                (take (* finals consumer-councils))
-                               (partition finals))]
+                               (partition finals))
+        public-good-exponents (->> #(+ cz (rand cz))
+                               repeatedly
+                               (take (* public-goods consumer-councils))
+                               (partition public-goods))]
     (map #(hash-map :num-workers workers-per-council
                     :effort effort
                     :income (* 500 effort workers-per-council)
                     :cy (+ 6 (rand 9))
-                    :utility-exponents (vec %)
-                    :final-demands (vec (repeat 5 0)))
-         utility-exponents)))
+                    :utility-exponents (vec (first %))
+                    :final-demands (vec (repeat 5 0))
+                    :public-good-exponents (vec (last %)))  
+         (partition 2 (interleave utility-exponents public-good-exponents)))))
 
 (defn create-wcs [worker-councils goods industry]
   (->> goods
@@ -163,7 +169,8 @@
         nature-types (vec (range 1 (inc (t :resources))))
         labor-types (vec (range 1 (inc (t :labors))))
         final-goods (vec (range 1 (inc (t :finals))))
-        ccs (create-ccs 100 10 4)]
+        public-goods (vec (range 1 (inc (t :public-goods))))
+        ccs (create-ccs 100 10 4 1)]
     (-> t
         initialize-prices
         (assoc :price-delta 0.1
@@ -174,12 +181,14 @@
                :intermediate-inputs intermediate-inputs
                :nature-types nature-types
                :labor-types labor-types
+               :public-goods public-goods
                :surplus-threshold 0.02
                :ccs (if (= button-type "random") ccs ex001/ccs)
                :wcs
                  (if (= button-type "ex001") ex001/wcs
                    (->> (merge (create-wcs 80 final-goods 0)
-                               (create-wcs 80 intermediate-inputs 1))
+                               (create-wcs 80 intermediate-inputs 1)
+                               (create-wcs 80 public-goods 2))
                         flatten
                         (map (partial continue-setup-wcs
                                       intermediate-inputs
@@ -224,15 +233,22 @@
                     (mapv adjust-exponents ex001/wcs))))
 
 
-(defn consume [final-goods final-prices cc]
+(defn consume [final-goods final-prices public-goods public-goods-prices cc]
   (let [utility-exponents (cc :utility-exponents)
+        public-good-exponents (cc :public-good-exponents)
         income (cc :income) 
         final-demands (map (fn [final-good]
                              (/ (* income (nth utility-exponents (dec final-good)))
                                 (* (apply + utility-exponents)
                                    (nth final-prices (dec final-good)))))
-                      final-goods)]
-    (assoc cc :final-demands final-demands)))
+                      final-goods)
+        public-goods-demands (map (fn [public-good]
+                             (/ (* income (nth public-good-exponents (dec public-good)))
+                                (* (apply + public-good-exponents)
+                                   (nth public-goods-prices (dec public-good)))))
+                      public-goods)]
+    (assoc cc :final-demands final-demands
+              :public-goods-demands public-goods-demands)))
 
 
 (defn assign-new-proposal [production-inputs xs]
@@ -404,7 +420,13 @@
                                          (map :output)
                                          (reduce +))
                      "nature" natural-resources-supply
-                     "labor"  labor-supply)
+                     "labor"  labor-supply
+                     "public-goods" (->> wcs
+                                         (filter #(and (= 2 (% :industry))
+                                                      (= (first inputs)
+                                                          (% :product))))
+                                         (map :output)
+                                         (reduce +)))
             demand (condp = type
                      "final" (->> ccs
                                   (map :final-demands)
@@ -427,12 +449,17 @@
                                                       (first inputs)))
                                   (map (juxt :production-inputs :labor-quantities))
                                   (map (partial get-input-quantity last inputs))
-                                  (reduce +)))
+                                  (reduce +))
+                     "public-goods" (->> ccs
+                                         (map :public-goods-demands)
+                                         (map #(nth % (dec (first inputs)))) ; is this correct?
+                                         (reduce +)))
             j-offset (condp = type
                            "final" 0
                            "intermediate" 4
                            "nature" 8
-                           "labor" 9)
+                           "labor" 9
+                           "public-goods" 10)
             surplus (- supply demand)
             delta (get-deltas (+ j-offset J) price-delta pdlist)
             new-delta (if (or (<= delta 1) (= type "final")) delta
@@ -564,7 +591,7 @@
 
 
 (defn iterate-plan [t]
-  (let [t2 (assoc t :ccs (map (partial consume (t :final-goods) (t :final-prices))
+  (let [t2 (assoc t :ccs (map (partial consume (t :final-goods) (t :final-prices) (t :public-goods) (t :public-goods-prices))
                               (t :ccs))
                     :wcs (map (partial proposal (t :final-prices) (t :input-prices) (t :nature-prices) (t :labor-prices))
                               (t :wcs)))
@@ -668,7 +695,7 @@
 ;; -------------------------
 ;; Views-
 
-#_(defn setup-random-button []
+(defn setup-random-button []
   [:input {:type "button" :value "Setup Random"
            :on-click #(swap! globals setup globals "random")}])
 
@@ -693,8 +720,8 @@
 (defn show-globals []
     (let [keys-to-show [:final-prices :threshold-met :delta-delay :price-delta :iteration :final-surpluses :price-deltas :pdlist :input-prices :nature-prices :labor-prices :input-surpluses :nature-surpluses :labor-surpluses :threshold-met :supply-list :demand-list :surplus-list :threshold :surplus-threshold]
         ]
-     [:div #_" "
-           #_(setup-random-button)
+     [:div " "
+           (setup-random-button)
            "  "
            (setup-ex001-button)
            "  "
@@ -703,20 +730,21 @@
            (reset-all-but-prices-button-no-exp)
            "  "
            (reset-all-but-prices-button-with-exp)
-           [:p]
-           [:table
+           #_[:p]
+           #_[:table
             (map (fn [x] [:tr [:td (str (first x))]
                           [:td (str (second x))]])
                  (sort (select-keys @globals keys-to-show))
                  )]
-           #_[:p]
-           #_ (clojure.string/join " " (sort (keys @globals)))
-           #_[:p]
-          #_ [:table
+           [:p]
+           (clojure.string/join " " (sort (keys @globals)))
+           [:p]
+           [:table
             (map (fn [x] [:tr [:td (str (first x))]
                           [:td (str (second x))]])
                  (sort @globals))]
             [:p]
+            (str (count (:wcs @globals)))
      ]))
 
 
