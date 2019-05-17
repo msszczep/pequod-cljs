@@ -88,6 +88,17 @@
                     :public-good-exponents (vec (last %)))  
          (partition 2 (interleave utility-exponents public-good-exponents)))))
 
+(defn create-ccs-pge [cc]
+  (let [consumer-councils 100
+        finals 4
+        cz (/ 0.5 finals)
+        public-goods 1
+        public-good-exponents (->> #(+ cz (rand cz))
+                               repeatedly
+                               (take (* public-goods consumer-councils))
+                               (partition public-goods))]
+    (assoc cc :public-good-exponents (vec public-good-exponents))))
+
 (defn create-wcs [worker-councils goods industry]
   (->> goods
        (map #(vec (repeat (/ worker-councils 2 (count goods))
