@@ -3,6 +3,7 @@
               [secretary.core :as secretary :include-macros true]
               [accountant.core :as accountant]
               [pequod-cljs.ex001data :as ex001]
+              [pequod-cljs.ex001ppgdata :as ex001pg]
               [goog.string :as gstring]
               [goog.string.format]))
 
@@ -11,6 +12,7 @@
          :init-intermediate-price 100
          :init-labor-price        150
          :init-nature-price       150
+         :init-public-good-price  100
          :finals                    4
          :inputs                    4
          :resources                 1
@@ -20,6 +22,7 @@
          :input-prices             []
          :labor-prices             []
          :nature-prices            []
+         :public-goods-prices      []
          :old-final-prices         []
          :old-input-prices         []
          :old-nature-prices        []
@@ -59,14 +62,16 @@
   (let [finals (t :finals)
         inputs (t :inputs)
         resources (t :resources)
-        labor (t :labors)]
+        labor (t :labors)
+        public-goods (t :public-goods)]
     (assoc t
       :final-prices (vec (repeat finals (t :init-final-price)))
       :input-prices (vec (repeat inputs (t :init-intermediate-price)))
       :nature-prices (vec (repeat resources (t :init-nature-price)))
       :labor-prices (vec (repeat labor (t :init-labor-price)))
+      :public-goods-prices (vec (repeat public-goods (t :init-public-good-price)))
       :price-deltas (vec (repeat 4 0.05))
-      :pdlist (vec (repeat (+ finals inputs resources labor) 0.05)))))
+      :pdlist (vec (repeat (+ finals inputs resources labor public-goods) 0.05)))))
 
 (defn create-ccs [consumer-councils workers-per-council finals public-goods]
   (let [effort 1
@@ -178,7 +183,7 @@
         nature-types (vec (range 1 (inc (t :resources))))
         labor-types (vec (range 1 (inc (t :labors))))
         final-goods (vec (range 1 (inc (t :finals))))
-        public-goods (vec (range 1 (inc (t :public-goods))))
+        public-goods-types (vec (range 1 (inc (t :public-goods))))
         ccs (create-ccs 100 10 4 1)]
     (-> t
         initialize-prices
@@ -190,19 +195,24 @@
                :intermediate-inputs intermediate-inputs
                :nature-types nature-types
                :labor-types labor-types
-               :public-goods public-goods
+               :public-goods-types public-goods-types
                :surplus-threshold 0.02
-               :ccs (if (= button-type "random") ccs ex001/ccs)
+               :ccs (condp = button-type
+                      "ex001" ex001/ccs
+                      "ex001pg" ex001pg/ccs
+                      ccs)
                :wcs
-                 (if (= button-type "ex001") ex001/wcs
-                   (->> (merge (create-wcs 80 final-goods 0)
-                               (create-wcs 80 intermediate-inputs 1)
-                               (create-wcs 80 public-goods 2))
-                        flatten
-                        (map (partial continue-setup-wcs
-                                      intermediate-inputs
-                                      nature-types
-                                      labor-types))))
+               (condp = button-type 
+                 "ex001" ex001/wcs
+                 "ex001pg" ex001pg/wcs
+                 (->> (merge (create-wcs 80 final-goods 0)
+                             (create-wcs 80 intermediate-inputs 1)
+                             (create-wcs 80 public-goods-types 2))
+                      flatten
+                      (map (partial continue-setup-wcs
+                                    intermediate-inputs
+                                    nature-types
+                                    labor-types))))
                :lorenz-gini-tuple (update-lorenz-and-gini ccs)))))
 
 
@@ -394,6 +404,32 @@
       :nature-quantities nature-qs
       :labor-quantities labor-qs}))
 
+(defn solution-7 [a s c k ps b λ p-i]
+  (let [[b1 b2 b3 b4 b5 b6 b7] b
+        [p1 p2 p3 p4 p5 p6 p7] (flatten ps)
+        output (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (* c (Math/log k)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log b1))) (* b1 k (Math/log p1)) (- (* b1 k (Math/log λ))) (- (* b2 k (Math/log b2))) (* b2 k (Math/log p2)) (- (* b2 k (Math/log λ))) (- (* b3 k (Math/log b3))) (* b3 k (Math/log p3)) (- (* b3 k (Math/log λ))) (- (* b4 k (Math/log b4))) (* b4 k (Math/log p4)) (- (* b4 k (Math/log λ))) (- (* b5 k (Math/log b5))) (* b5 k (Math/log p5)) (- (* b5 k (Math/log λ))) (- (* b6 k (Math/log b6))) (* b6 k (Math/log p6)) (- (* b6 k (Math/log λ))) (- (* b7 k (Math/log b7))) (* b7 k (Math/log p7)) (- (* b7 k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5) (* k b6) (* k b7))))
+        x1 (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (* b2 k (Math/log b1)) (* b3 k (Math/log b1)) (* b4 k (Math/log b1)) (* b5 k (Math/log b1)) (* b6 k (Math/log b1)) (* b7 k (Math/log b1)) (* c (Math/log b1)) (- (* k (Math/log b1))) (- (* b2 k (Math/log b2))) (- (* b3 k (Math/log b3))) (- (* b4 k (Math/log b4))) (- (* b5 k (Math/log b5))) (- (* b6 k (Math/log b6))) (- (* b7 k (Math/log b7))) (- (* c (Math/log c))) (* c (Math/log k)) (- (* b2 k (Math/log p1))) (- (* b3 k (Math/log p1))) (- (* b4 k (Math/log p1))) (- (* b5 k (Math/log p1))) (- (* b6 k (Math/log p1))) (- (* b7 k (Math/log p1))) (* k (Math/log p1)) (- (* c (Math/log p1))) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* b4 k (Math/log p4)) (* b5 k (Math/log p5)) (* b6 k (Math/log p6)) (* b7 k (Math/log p7)) (* c (Math/log s)) (- (* k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5) (* k b6) (* k b7))))
+        x2 (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (* b1 k (Math/log b2)) (* b3 k (Math/log b2)) (* b4 k (Math/log b2)) (* b5 k (Math/log b2)) (* b6 k (Math/log b2)) (* b7 k (Math/log b2)) (* c (Math/log b2)) (- (* k (Math/log b2))) (- (* b1 k (Math/log b1))) (- (* b3 k (Math/log b3))) (- (* b4 k (Math/log b4))) (- (* b5 k (Math/log b5))) (- (* b6 k (Math/log b6))) (- (* b7 k (Math/log b7))) (- (* c (Math/log c))) (* c (Math/log k)) (- (* b1 k (Math/log p2))) (- (* b3 k (Math/log p2))) (- (* b4 k (Math/log p2))) (- (* b5 k (Math/log p2))) (- (* b6 k (Math/log p2))) (- (* b7 k (Math/log p2))) (* k (Math/log p2)) (- (* c (Math/log p2))) (* b1 k (Math/log p1)) (* b3 k (Math/log p3)) (* b4 k (Math/log p4)) (* b5 k (Math/log p5)) (* b6 k (Math/log p6)) (* b7 k (Math/log p7)) (* c (Math/log s)) (- (* k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5) (* k b6) (* k b7))))
+        x3 (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (* b1 k (Math/log b3)) (* b2 k (Math/log b3)) (* b4 k (Math/log b3)) (* b5 k (Math/log b3)) (* b6 k (Math/log b3)) (* b7 k (Math/log b3)) (* c (Math/log b3)) (- (* k (Math/log b3))) (- (* b1 k (Math/log b1))) (- (* b2 k (Math/log b2))) (- (* b4 k (Math/log b4))) (- (* b5 k (Math/log b5))) (- (* b6 k (Math/log b6))) (- (* b7 k (Math/log b7))) (- (* c (Math/log c))) (* c (Math/log k)) (- (* b1 k (Math/log p3))) (- (* b2 k (Math/log p3))) (- (* b4 k (Math/log p3))) (- (* b5 k (Math/log p3))) (- (* b6 k (Math/log p3))) (- (* b7 k (Math/log p3))) (* k (Math/log p3)) (- (* c (Math/log p3))) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* b4 k (Math/log p4)) (* b5 k (Math/log p5)) (* b6 k (Math/log p6)) (* b7 k (Math/log p7)) (* c (Math/log s)) (- (* k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5) (* k b6) (* k b7))))
+        x4 (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (* b1 k (Math/log b4)) (* b2 k (Math/log b4)) (* b3 k (Math/log b4)) (* b5 k (Math/log b4)) (* b6 k (Math/log b4)) (* b7 k (Math/log b4)) (* c (Math/log b4)) (- (* k (Math/log b4))) (- (* b1 k (Math/log b1))) (- (* b2 k (Math/log b2))) (- (* b3 k (Math/log b3))) (- (* b5 k (Math/log b5))) (- (* b6 k (Math/log b6))) (- (* b7 k (Math/log b7))) (- (* c (Math/log c))) (* c (Math/log k)) (- (* b1 k (Math/log p4))) (- (* b2 k (Math/log p4))) (- (* b3 k (Math/log p4))) (- (* b5 k (Math/log p4))) (- (* b6 k (Math/log p4))) (- (* b7 k (Math/log p4))) (* k (Math/log p4)) (- (* c (Math/log p4))) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* b5 k (Math/log p5)) (* b6 k (Math/log p6)) (* b7 k (Math/log p7)) (* c (Math/log s)) (- (* k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5) (* k b6) (* k b7))))
+        x5 (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (* b1 k (Math/log b5)) (* b2 k (Math/log b5)) (* b3 k (Math/log b5)) (* b4 k (Math/log b5)) (* b6 k (Math/log b5)) (* b7 k (Math/log b5)) (* c (Math/log b5)) (- (* k (Math/log b5))) (- (* b1 k (Math/log b1))) (- (* b2 k (Math/log b2))) (- (* b3 k (Math/log b3))) (- (* b4 k (Math/log b4))) (- (* b6 k (Math/log b6))) (- (* b7 k (Math/log b7))) (- (* c (Math/log c))) (* c (Math/log k)) (- (* b1 k (Math/log p5))) (- (* b2 k (Math/log p5))) (- (* b3 k (Math/log p5))) (- (* b4 k (Math/log p5))) (- (* b6 k (Math/log p5))) (- (* b7 k (Math/log p5))) (* k (Math/log p5)) (- (* c (Math/log p5))) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* b4 k (Math/log p4)) (* b6 k (Math/log p6)) (* b7 k (Math/log p7)) (* c (Math/log s)) (- (* k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5) (* k b6) (* k b7))))
+        x6 (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (* b1 k (Math/log b6)) (* b2 k (Math/log b6)) (* b3 k (Math/log b6)) (* b4 k (Math/log b6)) (* b5 k (Math/log b6)) (* b7 k (Math/log b6)) (* c (Math/log b6)) (- (* k (Math/log b6))) (- (* b1 k (Math/log b1))) (- (* b2 k (Math/log b2))) (- (* b3 k (Math/log b3))) (- (* b4 k (Math/log b4))) (- (* b5 k (Math/log b5))) (- (* b7 k (Math/log b7))) (- (* c (Math/log c))) (* c (Math/log k)) (- (* b1 k (Math/log p6))) (- (* b2 k (Math/log p6))) (- (* b3 k (Math/log p6))) (- (* b4 k (Math/log p6))) (- (* b5 k (Math/log p6))) (- (* b7 k (Math/log p6))) (* k (Math/log p6)) (- (* c (Math/log p6))) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* b4 k (Math/log p4)) (* b5 k (Math/log p5)) (* b7 k (Math/log p7)) (* c (Math/log s)) (- (* k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5) (* k b6) (* k b7))))
+        x7 (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (* b1 k (Math/log b7)) (* b2 k (Math/log b7)) (* b3 k (Math/log b7)) (* b4 k (Math/log b7)) (* b5 k (Math/log b7)) (* b6 k (Math/log b7)) (* c (Math/log b7)) (- (* k (Math/log b7))) (- (* b1 k (Math/log b1))) (- (* b2 k (Math/log b2))) (- (* b3 k (Math/log b3))) (- (* b4 k (Math/log b4))) (- (* b5 k (Math/log b5))) (- (* b6 k (Math/log b6))) (- (* c (Math/log c))) (* c (Math/log k)) (- (* b1 k (Math/log p7))) (- (* b2 k (Math/log p7))) (- (* b3 k (Math/log p7))) (- (* b4 k (Math/log p7))) (- (* b5 k (Math/log p7))) (- (* b6 k (Math/log p7))) (* k (Math/log p7)) (- (* c (Math/log p7))) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* b4 k (Math/log p4)) (* b5 k (Math/log p5)) (* b6 k (Math/log p6)) (* c (Math/log s)) (- (* k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5) (* k b6) (* k b7))))
+        effort (Math/pow Math/E (/ (+ (- (* (Math/log a))) (- (* b1 (Math/log b1))) (- (* b2 (Math/log b2))) (- (* b3 (Math/log b3))) (- (* b4 (Math/log b4))) (- (* b5 (Math/log b5))) (- (* b6 (Math/log b6))) (- (* b7 (Math/log b7))) (* b1 (Math/log p1)) (* b2 (Math/log p2)) (* b3 (Math/log p3)) (* b4 (Math/log p4)) (* b5 (Math/log p5)) (* b6 (Math/log p6)) (* b7 (Math/log p7)) (- (* b1 (Math/log λ))) (- (* b2 (Math/log λ))) (- (* b3 (Math/log λ))) (- (* b4 (Math/log λ))) (- (* b5 (Math/log λ))) (- (* b6 (Math/log λ))) (- (* b7 (Math/log λ))) (- (* (Math/log λ)))(+ (- (* k (Math/log a))) (- (* c (Math/log c))) (* c (Math/log k)) (* c (Math/log s)) (- (* c (Math/log λ)))) (+ c (- k)) (* b1(+ (- (* k (Math/log a))) (* b1 k (Math/log b1)) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log λ)))) (+ c (- k) (* k b1))) (* b2(+ (- (* k (Math/log a))) (* b1 k (Math/log b1)) (* b2 k (Math/log b2)) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log λ))) (- (* b2 k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2))) (* b3(+ (- (* k (Math/log a))) (* b1 k (Math/log b1)) (* b2 k (Math/log b2)) (* b3 k (Math/log b3)) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log λ))) (- (* b2 k (Math/log λ))) (- (* b3 k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3))) (* b4(+ (- (* k (Math/log a))) (* b1 k (Math/log b1)) (* b2 k (Math/log b2)) (* b3 k (Math/log b3)) (* b4 k (Math/log b4)) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* b4 k (Math/log p4)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log λ))) (- (* b2 k (Math/log λ))) (- (* b3 k (Math/log λ))) (- (* b4 k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4))) (* b5(+ (- (* k (Math/log a))) (* b1 k (Math/log b1)) (* b2 k (Math/log b2)) (* b3 k (Math/log b3)) (* b4 k (Math/log b4)) (* b5 k (Math/log b5)) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* b4 k (Math/log p4)) (* b5 k (Math/log p5)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log λ))) (- (* b2 k (Math/log λ))) (- (* b3 k (Math/log λ))) (- (* b4 k (Math/log λ))) (- (* b5 k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5))) (* b6(+ (- (* k (Math/log a))) (* b1 k (Math/log b1)) (* b2 k (Math/log b2)) (* b3 k (Math/log b3)) (* b4 k (Math/log b4)) (* b5 k (Math/log b5)) (* b6 k (Math/log b6)) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* b4 k (Math/log p4)) (* b5 k (Math/log p5)) (* b6 k (Math/log p6)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log λ))) (- (* b2 k (Math/log λ))) (- (* b3 k (Math/log λ))) (- (* b4 k (Math/log λ))) (- (* b5 k (Math/log λ))) (- (* b6 k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5) (* k b6))) (* b7(+ (- (* k (Math/log a))) (* b1 k (Math/log b1)) (* b2 k (Math/log b2)) (* b3 k (Math/log b3)) (* b4 k (Math/log b4)) (* b5 k (Math/log b5)) (* b6 k (Math/log b6)) (* b7 k (Math/log b7)) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* b4 k (Math/log p4)) (* b5 k (Math/log p5)) (* b6 k (Math/log p6)) (* b7 k (Math/log p7)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log λ))) (- (* b2 k (Math/log λ))) (- (* b3 k (Math/log λ))) (- (* b4 k (Math/log λ))) (- (* b5 k (Math/log λ))) (- (* b6 k (Math/log λ))) (- (* b7 k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5) (* k b6) (* k b7)))) c)) 
+        [input-qs nature-qs labor-qs] (assign-new-proposal p-i [x1 x2 x3 x4 x5 x6 x7])]
+     {:output output
+      :x1 x1
+      :x2 x2
+      :x3 x3
+      :x4 x4
+      :x5 x5
+      :x6 x6
+      :x7 x7
+      :effort effort
+      :input-quantities input-qs
+      :nature-quantities nature-qs
+      :labor-quantities labor-qs}))
+
 
 (defn get-input-quantity [f ii [production-inputs input-quantities]]
   (->> ii
@@ -413,6 +449,10 @@
          prices prices
          surpluses []
          J 0]
+    (println "update-surpluses-prices/type:" type)
+    (println "update-surpluses-prices/inputs:" inputs)
+    (println "update-surpluses-prices/prices:" prices)
+    (println "update-surpluses-prices/surpluses:" surpluses)        
     (if (empty? inputs)
       {:prices prices :surpluses surpluses}
       (let [supply (condp = type
@@ -431,9 +471,7 @@
                      "nature" natural-resources-supply
                      "labor"  labor-supply
                      "public-goods" (->> wcs
-                                         (filter #(and (= 2 (% :industry))
-                                                      (= (first inputs)
-                                                          (% :product))))
+                                         (filter #(= 2 (% :industry)))
                                          (map :output)
                                          (reduce +)))
             demand (condp = type
@@ -460,7 +498,7 @@
                                   (map (partial get-input-quantity last inputs))
                                   (reduce +))
                      "public-goods" (->> ccs
-                                         (map :public-goods-demands)
+                                         (map :public-good-demands)
                                          (map #(nth % (dec (first inputs)))) ; is this correct?
                                          (reduce +)))
             j-offset (condp = type
@@ -477,13 +515,15 @@
             new-price (cond (pos? surplus) (* (- 1 new-delta) (nth prices (dec (first inputs))))
                             (neg? surplus) (* (+ 1 new-delta) (nth prices (dec (first inputs))))
                             :else (nth prices (dec (first inputs))))]
+        (println "supply:" supply)
+        (println "demand:" demand)
         (recur (rest inputs)
                (assoc prices J new-price)
                (conj surpluses surplus)
                (inc J))))))
 
 
-(defn proposal [final-prices input-prices nature-prices labor-prices wc]
+(defn proposal [final-prices input-prices nature-prices labor-prices public-goods-prices wc]
   (letfn [(count-inputs [w]
             ((comp count flatten :production-inputs) w))
           (get-input-prices [[indexes prices]]
@@ -493,7 +533,7 @@
                   product (:product w)]
               (cond (= 0 industry) (nth final-prices (dec product))
                     (= 1 industry) (nth input-prices (dec product)))))]
-    (let [prices-and-indexes (->> (vector input-prices nature-prices labor-prices)
+    (let [prices-and-indexes (->> (vector input-prices nature-prices labor-prices public-goods-prices)
                                   (interleave (wc :production-inputs))
                                   (partition 2))
           input-count-r (count-inputs wc)
@@ -505,7 +545,8 @@
           b-input (wc :input-exponents)
           b-labor (wc :labor-exponents)
           b-nature (wc :nature-exponents)
-          b (concat b-input b-nature b-labor)
+          b-pg (wc :public-good-exponents)
+          b (concat b-input b-nature b-labor b-pg)
           λ (get-lambda-o wc final-prices input-prices)
           p-i (wc :production-inputs)]
       (condp = input-count-r
@@ -515,6 +556,7 @@
         4 (merge wc (solution-4 a s c k ps b λ p-i))
         5 (merge wc (solution-5 a s c k ps b λ p-i))
         6 (merge wc (solution-6 a s c k ps b λ p-i))
+        7 (merge wc (solution-7 a s c k ps b λ p-i))
         (str "unexpected input-count value: " input-count-r)))))
 
 
@@ -582,6 +624,7 @@
 
 
 (defn get-supply-list [t]
+  (println "in get-supply-list")
   (letfn [(get-producers [t industry product]
             (->> t
                  :wcs
@@ -600,14 +643,16 @@
 
 
 (defn iterate-plan [t]
+  (print "in iterate-plan")
   (let [t2 (assoc t :ccs (map (partial consume (t :final-goods) (t :final-prices) (t :public-goods) (t :public-goods-prices))
                               (t :ccs))
-                    :wcs (map (partial proposal (t :final-prices) (t :input-prices) (t :nature-prices) (t :labor-prices))
+                    :wcs (map (partial proposal (t :final-prices) (t :input-prices) (t :nature-prices) (t :labor-prices) (t :public-goods-prices))
                               (t :wcs)))
         {final-prices :prices, final-surpluses :surpluses} (update-surpluses-prices "final" (t2 :final-goods) (t2 :final-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
         {input-prices :prices, input-surpluses :surpluses} (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :input-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
         {nature-prices :prices, nature-surpluses :surpluses} (update-surpluses-prices "nature" (t2 :nature-types) (t2 :nature-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
         {labor-prices :prices, labor-surpluses :surpluses} (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
+        {public-good-prices :prices, public-good-surpluses :surpluses} (update-surpluses-prices "public-goods" (t2 :public-goods-types) (t2 :public-goods-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
         surplus-list (vector final-surpluses input-surpluses nature-surpluses labor-surpluses)
         supply-list (get-supply-list t2)
         demand-list (get-demand-list t2)
@@ -623,6 +668,8 @@
               :nature-surpluses nature-surpluses
               :labor-prices labor-prices
               :labor-surpluses labor-surpluses
+              :public-good-prices public-good-prices
+              :public-good-surpluses public-good-surpluses 
               :demand-list demand-list
               :surplus-list surplus-list
               :supply-list supply-list
@@ -676,6 +723,7 @@
 
 
 (defn rest-of-to-do [t]
+  (println "in rest-of-to-do")
   (let [surplus-total (total-surplus (:surplus-list t))
         threshold (check-surpluses t)
         delta-delay (:delta-delay t)
@@ -712,6 +760,10 @@
   [:input {:type "button" :value "Setup Ex001"
            :on-click #(swap! globals setup globals "ex001")}])
 
+(defn setup-ex001-button-pg []
+  [:input {:type "button" :value "Setup Ex001 w/Public Goods"
+           :on-click #(swap! globals setup globals "ex001pg")}])
+
 (defn iterate-button []
   [:input {:type "button" :value "Iterate and check"
            :on-click #(swap! globals proceed globals)}])
@@ -733,6 +785,8 @@
            (setup-random-button)
            "  "
            (setup-ex001-button)
+           "  "
+           (setup-ex001-button-pg)
            "  "
            (iterate-button)
            "  "
