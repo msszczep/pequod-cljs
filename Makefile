@@ -3,6 +3,9 @@ launch:
 	emacs test/cljs/pequod_cljs/core_test.cljs &
 	lein figwheel
 
+core:
+	emacs src/cljs/pequod_cljs/core.cljs &
+
 doo:
 	emacs src/cljs/pequod_cljs/core.cljs &
 	emacs test/cljs/pequod_cljs/core_test.cljs &

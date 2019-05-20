@@ -70,7 +70,7 @@
       :nature-prices (vec (repeat resources (t :init-nature-price)))
       :labor-prices (vec (repeat labor (t :init-labor-price)))
       :public-goods-prices (vec (repeat public-goods (t :init-public-good-price)))
-      :price-deltas (vec (repeat 4 0.05))
+      :price-deltas (vec (repeat 5 0.05))
       :pdlist (vec (repeat (+ finals inputs resources labor public-goods) 0.05)))))
 
 (defn create-ccs [consumer-councils workers-per-council finals public-goods]
@@ -497,10 +497,8 @@
                                   (map (juxt :production-inputs :labor-quantities))
                                   (map (partial get-input-quantity last inputs))
                                   (reduce +))
-                     "public-goods" (->> ccs
-                                         (map :public-good-demands)
-                                         (map #(nth % (dec (first inputs)))) ; is this correct?
-                                         (reduce +)))
+                     "public-goods" (/ (apply + (map (partial apply +) (map :public-good-demands ccs))) 
+                                       (count ccs)))
             j-offset (condp = type
                            "final" 0
                            "intermediate" 4
