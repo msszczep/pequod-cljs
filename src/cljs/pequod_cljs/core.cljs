@@ -252,7 +252,7 @@
                     (mapv adjust-exponents ex001/wcs))))
 
 
-(defn consume [final-goods final-prices public-goods public-goods-prices cc]
+(defn consume [final-goods final-prices public-goods public-goods-prices num-of-ccs cc]
   (let [utility-exponents (cc :utility-exponents)
         public-good-exponents (cc :public-good-exponents)
         income (cc :income) 
@@ -260,12 +260,13 @@
                              (/ (* income (nth utility-exponents (dec final-good)))
                                 (* (apply + utility-exponents)
                                    (nth final-prices (dec final-good)))))
-                      final-goods)
+                           final-goods)
         public-goods-demands (map (fn [public-good]
-                             (/ (* income (nth public-good-exponents (dec public-good)))
-                                (* (apply + public-good-exponents)
-                                   (nth public-goods-prices (dec public-good)))))
-                      public-goods)]
+                                    (/ (* income (nth public-good-exponents (dec public-good)))
+                                       (* (apply + public-good-exponents)
+                                          (/ (nth public-goods-prices (dec public-good))
+                                             num-of-ccs))))
+                             public-goods)]
     (assoc cc :final-demands final-demands
               :public-goods-demands public-goods-demands)))
 
@@ -526,13 +527,14 @@
             ((comp count flatten :production-inputs) w))
           (get-input-prices [[indexes prices]]
             (map #(nth prices (dec %)) indexes))
-          (get-lambda-o [w final-prices input-prices]
+          (get-lambda-o [w final-prices input-prices public-goods-prices]
             (let [industry (:industry w)
                   product (:product w)]
               (cond (= 0 industry) (nth final-prices (dec product))
-                    (= 1 industry) (nth input-prices (dec product)))))]
+                    (= 1 industry) (nth input-prices (dec product))
+                    (= 2 industry) (nth public-goods-prices (dec product)))))]
     (let [prices-and-indexes (->> (vector input-prices nature-prices labor-prices public-goods-prices)
-                                  (interleave (wc :production-inputs))
+                                  (interleave (into (wc :production-inputs) [[1]]))
                                   (partition 2))
           input-count-r (count-inputs wc)
           a (wc :a)
@@ -545,7 +547,7 @@
           b-nature (wc :nature-exponents)
           b-pg (wc :public-good-exponents)
           b (concat b-input b-nature b-labor b-pg)
-          λ (get-lambda-o wc final-prices input-prices)
+          λ (get-lambda-o wc final-prices input-prices public-goods-prices)
           p-i (wc :production-inputs)]
       (condp = input-count-r
         1 (merge wc (solution-1 a s c k ps b λ p-i))
@@ -622,7 +624,6 @@
 
 
 (defn get-supply-list [t]
-  (println "in get-supply-list")
   (letfn [(get-producers [t industry product]
             (->> t
                  :wcs
@@ -636,13 +637,18 @@
          intermediate-inputs (:intermediate-inputs t)
          input-producers (mapv (partial get-producers t 1) intermediate-inputs)
          natural-resources-supply (vector (:natural-resources-supply t))
-         labor-supply (vector (:labor-supply t))]
-     (vector final-producers input-producers natural-resources-supply labor-supply))))
+         labor-supply (vector (:labor-supply t))
+         public-good-supply (->> t
+                                :wcs
+                                (filter #(= 2 (% :industry)))
+                                (map :output)
+                                (reduce +))]
+     (vector final-producers input-producers natural-resources-supply labor-supply public-good-supply))))
 
 
 (defn iterate-plan [t]
   (print "in iterate-plan")
-  (let [t2 (assoc t :ccs (map (partial consume (t :final-goods) (t :final-prices) (t :public-goods) (t :public-goods-prices))
+  (let [t2 (assoc t :ccs (map (partial consume (t :final-goods) (t :final-prices) (t :public-goods) (t :public-goods-prices) (count (t :ccs)))
                               (t :ccs))
                     :wcs (map (partial proposal (t :final-prices) (t :input-prices) (t :nature-prices) (t :labor-prices) (t :public-goods-prices))
                               (t :wcs)))
