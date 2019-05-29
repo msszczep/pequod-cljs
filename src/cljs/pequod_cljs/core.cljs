@@ -850,8 +850,8 @@
            #_(reset-all-but-prices-button-no-exp)
            "  "
            #_(reset-all-but-prices-button-with-exp)
-           #_[:p]
-           #_[:table
+           [:p]
+           [:table
             (map (fn [x] [:tr [:td (str (first x))]
                           [:td (str (second x))]])
                  (sort (select-keys @globals keys-to-show))
