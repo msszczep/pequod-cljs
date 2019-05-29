@@ -502,12 +502,14 @@
                                     (map #(nth % (dec (first inputs))))
                                     (reduce +))
                        "intermediate" (->> wcs
+                                           (filter #(contains? #{0, 1} (:industry %)))
                                            (filter #(contains? (set (first (:production-inputs %)))
                                                                (first inputs)))
                                            (map (juxt :production-inputs :input-quantities))
                                            (map (partial get-input-quantity first inputs))
                                            (reduce +))
                        "nature" (->> wcs
+                                     (filter #(contains? #{0, 1} (:industry %)))
                                      (filter #(contains? (set (second (:production-inputs %)))
                                                          (first inputs)))
                                      (map :nature-quantities)
@@ -516,6 +518,7 @@
                        "labor" (->> wcs
                                     #_(filter #(contains? (set (last (:production-inputs %)))
                                                           (first inputs)))
+                                    (filter #(contains? #{0, 1} (:industry %)))
                                     (map (juxt :production-inputs :labor-quantities))
                                     (map (partial get-input-quantity last inputs))
                                     (reduce +))
