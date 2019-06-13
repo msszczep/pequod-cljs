@@ -45,7 +45,6 @@
          :labor-supply             0}))
 
 (defn standardize-prices [t]
-  (println "in standardize-prices")
   (assoc t
     :init-final-price 80
     :init-intermediate-price 80
@@ -53,7 +52,6 @@
     :init-labor-price 80))
 
 (defn randomize-prices [t]
-  (println "in randomize-prices")
   (assoc t
     :init-final-price (+ 40 (rand-nth (range 0 40)))
     :init-intermediate-price (+ 40 (rand-nth (range 0 40)))
@@ -61,7 +59,6 @@
     :init-labor-price (+ 30 (rand-nth (range 0 30)))))
 
 (defn initialize-prices [t]
-  (println "in initialize-prices")
   (let [finals (t :finals)
         inputs (t :inputs)
         resources (t :resources)
@@ -78,7 +75,6 @@
 
 
 (defn create-ccs [consumer-councils workers-per-council finals public-goods]
-  (println "in create-ccs")
   (let [effort 1
         cz (/ 0.5 finals)
         utility-exponents (->> #(+ cz (rand cz))
@@ -101,7 +97,6 @@
 
 (defn create-ccs-pge [ccs]
   "Note: I don't add cz to the rand cz function call."
-  (println "in create-ccs-pge")
   (let [consumer-councils 100
         finals 4
         public-goods 1
@@ -111,7 +106,6 @@
 
 
 (defn create-wcs [worker-councils goods industry]
-  (println "in create-wcs")
   (->> goods
        (map #(vec (repeat (/ worker-councils 2 (count goods))
                           {:industry industry :product %})))
@@ -119,7 +113,6 @@
 
 (defn continue-setup-wcs [intermediate-inputs nature-types labor-types wc]
   "Assumes wc is a map"
-  (println "continue-setup-wcs")
   (letfn [(get-random-subset [input-seq]
             (->> input-seq
                  shuffle
@@ -156,7 +149,6 @@
 
 
 (defn calculate-consumer-utility [cc]
-;  (println "in calculate-consumer-utility")
   (let [final-demands (:final-demands cc)
         utility-exponents (:utility-exponents cc)
         cy (:cy cc)]
@@ -168,7 +160,6 @@
 
 
 (defn update-lorenz-and-gini [ccs]
-  (println "in update-lorenz-and-gini")
   (let [num-people (count ccs)
         sorted-wealths (sort (mapv calculate-consumer-utility ccs))
         total-wealth (reduce + sorted-wealths)]
@@ -230,7 +221,6 @@
 
 
 (defn adjust-exponents [wc]
-  (println "in adjust-exponents")
   (let [adj-input-exponent (rand-nth [0.01 -0.01])
         adj-nature-exponent (rand-nth [0.01 -0.01])
         adj-labor-exponent (rand-nth [0.01 -0.01])
@@ -247,7 +237,6 @@
 
 
 (defn reset-all-but-prices [t _ button-type]
-  (println "in reset-all-but-prices")
   (assoc t :ccs ex001/ccs
            :delta-delay 5
            :demand-list []
@@ -268,11 +257,6 @@
 
 
 (defn consume [final-goods final-prices public-goods public-goods-prices num-of-ccs cc]
-;  (println "in consume")
-;  (println "consume/final-goods:" final-goods)
-;  (println "consume/final-prices:" final-prices)
-;  (println "consume/public-goods:" public-goods)
-;  (println "consume/public-goods-prices:" public-goods-prices)
   (let [utility-exponents (cc :utility-exponents)
         public-good-exponents (cc :public-good-exponents)
         income (cc :income)
@@ -292,7 +276,6 @@
 
 
 (defn assign-new-proposal [production-inputs xs]
-;  (println "in assign-new-proposal")
   (let [num-input-quantities (count (first production-inputs))
         num-nature-quantities (count (second production-inputs))
         input-quantities (->> xs
@@ -309,7 +292,6 @@
 
 
 (defn solution-1 [a s c k ps b λ p-i]
-;  (println "in solution-1")
   (let [b1 (first b)
         p1 (first (flatten ps))
         output (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (- (* b1 k (Math/log b1))) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log λ)))) (+ c (- k) (* k b1))))
@@ -325,7 +307,6 @@
 
 
 (defn solution-2 [a s c k ps b λ p-i]
-;  (println "in solution-2")
   (let [[b1 b2] b
         [p1 p2] (flatten ps)
         output (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (- (* b1 k (Math/log b1))) (- (* b2 k (Math/log b2))) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log λ))) (- (* b2 k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2))))
@@ -343,7 +324,6 @@
 
 
 (defn solution-3 [a s c k ps b λ p-i]
-;  (println "in solution-3")
   (let [[b1 b2 b3] b
         [p1 p2 p3] (flatten ps)
         output (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (- (* b1 k (Math/log b1))) (- (* b2 k (Math/log b2))) (- (* b3 k (Math/log b3))) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log λ))) (- (* b2 k (Math/log λ))) (- (* b3 k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3))))
@@ -363,7 +343,6 @@
 
 
 (defn solution-4 [a s c k ps b λ p-i]
-;  (println "in solution-4")
   (let [[b1 b2 b3 b4] b
         [p1 p2 p3 p4] (flatten ps)
         output (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (- (* b1 k (Math/log b1))) (- (* b2 k (Math/log b2))) (- (* b3 k (Math/log b3))) (- (* b4 k (Math/log b4))) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* b4 k (Math/log p4)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log λ))) (- (* b2 k (Math/log λ))) (- (* b3 k (Math/log λ))) (- (* b4 k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4))))
@@ -384,7 +363,6 @@
      :labor-quantities labor-qs}))
 
 (defn solution-5 [a s c k ps b λ p-i]
-;  (println "in solution-5")
   (let [[b1 b2 b3 b4 b5] b
         [p1 p2 p3 p4 p5] (flatten ps)
         output (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (- (* b1 k (Math/log b1))) (- (* b2 k (Math/log b2))) (- (* b3 k (Math/log b3))) (- (* b4 k (Math/log b4))) (- (* b5 k (Math/log b5))) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* b4 k (Math/log p4)) (* b5 k (Math/log p5)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log λ))) (- (* b2 k (Math/log λ))) (- (* b3 k (Math/log λ))) (- (* b4 k (Math/log λ))) (- (* b5 k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5))))
@@ -408,7 +386,6 @@
 
 
 (defn solution-6 [a s c k ps b λ p-i]
-;  (println "in solution-6")
   (let [[b1 b2 b3 b4 b5 b6] b
         [p1 p2 p3 p4 p5 p6] (flatten ps)
         output (Math/pow Math/E (- (/ (+ (* k (Math/log a)) (* b1 k (Math/log b1)) (* b2 k (Math/log b2)) (* b3 k (Math/log b3)) (* b4 k (Math/log b4)) (* b5 k (Math/log b5)) (* b6 k (Math/log b6)) (* c (Math/log c)) (- (* c (Math/log k))) (- (* b1 k (Math/log p1))) (- (* b2 k (Math/log p2))) (- (* b3 k (Math/log p3))) (- (* b4 k (Math/log p4))) (- (* b5 k (Math/log p5))) (- (* b6 k (Math/log p6)))  (- (* c (Math/log s))) (* c (Math/log λ)) (* b1 k (Math/log λ)) (* b2 k (Math/log λ)) (* b3 k (Math/log λ)) (* b4 k (Math/log λ)) (* b5 k (Math/log λ)) (* b6 k (Math/log λ))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5) (* k b6)))))
@@ -433,7 +410,6 @@
       :labor-quantities labor-qs}))
 
 (defn solution-7 [a s c k ps b λ p-i]
-;  (println "in solution-7")
   (let [[b1 b2 b3 b4 b5 b6 b7] b
         [p1 p2 p3 p4 p5 p6 p7] (flatten ps)
         output (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (* c (Math/log k)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* c (Math/log c))) (- (* b1 k (Math/log b1))) (* b1 k (Math/log p1)) (- (* b1 k (Math/log λ))) (- (* b2 k (Math/log b2))) (* b2 k (Math/log p2)) (- (* b2 k (Math/log λ))) (- (* b3 k (Math/log b3))) (* b3 k (Math/log p3)) (- (* b3 k (Math/log λ))) (- (* b4 k (Math/log b4))) (* b4 k (Math/log p4)) (- (* b4 k (Math/log λ))) (- (* b5 k (Math/log b5))) (* b5 k (Math/log p5)) (- (* b5 k (Math/log λ))) (- (* b6 k (Math/log b6))) (* b6 k (Math/log p6)) (- (* b6 k (Math/log λ))) (- (* b7 k (Math/log b7))) (* b7 k (Math/log p7)) (- (* b7 k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5) (* k b6) (* k b7))))
@@ -461,7 +437,6 @@
 
 
 (defn get-input-quantity [f ii [production-inputs input-quantities]]
-;  (println "in get-input-quantity")
   (->> ii
        first
        (.indexOf (f production-inputs))
@@ -469,7 +444,6 @@
 
 
 (defn get-deltas [J price-delta pdlist]
-  (println "in get-deltas")
   (letfn [(abs [n] (max n (- n)))]
     (max 0.001 (min price-delta (abs (* price-delta (nth pdlist J)))))))
 
@@ -548,8 +522,6 @@
             new-price (cond (pos? surplus) (* (- 1 new-delta) (nth prices (dec (first inputs))))
                             (neg? surplus) (* (+ 1 new-delta) (nth prices (dec (first inputs))))
                             :else (nth prices (dec (first inputs))))]
-        (println "supply:" supply)
-        (println "demand:" demand)
         (recur (rest inputs)
                (assoc prices J new-price)
                (conj surpluses surplus)
@@ -557,7 +529,6 @@
 
 
 (defn proposal [final-prices input-prices nature-prices labor-prices public-goods-prices wc]
-;  (println "in proposal")
   (letfn [(count-inputs [w]
             ((comp count flatten :production-inputs) w))
           (get-input-prices [[indexes prices]]
@@ -599,10 +570,6 @@
   (/ (reduce + L) (count L)))
 
 (defn price-change [supply-list demand-list surplus-list]
-  (println "in price-change")
-  (println "price-change/supply-list:" supply-list)
-  (println "price-change/demand-list:" demand-list)
-  (println "price-change/surplus-list:" surplus-list)
   (let [supply-list-means (map mean supply-list)
         demand-list-means (map mean demand-list)
         surplus-list-means (map mean surplus-list)
@@ -610,15 +577,12 @@
                                           demand-list-means)
                               (partition 2)
                               (map mean))]
-    (println "surplus-list-means:" surplus-list-means)
-    (println "averaged-s-and-d:" averaged-s-and-d)
     (->> (interleave surplus-list-means averaged-s-and-d)
          (partition 2)
          (mapv #(Math/abs (/ (first %) (last %)))))))
 
 (defn check-sum-exponents [cc]
   "are the exponents for a given cc totalling less than 1?"
-  (println "in check-sum-exponents")
   (let [utility-exponents (:utility-exponents cc)
         public-good-exponents (:public-good-exponents cc)]
     (->> public-good-exponents
@@ -627,7 +591,6 @@
          (> 1))))
 
 (defn other-price-change [supply-list demand-list surplus-list]
-  (println "in other-price-change")
   (let [averaged-s-and-d (->> (interleave (flatten supply-list)
                                           (flatten demand-list))
                               (partition 2)
@@ -638,7 +601,6 @@
 
 
 (defn get-demand-list [t]
-  (println "in get-demand-list")
   (letfn [(merge-inputs-and-quantities [type ks vs]
             (map #(hash-map :type type :key (first %) :value (last %))
                  (partition 2 (interleave ks vs))))
@@ -682,7 +644,6 @@
 
 
 (defn get-supply-list [t]
-  (println "in get-supply-list")
   (letfn [(get-producers [t industry product]
             (->> t
                  :wcs
@@ -707,7 +668,6 @@
 
 
 (defn iterate-plan [t]
-  (println "in iterate-plan")
   (let [t2 (assoc t :ccs (map (partial consume (t :final-goods) (t :final-prices) (t :public-goods-types) (t :public-goods-prices) (count (t :ccs)))
                               (t :ccs))
                     :wcs (map (partial proposal (t :final-prices) (t :input-prices) (t :nature-prices) (t :labor-prices) (t :public-goods-prices))
@@ -744,7 +704,6 @@
 
 
 (defn check-surpluses [t]
-  (println "in check-surpluses")
   (letfn [(check-producers [surpluses producers inputs]
             (some #(> (Math/abs (nth surpluses (dec %)))
                       (* (:surplus-threshold t)
@@ -767,7 +726,6 @@
 
 
 (defn total-surplus [surplus-list]
-  (println "in total-surplus")
   (->> surplus-list
        flatten
        (map Math/abs)
@@ -775,7 +733,6 @@
 
 
 (defn adjust-delta [price-delta raise-or-lower]
-  (println "in adjust-delta")
   (let [price-delta-adjustment-fn
          (if (= raise-or-lower "raise") + -)
         min-or-max-fn
@@ -790,7 +747,6 @@
 
 
 (defn rest-of-to-do [t]
-  (println "in rest-of-to-do")
   (let [surplus-total (total-surplus (:surplus-list t))
         threshold (check-surpluses t)
         delta-delay (:delta-delay t)
@@ -812,10 +768,6 @@
         t-updated (assoc t :threshold-met threshold
                   :price-delta price-delta
                   :delta-delay delta-delay)]
-    (println "in rest-of-to-do: after let")
-    (println "rest-of-to-do threshold:" threshold)
-    (println "rest-of-to-do price-delta:" price-delta)
-    (println "rest-of-to-do delta-delay:" delta-delay)
     (println "iteration:" (:iteration t))
     t-updated))
 
