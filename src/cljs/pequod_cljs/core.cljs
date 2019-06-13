@@ -632,10 +632,10 @@
                           (sum-input-quantities all-quantities 3 :input-quantity)
                           (sum-input-quantities all-quantities 4 :input-quantity)]
           public-good-demands
-                     (map (fn [public-good]
-                            (mean (map #(nth (:public-good-demands %) (dec public-good))
-                                        (t :ccs))))
-                          (t :public-goods-types))]
+                     (mapv (fn [public-good]
+                             (mean (map #(nth (:public-good-demands %) (dec public-good))
+                                         (t :ccs))))
+                           (t :public-goods-types))]
       [final-demands
        input-quantity
        [(sum-input-quantities all-quantities 1 :nature-quantity)]
