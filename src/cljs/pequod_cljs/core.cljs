@@ -625,6 +625,7 @@
                              (mapv (partial reduce +)))
           all-quantities (->> t
                               :wcs
+                              (filter #(not= 2 (% :industry)))
                               (map get-inputs-and-quantities)
                               flatten)
           input-quantity [(sum-input-quantities all-quantities 1 :input-quantity)
@@ -826,7 +827,7 @@
                           [:td (str (second x))]])
                  (sort (select-keys @globals keys-to-show))
                  )]
-           [:p]
+           #_[:p]
 ;           (clojure.string/join " " (sort (keys @globals)))
 ;           [:p]
 ;            (println "@globals:" @globals)
