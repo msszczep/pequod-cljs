@@ -12,7 +12,7 @@
          :init-intermediate-price 100
          :init-labor-price        150
          :init-nature-price       150
-         :init-public-good-price  100
+         :init-public-good-price  1000
          :finals                    4
          :inputs                    4
          :resources                 1
@@ -770,13 +770,13 @@
         delta-delay (:delta-delay t)
         price-delta (:price-delta t)
         {price-delta :price-delta
-         delta-delay :delta-delay} (if (and (< total-surplus 100)
+         delta-delay :delta-delay} (if (and (< surplus-total 100)
                                               (<= delta-delay 0))
                                      (adjust-delta price-delta "lower")
                                      {:price-delta price-delta
                                       :delta-delay delta-delay})
         {price-delta :price-delta
-         delta-delay :delta-delay} (if (and (> total-surplus 100000)
+         delta-delay :delta-delay} (if (and (> surplus-total 100000)
                                               (<= delta-delay 0))
                                      (adjust-delta price-delta "raise")
                                      {:price-delta price-delta
@@ -824,7 +824,7 @@
 
 #_[:iteration :demand-list :pdlist :input-prices :nature-prices :labor-prices :final-prices :supply-list :threshold-met :nature-surpluses :natural-resources-supply :nature-types :surplus-threshold] 
 (defn show-globals []
-    (let [keys-to-show [:final-prices :threshold-met :delta-delay :price-delta :iteration :final-surpluses :price-deltas :pdlist :input-prices :nature-prices :labor-prices :input-surpluses :nature-surpluses :labor-surpluses :threshold-met :supply-list :demand-list :surplus-list :threshold :surplus-threshold]
+    (let [keys-to-show [:final-prices :threshold-met :delta-delay :price-delta :iteration :final-surpluses :price-deltas :pdlist :input-prices :nature-prices :labor-prices :input-surpluses :nature-surpluses :labor-surpluses :threshold-met :supply-list :demand-list :surplus-list :threshold :surplus-threshold :public-good-prices :public-good-surpluses]
         ]
      [:div " "
            #_(setup-random-button)
