@@ -1,6 +1,5 @@
 launch:
 	emacs src/cljs/pequod_cljs/core.cljs &
-	emacs test/cljs/pequod_cljs/core_test.cljs &
 	lein figwheel
 
 core:
