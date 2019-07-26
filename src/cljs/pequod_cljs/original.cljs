@@ -13,8 +13,7 @@
          :init-labor-price        150
          :init-nature-price       150
          :init-public-good-price  1000
-
-         :private-goods             4
+         :finals                    4
          :inputs                    4
          :resources                 1
          :labors                    1
@@ -26,53 +25,215 @@
          :nature-prices            []
          :public-goods-prices      []
 
+         :old-final-prices         []
+         :old-input-prices         []
+         :old-nature-prices        []
+         :old-labor-prices         []
+
          :final-surpluses          []
          :input-surpluses          []
          :nature-surpluses         []
          :labor-surpluses          []
-         :public-good-surpluses    []
 
          :threshold-met            false
          :pdlist                   []
          :delta-delay              0
          :price-deltas             []
          :price-delta              0
+         :lorenz-gini-tuple        [] 
+           ; both lorenz-points and gini-index-reserve
          :wcs                      []
          :ccs                      []
          :iteration                0
          :natural-resources-supply 0
          :labor-supply             0}))
 
+(defn standardize-prices [t]
+  (assoc t
+    :init-final-price 80
+    :init-intermediate-price 80
+    :init-nature-price 80
+    :init-labor-price 80))
+
+(defn randomize-prices [t]
+  (assoc t
+    :init-final-price (+ 40 (rand-nth (range 0 40)))
+    :init-intermediate-price (+ 40 (rand-nth (range 0 40)))
+    :init-nature-price (+ 30 (rand-nth (range 0 30)))
+    :init-labor-price (+ 30 (rand-nth (range 0 30)))))
 
 (defn initialize-prices [t]
-  (let [private-goods (t :private-goods)
+  (let [finals (t :finals)
         inputs (t :inputs)
         resources (t :resources)
         labor (t :labors)
         public-goods (t :public-goods)]
     (assoc t
-      :final-prices (vec (repeat private-goods (t :init-final-price)))
+      :final-prices (vec (repeat finals (t :init-final-price)))
       :input-prices (vec (repeat inputs (t :init-intermediate-price)))
       :nature-prices (vec (repeat resources (t :init-nature-price)))
       :labor-prices (vec (repeat labor (t :init-labor-price)))
       :public-goods-prices (vec (repeat public-goods (t :init-public-good-price)))
       :price-deltas (vec (repeat 5 0.05))
-      :pdlist (vec (repeat (+ private-goods inputs resources labor public-goods) 0.05)))))
+      :pdlist (vec (repeat (+ finals inputs resources labor public-goods) 0.05)))))
+
+
+(defn create-ccs [consumer-councils workers-per-council finals public-goods]
+  (let [effort 1
+        cz (/ 0.5 finals)
+        utility-exponents (->> #(+ cz (rand cz))
+                               repeatedly
+                               (take (* finals consumer-councils))
+                               (partition finals))
+        public-good-exponents (->> #(+ cz (rand cz))
+                               repeatedly
+                               (take (* public-goods consumer-councils))
+                               (partition public-goods))]
+    (map #(hash-map :num-workers workers-per-council
+                    :effort effort
+                    :income (* 500 effort workers-per-council)
+                    :cy (+ 6 (rand 9))
+                    :utility-exponents (vec (first %))
+                    :final-demands (vec (repeat 5 0))
+                    :public-good-exponents (vec (last %)))  
+         (partition 2 (interleave utility-exponents public-good-exponents)))))
+
+
+; args to use: 1000 10 4 1
+; TODO: Add id!
+(defn create-ccs-bulk [consumer-councils workers-per-council finals public-goods]
+  (let [effort 1
+        cz (/ 0.5 (+ public-goods finals))
+        utility-exponents (->> #(+ cz (rand cz))
+                               repeatedly
+                               (take (* finals (+ public-goods consumer-councils)))
+                               (partition finals))
+        public-good-exponents (->> #(+ cz (rand cz))
+                                   repeatedly
+                                   (take (* public-goods consumer-councils))
+                                   (partition public-goods))]
+    (map #(hash-map :num-workers workers-per-council
+                    :effort effort
+                    :income (* 500 effort workers-per-council)
+                    :cy (+ 6 (rand 9))
+                    :utility-exponents (vec (first %))
+                    :final-demands (vec (repeat 5 0))
+                    :public-good-demands (vec (repeat 1 0))
+                    :public-good-exponents (vec (last %)))  
+         (partition 2 (interleave utility-exponents public-good-exponents)))))
+
+
+(defn create-ccs-pge [ccs]
+  "Note: I don't add cz to the rand cz function call."
+  (let [consumer-councils 100
+        finals 4
+        public-goods 1
+        cz (/ 0.5 (+ finals public-goods))]
+    (for [cc ccs]
+      (assoc cc :public-good-exponents [(rand cz)]))))
+
+
+(defn create-wcs [worker-councils goods industry]
+  (->> goods
+       (map #(vec (repeat (/ worker-councils 2 (count goods))
+                          {:industry industry :product %})))
+       flatten))
+
+(defn continue-setup-wcs [intermediate-inputs nature-types labor-types wc]
+  "Assumes wc is a map"
+  (letfn [(get-random-subset [input-seq]
+            (->> input-seq
+                 shuffle
+                 (take (rand-nth input-seq))
+                 sort
+                 vec))]
+    (let [production-inputs (vector (get-random-subset intermediate-inputs)
+                                    (get-random-subset nature-types)
+                                    (get-random-subset labor-types))
+          input-exponents (when (pos? (count (first production-inputs)))
+                            (let [xz (/ 0.2 (count (first production-inputs)))]
+                              (vec (take (count (first production-inputs))
+                                         (repeatedly #(+ xz (rand xz)))))))
+          nature-exponents (let [rz (/ 0.2 (count (second production-inputs)))]
+                             (vec (take (count (second production-inputs))
+                                        (repeatedly #(+ 0.05 rz (rand rz))))))
+          labor-exponents (let [lz (/ 0.2 (count (last production-inputs)))]
+                            (vec (take (count (last production-inputs))
+                                       (repeatedly #(+ 0.05 lz (rand lz))))))]
+      (merge wc {:production-inputs production-inputs
+                 :xe 0.05
+                 :c 0.05
+                 :input-exponents input-exponents
+                 :nature-exponents nature-exponents
+                 :labor-exponents labor-exponents
+                 :cq 0.25
+                 :ce 1
+                 :du 7
+                 :s 1
+                 :a 0.25
+                 :effort 0.5
+                 :output 0
+                 :labor-quantities [0]}))))
+
+(defn create-wcs-bulk [num-ind-0 num-ind-1 num-ind-2]
+  (->> (merge (create-wcs num-ind-0 [1 2 3 4] 0)
+              (create-wcs num-ind-1 [1 2 3 4] 1)
+              (create-wcs num-ind-2 [1] 2))
+       flatten
+       (map (partial continue-setup-wcs
+                     [1 2 3 4] ; intermediate-inputs
+                     [1] ; nature-types
+                     [1] ; labor-types
+             ))))
+
+
+(defn calculate-consumer-utility [cc]
+  (let [final-demands (:final-demands cc)
+        utility-exponents (:utility-exponents cc)
+        cy (:cy cc)]
+    (->> (interleave final-demands utility-exponents)
+         (partition 2)
+         (map #(Math/pow (first %) (last %)))
+         (reduce *)
+         (* cy))))
+
+
+(defn update-lorenz-and-gini [ccs]
+  (let [num-people (count ccs)
+        sorted-wealths (sort (mapv calculate-consumer-utility ccs))
+        total-wealth (reduce + sorted-wealths)]
+    (if (pos? total-wealth)
+      (loop [wealth-sum-so-far (nth sorted-wealths 0)
+             index 1
+             gini-index-reserve 0
+             lorenz-points []
+             num-people-counter 0]
+        (if (= num-people-counter (dec num-people))
+          [(conj lorenz-points (* (/ wealth-sum-so-far total-wealth) 100)) gini-index-reserve]
+          (recur (+ wealth-sum-so-far (nth sorted-wealths index))
+                 (inc index)
+                 (+ gini-index-reserve
+                    (/ index num-people)
+                    (- (/ wealth-sum-so-far total-wealth)))
+                 (conj lorenz-points (* (/ wealth-sum-so-far total-wealth) 100))
+                 (inc num-people-counter))))
+      [[] 0])))
 
 
 (defn setup [t _ button-type]
   (let [intermediate-inputs (vec (range 1 (inc (t :inputs))))
         nature-types (vec (range 1 (inc (t :resources))))
         labor-types (vec (range 1 (inc (t :labors))))
-        private-goods (vec (range 1 (inc (t :private-goods))))
-        public-goods-types (vec (range 1 (inc (t :public-goods))))]
+        final-goods (vec (range 1 (inc (t :finals))))
+        public-goods-types (vec (range 1 (inc (t :public-goods))))
+        ccs (create-ccs 100 10 4 1)]
     (-> t
         initialize-prices
         (assoc :price-delta 0.1
                :delta-delay 5
                :natural-resources-supply 1000
                :labor-supply 1000
-               :final-goods private-goods
+               :final-goods final-goods
                :intermediate-inputs intermediate-inputs
                :nature-types nature-types
                :labor-types labor-types
@@ -80,11 +241,57 @@
                :surplus-threshold 0.02
                :ccs (condp = button-type
                       "ex001" ex001/ccs
-                      "ex001pg" ex001pg/ccs)
+                      "ex001pg" ex001pg/ccs
+                      ccs)
                :wcs
                (condp = button-type 
                  "ex001" ex001/wcs
-                 "ex001pg" ex001pg/wcs)))))
+                 "ex001pg" ex001pg/wcs
+                 (->> (merge (create-wcs 80 final-goods 0)
+                             (create-wcs 80 intermediate-inputs 1)
+                             (create-wcs 80 public-goods-types 2))
+                      flatten
+                      (map (partial continue-setup-wcs
+                                    intermediate-inputs
+                                    nature-types
+                                    labor-types))))
+               :lorenz-gini-tuple (update-lorenz-and-gini ccs)))))
+
+
+(defn adjust-exponents [wc]
+  (let [adj-input-exponent (rand-nth [0.01 -0.01])
+        adj-nature-exponent (rand-nth [0.01 -0.01])
+        adj-labor-exponent (rand-nth [0.01 -0.01])
+        input-exponents (:input-exponents wc)
+        labor-exponents (:labor-exponents wc)
+        nature-exponents (:nature-exponents wc)]
+    (merge wc
+           {:input-exponents
+              (mapv (partial + adj-input-exponent) input-exponents)
+            :labor-exponents
+              (mapv (partial + adj-labor-exponent) labor-exponents)
+            :nature-exponents
+              (mapv (partial + adj-nature-exponent) nature-exponents)})))
+
+
+(defn reset-all-but-prices [t _ button-type]
+  (assoc t :ccs ex001/ccs
+           :delta-delay 5
+           :demand-list []
+           :final-surpluses []
+           :input-surpluses []
+           :iteration 0
+           :labor-surpluses []
+           :lorenz-gini-tuple [[] 0]
+           :nature-surpluses []
+           :pdlist [0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5]
+           :price-deltas [0.5 0.5 0.5 0.5]
+           :supply-list []
+           :surplus-list []
+           :threshold-met false
+           :wcs (if (= button-type "no-exponent-adjustment")
+                    ex001/wcs
+                    (mapv adjust-exponents ex001/wcs))))
 
 
 (defn consume [final-goods final-prices public-goods public-goods-prices num-of-ccs cc]
@@ -193,7 +400,6 @@
      :nature-quantities nature-qs
      :labor-quantities labor-qs}))
 
-
 (defn solution-5 [a s c k ps b λ p-i id]
   (let [[b1 b2 b3 b4 b5] b
         [p1 p2 p3 p4 p5] (flatten ps)
@@ -241,7 +447,6 @@
       :nature-quantities nature-qs
       :labor-quantities labor-qs}))
 
-
 (defn solution-7 [a s c k ps b λ p-i]
   (let [[b1 b2 b3 b4 b5 b6 b7] b
         [p1 p2 p3 p4 p5 p6 p7] (flatten ps)
@@ -277,16 +482,24 @@
 
 
 (defn get-deltas [J price-delta pdlist]
+;  (println "get-deltas/J:" J)
+;  (println "get-deltas/price-delta:" price-delta)
+;  (println "get-deltas/pdlist:" pdlist)
+;  (println "get-deltas/nth pdlist J:" (nth pdlist J))
   (letfn [(abs [n] (max n (- n)))]
     (max 0.001 (min price-delta (abs (* price-delta (nth pdlist J)))))))
 
 
 (defn update-surpluses-prices
-  [type inputs prices wcs ccs natural-resources-supply labor-supply price-delta pdlist]
+  [type inputs prices wcs ccs natural-resources-supply labor-supply price-delta pdlist iteration]
   (loop [inputs inputs
          prices prices
          surpluses []
          J 0]
+    ;(println "update-surpluses-prices/inputs:" inputs)
+    ;(println "update-surpluses-prices/prices:" prices)
+    ;(println "update-surpluses-prices/surpluses:" surpluses)
+    ;(println "update-surpluses-prices/J:" J)
     (if (empty? inputs)
       {:prices prices :surpluses surpluses}
       (let [supply (condp = type
@@ -344,13 +557,23 @@
                        "public-goods" 10)
             surplus (- supply demand)
             delta (get-deltas (+ j-offset J) price-delta pdlist)
-            new-delta (cond (<= delta 1)            delta
+            new-delta (cond ; (= type "public-goods") (* (- 0.1) (- demand supply))
+                            (<= delta 1)            delta
                             (= type "final")        delta
                             :else                   (last (take-while (partial < 1)
                                                                       (iterate #(/ % 2.0) delta))))
             new-price (cond (pos? surplus) (* (- 1 new-delta) (nth prices (dec (first inputs))))
                             (neg? surplus) (* (+ 1 new-delta) (nth prices (dec (first inputs))))
                             :else (nth prices (dec (first inputs))))]
+;  (println "supply:" supply)
+; (= type "public-goods") (* (- 0.1) (- demand supply))
+;  (println "demand:" demand)
+;  (println "surplus:" surplus)
+;  (println "type:" type)
+;  (println "J:" J)
+;  (println "delta:" delta)
+;  (println "new-delta:" new-delta)
+;  (println "===")
         (recur (rest inputs)
                (assoc prices J new-price)
                (conj surpluses surplus)
@@ -381,6 +604,7 @@
           b-input (wc :input-exponents)
           b-labor (wc :labor-exponents)
           b-nature (wc :nature-exponents)
+          ; b-pg (wc :public-good-exponents)
           b (concat b-input b-nature b-labor)
           λ (get-lambda-o wc final-prices input-prices public-goods-prices)
           p-i (wc :production-inputs)]
@@ -398,7 +622,6 @@
 (defn mean [L]
   (/ (reduce + L) (count L)))
 
-
 (defn update-price-deltas [supply-list demand-list surplus-list]
   (let [supply-list-means (map mean supply-list)
         demand-list-means (map mean demand-list)
@@ -407,10 +630,24 @@
                                           demand-list-means)
                               (partition 2)
                               (map mean))]
+;    (println "update-price-deltas/supply-list-means:" supply-list-means)
+;    (println "update-price-deltas/demand-list-means:" demand-list-means)
+;    (println "update-price-deltas/surplus-list-means:" surplus-list-means)
+;    (println "update-price-deltas/avg-s-and-d:" averaged-s-and-d)
+;    (println "update-price-deltas/interleave:" (interleave surplus-list-means averaged-s-and-d))
     (->> (interleave surplus-list-means averaged-s-and-d)
          (partition 2)
          (mapv #(Math/abs (/ (first %) (last %)))))))
 
+(defn check-sum-exponents [cc]
+  "are the exponents for a given cc totalling less than 1?"
+  (let [utility-exponents (:utility-exponents cc)
+        public-good-exponents (:public-good-exponents cc)]
+    (->> public-good-exponents
+         (concat utility-exponents)
+         (apply +)
+         (> 1))))
+; useful: (frequencies (map check-sum-exponents (create-ccs-bulk 10000 10 4 1)))
 
 (defn update-pdlist [supply-list demand-list surplus-list]
   (let [averaged-s-and-d (->> (interleave (flatten supply-list)
@@ -495,14 +732,15 @@
                               (t :ccs))
                     :wcs (map (partial proposal (t :final-prices) (t :input-prices) (t :nature-prices) (t :labor-prices) (t :public-goods-prices))
                               (t :wcs)))
-        {final-prices :prices, final-surpluses :surpluses} (update-surpluses-prices "final" (t2 :final-goods) (t2 :final-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
-        {input-prices :prices, input-surpluses :surpluses} (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :input-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
-        {nature-prices :prices, nature-surpluses :surpluses} (update-surpluses-prices "nature" (t2 :nature-types) (t2 :nature-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
-        {labor-prices :prices, labor-surpluses :surpluses} (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
-        {public-good-prices :prices, public-good-surpluses :surpluses} (update-surpluses-prices "public-goods" (t2 :public-goods-types) (t2 :public-goods-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
+        {final-prices :prices, final-surpluses :surpluses} (update-surpluses-prices "final" (t2 :final-goods) (t2 :final-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist) (inc (:iteration t2)))
+        {input-prices :prices, input-surpluses :surpluses} (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :input-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist) (inc (:iteration t2)))
+        {nature-prices :prices, nature-surpluses :surpluses} (update-surpluses-prices "nature" (t2 :nature-types) (t2 :nature-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist) (inc (:iteration t2)))
+        {labor-prices :prices, labor-surpluses :surpluses} (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist) (inc (:iteration t2)))
+        {public-good-prices :prices, public-good-surpluses :surpluses} (update-surpluses-prices "public-goods" (t2 :public-goods-types) (t2 :public-goods-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist) (inc (:iteration t2)))
         surplus-list (vector final-surpluses input-surpluses nature-surpluses labor-surpluses public-good-surpluses)
         supply-list (get-supply-list t2)
         demand-list (get-demand-list t2)
+        new-lorenz-and-gini-tuple (update-lorenz-and-gini (:ccs t2))
         new-price-deltas (update-price-deltas supply-list demand-list surplus-list)
         new-pdlist (update-pdlist supply-list demand-list surplus-list)
         iteration (inc (:iteration t2))]
@@ -521,6 +759,7 @@
               :supply-list supply-list
               :price-deltas new-price-deltas
               :pdlist new-pdlist
+              :lorenz-gini-tuple new-lorenz-and-gini-tuple
               :iteration iteration)))
 
 
@@ -600,6 +839,14 @@
 ;; -------------------------
 ;; Views-
 
+#_(defn setup-random-button []
+  [:input {:type "button" :value "Setup Random"
+           :on-click #(swap! globals setup globals "random")}])
+
+#_(defn setup-ex001-button []
+  [:input {:type "button" :value "Setup Ex001"
+           :on-click #(swap! globals setup globals "ex001")}])
+
 (defn setup-ex001-button-pg []
   [:input {:type "button" :value "Setup Ex001 w/Public Goods"
            :on-click #(swap! globals setup globals "ex001pg")}])
@@ -608,21 +855,48 @@
   [:input {:type "button" :value "Iterate and check"
            :on-click #(swap! globals proceed globals)}])
 
+#_(defn reset-all-but-prices-button-no-exp []
+  [:input {:type "button" :value "Reset Ex001: All but prices, no exp. adj."
+           :on-click #(swap! globals reset-all-but-prices globals "no-exponent-adjustment")}])
+
+#_(defn reset-all-but-prices-button-with-exp []
+  [:input {:type "button" :value "Reset Ex001: All but prices, with ex. adj."
+           :on-click #(swap! globals reset-all-but-prices globals "random-exponent-adjustment")}])
+
+
+#_[:iteration :demand-list :pdlist :input-prices :nature-prices :labor-prices :final-prices :supply-list :threshold-met :nature-surpluses :natural-resources-supply :nature-types :surplus-threshold] 
+#_[:final-prices :threshold-met :delta-delay :price-delta :iteration :final-surpluses :price-deltas :pdlist :input-prices :nature-prices :labor-prices :input-surpluses :nature-surpluses :labor-surpluses :threshold-met :supply-list :demand-list :surplus-list :threshold :surplus-threshold :public-good-prices :public-good-surpluses]
 (defn show-globals []
     (let [keys-to-show [:final-prices :threshold-met :iteration :price-deltas :input-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist]
         ]
      [:div " "
+           #_(setup-random-button)
+           "  "
+           #_(setup-ex001-button)
+           "  "
            (setup-ex001-button-pg)
            "  "
            (iterate-button)
            "  "
+           #_(reset-all-but-prices-button-no-exp)
+           "  "
+           #_(reset-all-but-prices-button-with-exp)
            [:p]
            [:table
             (map (fn [x] [:tr [:td (str (first x))]
                           [:td (str (second x))]])
                  (sort (select-keys @globals keys-to-show))
                  )]
+           #_[:p]
+;           (clojure.string/join " " (sort (keys @globals)))
+;           [:p]
+;            (println "@globals:" @globals)
+           #_[:table
+            (map (fn [x] [:tr [:td (str (first x))]
+                          [:td (str (second x))]])
+                 (sort @globals))]
             [:p]
+;            (str (count (:wcs @globals)))
      ]))
 
 
