@@ -8,23 +8,26 @@
               [goog.string.format]))
 
 (def globals
-  (atom {:init-final-price        100
+  (atom {:init-private-good-price 100
          :init-intermediate-price 100
          :init-labor-price        150
          :init-nature-price       150
          :init-public-good-price  1000
+         :init-pollutant-price    100
 
          :private-goods             4
          :inputs                    4
          :resources                 1
          :labors                    1
          :public-goods              1
+         :num-pollutants            1
 
-         :final-prices             []
-         :input-prices             []
+         :private-good-prices      []
+         :intermediate-good-prices []
          :labor-prices             []
          :nature-prices            []
          :public-goods-prices      []
+         :pollutant-prices         []
 
          :final-surpluses          []
          :input-surpluses          []
@@ -51,8 +54,8 @@
         labor (t :labors)
         public-goods (t :public-goods)]
     (assoc t
-      :final-prices (vec (repeat private-goods (t :init-final-price)))
-      :input-prices (vec (repeat inputs (t :init-intermediate-price)))
+      :private-good-prices (vec (repeat private-goods (t :init-private-good-price)))
+      :intermediate-good-prices (vec (repeat inputs (t :init-intermediate-price)))
       :nature-prices (vec (repeat resources (t :init-nature-price)))
       :labor-prices (vec (repeat labor (t :init-labor-price)))
       :public-goods-prices (vec (repeat public-goods (t :init-public-good-price)))
@@ -87,14 +90,14 @@
                  "ex001pg" ex001pg/wcs)))))
 
 
-(defn consume [final-goods final-prices public-goods public-goods-prices num-of-ccs cc]
+(defn consume [final-goods private-good-prices public-goods public-goods-prices num-of-ccs cc]
   (let [utility-exponents (cc :utility-exponents)
         public-good-exponents (cc :public-good-exponents)
         income (cc :income)
         final-demands (mapv (fn [final-good]
                              (/ (* income (nth utility-exponents (dec final-good)))
                                 (* (apply + (concat utility-exponents public-good-exponents))
-                                   (nth final-prices (dec final-good)))))
+                                   (nth private-good-prices (dec final-good)))))
                            final-goods)
         public-good-demands (mapv (fn [public-good]
                                     (/ (* income (nth public-good-exponents (dec public-good)))
@@ -357,15 +360,15 @@
                (inc J))))))
 
 
-(defn proposal [final-prices input-prices nature-prices labor-prices public-goods-prices wc]
+(defn proposal [private-good-prices input-prices nature-prices labor-prices public-goods-prices wc]
   (letfn [(count-inputs [w]
             ((comp count flatten :production-inputs) w))
           (get-input-prices [[indexes prices]]
             (map #(nth prices (dec %)) indexes))
-          (get-lambda-o [w final-prices input-prices public-goods-prices]
+          (get-lambda-o [w private-good-prices input-prices public-goods-prices]
             (let [industry (:industry w)
                   product (:product w)]
-              (cond (= 0 industry) (nth final-prices (dec product))
+              (cond (= 0 industry) (nth private-good-prices (dec product))
                     (= 1 industry) (nth input-prices (dec product))
                     (= 2 industry) (nth public-goods-prices (dec product)))))]
     (let [prices-and-indexes (->> (vector input-prices nature-prices labor-prices)
@@ -382,7 +385,7 @@
           b-labor (wc :labor-exponents)
           b-nature (wc :nature-exponents)
           b (concat b-input b-nature b-labor)
-          λ (get-lambda-o wc final-prices input-prices public-goods-prices)
+          λ (get-lambda-o wc private-good-prices input-prices public-goods-prices)
           p-i (wc :production-inputs)]
       (condp = input-count-r
         1 (merge wc (solution-1 a s c k ps b λ p-i))
@@ -491,12 +494,12 @@
 
 
 (defn iterate-plan [t]
-  (let [t2 (assoc t :ccs (map (partial consume (t :final-goods) (t :final-prices) (t :public-goods-types) (t :public-goods-prices) (count (t :ccs)))
+  (let [t2 (assoc t :ccs (map (partial consume (t :final-goods) (t :private-good-prices) (t :public-goods-types) (t :public-goods-prices) (count (t :ccs)))
                               (t :ccs))
-                    :wcs (map (partial proposal (t :final-prices) (t :input-prices) (t :nature-prices) (t :labor-prices) (t :public-goods-prices))
+                    :wcs (map (partial proposal (t :private-good-prices) (t :intermediate-good-prices) (t :nature-prices) (t :labor-prices) (t :public-goods-prices))
                               (t :wcs)))
-        {final-prices :prices, final-surpluses :surpluses} (update-surpluses-prices "final" (t2 :final-goods) (t2 :final-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
-        {input-prices :prices, input-surpluses :surpluses} (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :input-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
+        {private-good-prices :prices, final-surpluses :surpluses} (update-surpluses-prices "final" (t2 :final-goods) (t2 :private-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
+        {input-prices :prices, input-surpluses :surpluses} (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :intermediate-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
         {nature-prices :prices, nature-surpluses :surpluses} (update-surpluses-prices "nature" (t2 :nature-types) (t2 :nature-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
         {labor-prices :prices, labor-surpluses :surpluses} (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
         {public-good-prices :prices, public-good-surpluses :surpluses} (update-surpluses-prices "public-goods" (t2 :public-goods-types) (t2 :public-goods-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
@@ -506,9 +509,9 @@
         new-price-deltas (update-price-deltas supply-list demand-list surplus-list)
         new-pdlist (update-pdlist supply-list demand-list surplus-list)
         iteration (inc (:iteration t2))]
-    (assoc t2 :final-prices final-prices
+    (assoc t2 :private-good-prices private-good-prices
               :final-surpluses final-surpluses
-              :input-prices input-prices
+              :intermediate-good-prices input-prices
               :input-surpluses input-surpluses
               :nature-prices nature-prices
               :nature-surpluses nature-surpluses
@@ -609,7 +612,7 @@
            :on-click #(swap! globals proceed globals)}])
 
 (defn show-globals []
-    (let [keys-to-show [:final-prices :threshold-met :iteration :price-deltas :input-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist]
+    (let [keys-to-show [:private-good-prices :threshold-met :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist]
         ]
      [:div " "
            (setup-ex001-button-pg)
