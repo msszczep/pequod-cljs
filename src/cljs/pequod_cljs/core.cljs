@@ -47,6 +47,96 @@
          :labor-supply             0}))
 
 
+(defn create-ccs-bulk [consumer-councils workers-per-council finals public-goods num-pollutants]
+  (let [effort 1
+        cz (/ 0.5 (+ public-goods finals))
+        utility-exponents (->> #(+ cz (rand cz))
+                               repeatedly
+                               (take (* finals (+ public-goods consumer-councils)))
+                               (partition finals))
+        public-good-exponents (->> #(+ cz (rand cz))
+                                   repeatedly
+                                   (take (* public-goods consumer-councils))
+                                   (partition public-goods))
+        pollution-supply-coefficient (->> #(+ cz (rand cz))
+                                         repeatedly
+                                         (take num-pollutants))]
+    (map #(hash-map :num-workers workers-per-council
+                    :effort effort
+                    :income (* 500 effort workers-per-council)
+                    :cy (+ 6 (rand 9))
+                    :utility-exponents (vec (first %))
+                    :final-demands (vec (repeat 5 0))
+                    :public-good-demands (vec (repeat 1 0))
+                    :public-good-exponents (vec (last %))
+                    :pollution-supply-coefficient (vec pollution-supply-coefficient))
+         (partition 2 (interleave utility-exponents public-good-exponents)))))
+
+
+; TODO: Simplify n?
+(defn create-wcs [worker-councils goods industry]
+  "# of wcs created is (/ (count wcs) 2 (count goods)"
+  (let [n (/ worker-councils 2 (count goods))]
+    (->> goods
+        (map #(vec (repeat n {:industry industry :product %})))
+        flatten)))
+
+
+(defn continue-setup-wcs [intermediate-inputs nature-types labor-types pollutant-types wc]
+  "Assumes wc is a map; change 0.2 below to some other value?"
+  (letfn [(get-random-subset [input-seq]
+            (->> input-seq
+                 shuffle
+                 (take (rand-nth input-seq))
+                 sort
+                 vec))]
+    (let [production-inputs (vector (get-random-subset intermediate-inputs)
+                                    (get-random-subset nature-types)
+                                    (get-random-subset labor-types)
+                                    (get-random-subset pollutant-types))
+          input-exponents (when (pos? (count (first production-inputs)))
+                            (let [xz (/ 0.2 (count (first production-inputs)))]
+                              (vec (take (count (first production-inputs))
+                                         (repeatedly #(+ xz (rand xz)))))))
+          nature-exponents (let [rz (/ 0.2 (count (second production-inputs)))]
+                             (vec (take (count (second production-inputs))
+                                        (repeatedly #(+ 0.05 rz (rand rz))))))
+          labor-exponents (let [lz (/ 0.2 (count (nth production-inputs 2)))]
+                            (vec (take (count (nth production-inputs 2))
+                                       (repeatedly #(+ 0.05 lz (rand lz))))))
+          pollutant-exponents (let [pz (/ 0.2 (count (last production-inputs)))]
+                                (vec (take (count (last production-inputs))
+                                           (repeatedly #(+ 0.05 pz (rand pz))))))]
+      (merge wc {:production-inputs production-inputs
+                 :xe 0.05
+                 :c 0.05
+                 :input-exponents input-exponents
+                 :nature-exponents nature-exponents
+                 :labor-exponents labor-exponents
+                 :pollutant-exponents pollutant-exponents
+                 :cq 0.25
+                 :ce 1
+                 :du 7
+                 :s 1
+                 :a 0.25
+                 :effort 0.5
+                 :output 0
+                 :labor-quantities [0]}))))
+
+
+(defn create-wcs-bulk [num-ind-0 num-ind-1 num-ind-2]
+  (->> (merge (create-wcs num-ind-0 [1 2 3 4] 0)
+              (create-wcs num-ind-1 [1 2 3 4] 1)
+              (create-wcs num-ind-2 [1] 2))
+       flatten
+       (map (partial continue-setup-wcs
+                     [1 2 3 4] ; intermediate-inputs
+                     [1] ; nature-types
+                     [1] ; labor-types
+                     [1] ; pollutant-types
+             ))))
+
+
 (defn initialize-prices [t]
   (let [private-goods (t :private-goods)
         inputs (t :inputs)
@@ -547,7 +637,7 @@
           im-goods-check (check-producers (:input-surpluses t) input-producers (:intermediate-inputs t))
           nature-check (check-supplies (:nature-surpluses t) (:natural-resources-supply t) (:nature-types t) surplus-threshold)
           labor-check (check-supplies (:labor-surplus t) (:labor-supply t) (:labor-types t) surplus-threshold)
-          public-goods-check (check-producers (:public-good-surpluses t) public-good-producers (:public-goods-types t) surplus-threshold)]
+          public-goods-check (check-producers (:public-good-surpluses t) public-good-producers (:public-goods-types t))]
       (every? nil? [final-goods-check im-goods-check nature-check labor-check public-goods-check]))))
 
 
