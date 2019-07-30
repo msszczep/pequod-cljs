@@ -486,8 +486,7 @@
 ;  (println "get-deltas/price-delta:" price-delta)
 ;  (println "get-deltas/pdlist:" pdlist)
 ;  (println "get-deltas/nth pdlist J:" (nth pdlist J))
-  (letfn [(abs [n] (max n (- n)))]
-    (max 0.001 (min price-delta (abs (* price-delta (nth pdlist J)))))))
+  (max 0.001 (min price-delta (Math/abs (* price-delta (nth pdlist J))))))
 
 
 (defn update-surpluses-prices
@@ -639,15 +638,25 @@
          (partition 2)
          (mapv #(Math/abs (/ (first %) (last %)))))))
 
-(defn check-sum-exponents [cc]
+(defn check-cc-sum-exponents [cc]
   "are the exponents for a given cc totalling less than 1?"
   (let [utility-exponents (:utility-exponents cc)
-        public-good-exponents (:public-good-exponents cc)]
-    (->> public-good-exponents
-         (concat utility-exponents)
+        public-good-exponents (:public-good-exponents cc)
+        pollution-supply-coefficient (:pollution-supply-coefficient cc)
+        non-pollution-exponents-sum (apply + (concat public-good-exponents utility-exponents))]
+    (and (< non-pollution-exponents-sum 1)
+         (> non-pollution-exponents-sum (Math/abs (first pollution-supply-coefficient))))))
+
+; useful: (frequencies (map check-sum-exponents (create-ccs-bulk 10000 10 4 1)))
+
+(defn check-wc-sum-exponents [wc]
+  (let [e1 (:input-exponents wc)
+        e2 (:nature-exponents wc)
+        e3 (:labor-exponents wc)
+        e4 (:pollutant-exponents wc)]
+    (->> (concat e1 e2 e3 e4)
          (apply +)
          (> 1))))
-; useful: (frequencies (map check-sum-exponents (create-ccs-bulk 10000 10 4 1)))
 
 (defn update-pdlist [supply-list demand-list surplus-list]
   (let [averaged-s-and-d (->> (interleave (flatten supply-list)

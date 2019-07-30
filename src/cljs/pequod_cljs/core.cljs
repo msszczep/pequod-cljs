@@ -1,3 +1,4 @@
+
 (ns pequod-cljs.core
     (:require [reagent.core :as reagent :refer [atom]]
               [secretary.core :as secretary :include-macros true]
@@ -49,7 +50,7 @@
 
 (defn create-ccs-bulk [consumer-councils workers-per-council finals public-goods num-pollutants]
   (let [effort 1
-        cz (/ 0.5 (+ public-goods finals))
+        cz (/ 0.5 (+ public-goods finals num-pollutants))
         utility-exponents (->> #(+ cz (rand cz))
                                repeatedly
                                (take (* finals (+ public-goods consumer-councils)))
@@ -60,7 +61,8 @@
                                    (partition public-goods))
         pollution-supply-coefficient (->> #(+ cz (rand cz))
                                          repeatedly
-                                         (take num-pollutants))]
+                                         (take num-pollutants)
+                                         (map -))]
     (map #(hash-map :num-workers workers-per-council
                     :effort effort
                     :income (* 500 effort workers-per-council)
@@ -97,16 +99,16 @@
           input-exponents (when (pos? (count (first production-inputs)))
                             (let [xz (/ 0.2 (count (first production-inputs)))]
                               (vec (take (count (first production-inputs))
-                                         (repeatedly #(+ xz (rand xz)))))))
+                                         (repeatedly #(rand xz))))))
           nature-exponents (let [rz (/ 0.2 (count (second production-inputs)))]
                              (vec (take (count (second production-inputs))
-                                        (repeatedly #(+ 0.05 rz (rand rz))))))
+                                        (repeatedly #(rand rz)))))
           labor-exponents (let [lz (/ 0.2 (count (nth production-inputs 2)))]
                             (vec (take (count (nth production-inputs 2))
-                                       (repeatedly #(+ 0.05 lz (rand lz))))))
+                                       (repeatedly #(rand lz)))))
           pollutant-exponents (let [pz (/ 0.2 (count (last production-inputs)))]
                                 (vec (take (count (last production-inputs))
-                                           (repeatedly #(+ 0.05 pz (rand pz))))))]
+                                           (repeatedly #(rand pz)))))]
       (merge wc {:production-inputs production-inputs
                  :xe 0.05
                  :c 0.05
@@ -142,15 +144,17 @@
         inputs (t :inputs)
         resources (t :resources)
         labor (t :labors)
-        public-goods (t :public-goods)]
+        public-goods (t :public-goods)
+        num-pollutants (t :num-pollutants)]
     (assoc t
       :private-good-prices (vec (repeat private-goods (t :init-private-good-price)))
       :intermediate-good-prices (vec (repeat inputs (t :init-intermediate-price)))
       :nature-prices (vec (repeat resources (t :init-nature-price)))
       :labor-prices (vec (repeat labor (t :init-labor-price)))
       :public-goods-prices (vec (repeat public-goods (t :init-public-good-price)))
-      :price-deltas (vec (repeat 5 0.05))
-      :pdlist (vec (repeat (+ private-goods inputs resources labor public-goods) 0.05)))))
+      :pollutant-prices (vec (repeat num-pollutants (t :init-pollutant-price)))
+      :price-deltas (vec (repeat 6 0.05))
+      :pdlist (vec (repeat (+ private-goods inputs resources labor public-goods num-pollutants) 0.05)))))
 
 
 (defn setup [t _ button-type]
@@ -158,7 +162,8 @@
         nature-types (vec (range 1 (inc (t :resources))))
         labor-types (vec (range 1 (inc (t :labors))))
         private-goods (vec (range 1 (inc (t :private-goods))))
-        public-goods-types (vec (range 1 (inc (t :public-goods))))]
+        public-goods-types (vec (range 1 (inc (t :public-goods))))
+        pollutant-types (vec (range 1 (inc (t :num-pollutants))))]
     (-> t
         initialize-prices
         (assoc :price-delta 0.1
@@ -170,6 +175,7 @@
                :nature-types nature-types
                :labor-types labor-types
                :public-goods-types public-goods-types
+               :pollutant-types pollutant-types
                :surplus-threshold 0.02
                :ccs (condp = button-type
                       "ex001" ex001/ccs
