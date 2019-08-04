@@ -2,8 +2,9 @@
     (:require [reagent.core :as reagent :refer [atom]]
               [secretary.core :as secretary :include-macros true]
               [accountant.core :as accountant]
-              [pequod-cljs.ex001data :as ex001]
-              [pequod-cljs.ex001ppgdata :as ex001pg]
+;              [pequod-cljs.ex001data :as ex001]
+;              [pequod-cljs.ex001ppgdata :as ex001pg]
+              [pequod-cljs.ex1dot3 :as ex1dot3]
               [goog.string :as gstring]
               [goog.string.format]))
 
@@ -62,8 +63,9 @@
                                    (partition public-goods))
         pollution-supply-coefficients (->> #(+ cz (rand cz))
                                          repeatedly
-                                         (take num-pollutants)
-                                         (map -))]
+                                         (take (* num-pollutants consumer-councils))
+                                         (map -)
+                                         (partition num-pollutants))]
     (map #(hash-map :num-workers workers-per-council
                     :effort effort
                     :income (* 500 effort workers-per-council)
@@ -72,7 +74,7 @@
                     :final-demands (vec (repeat 5 0))
                     :public-good-demands (vec (repeat 1 0))
                     :public-good-exponents (vec (second %))
-                    :pollution-supply-coefficients (vec last %))
+                    :pollution-supply-coefficients (vec (last %)))
          (partition 3 (interleave utility-exponents public-good-exponents pollution-supply-coefficients)))))
 
 
@@ -177,11 +179,12 @@
                :public-goods-types public-goods-types
                :pollutant-types pollutant-types
                :surplus-threshold 0.02
-               :ccs (condp = button-type
+               :ccs ex1dot3/ccs
+                    #_(condp = button-type
                       "ex001" ex001/ccs
                       "ex001pg" ex001pg/ccs)
-               :wcs
-               (condp = button-type 
+               :wcs ex1dot3/wcs
+               #_(condp = button-type 
                  "ex001" ex001/wcs
                  "ex001pg" ex001pg/wcs)))))
 
@@ -203,7 +206,7 @@
                                              num-of-ccs))))
                              public-goods)
         pollutant-supply (mapv (fn [pollutant]
-                                    (/ (* income (nth pollution-supply-coefficients (dec pollutants)))
+                                    (/ (* income (nth pollution-supply-coefficients (dec pollutant)))
                                        (* (apply + (concat utility-exponents public-good-exponents pollution-supply-coefficients))
                                           (/ (nth pollutant-prices (dec pollutant))
                                              num-of-ccs))))
@@ -268,7 +271,7 @@
      :pollutant-demand pollutant-d}))
 
 
-(defn solution-3 [a s c k ps b λ p-i id]
+(defn solution-3 [a s c k ps b λ p-i]
   (let [[b1 b2 b3] b
         [p1 p2 p3] (flatten ps)
         output (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (- (* b1 k (Math/log b1))) (- (* b2 k (Math/log b2))) (- (* b3 k (Math/log b3))) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log λ))) (- (* b2 k (Math/log λ))) (- (* b3 k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3))))
@@ -288,7 +291,7 @@
      :pollutant-demand pollutant-d}))
 
 
-(defn solution-4 [a s c k ps b λ p-i id]
+(defn solution-4 [a s c k ps b λ p-i]
   (let [[b1 b2 b3 b4] b
         [p1 p2 p3 p4] (flatten ps)
         output (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (- (* b1 k (Math/log b1))) (- (* b2 k (Math/log b2))) (- (* b3 k (Math/log b3))) (- (* b4 k (Math/log b4))) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* b4 k (Math/log p4)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log λ))) (- (* b2 k (Math/log λ))) (- (* b3 k (Math/log λ))) (- (* b4 k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4))))
@@ -310,7 +313,7 @@
      :pollutant-demand pollutant-d}))
 
 
-(defn solution-5 [a s c k ps b λ p-i id]
+(defn solution-5 [a s c k ps b λ p-i]
   (let [[b1 b2 b3 b4 b5] b
         [p1 p2 p3 p4 p5] (flatten ps)
         output (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (- (* b1 k (Math/log b1))) (- (* b2 k (Math/log b2))) (- (* b3 k (Math/log b3))) (- (* b4 k (Math/log b4))) (- (* b5 k (Math/log b5))) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* b4 k (Math/log p4)) (* b5 k (Math/log p5)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log λ))) (- (* b2 k (Math/log λ))) (- (* b3 k (Math/log λ))) (- (* b4 k (Math/log λ))) (- (* b5 k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5))))
@@ -334,7 +337,7 @@
       :pollutant-demand pollutant-d}))
 
 
-(defn solution-6 [a s c k ps b λ p-i id]
+(defn solution-6 [a s c k ps b λ p-i]
   (let [[b1 b2 b3 b4 b5 b6] b
         [p1 p2 p3 p4 p5 p6] (flatten ps)
         output (Math/pow Math/E (- (/ (+ (* k (Math/log a)) (* b1 k (Math/log b1)) (* b2 k (Math/log b2)) (* b3 k (Math/log b3)) (* b4 k (Math/log b4)) (* b5 k (Math/log b5)) (* b6 k (Math/log b6)) (* c (Math/log c)) (- (* c (Math/log k))) (- (* b1 k (Math/log p1))) (- (* b2 k (Math/log p2))) (- (* b3 k (Math/log p3))) (- (* b4 k (Math/log p4))) (- (* b5 k (Math/log p5))) (- (* b6 k (Math/log p6)))  (- (* c (Math/log s))) (* c (Math/log λ)) (* b1 k (Math/log λ)) (* b2 k (Math/log λ)) (* b3 k (Math/log λ)) (* b4 k (Math/log λ)) (* b5 k (Math/log λ)) (* b6 k (Math/log λ))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5) (* k b6)))))
@@ -502,7 +505,7 @@
           s (wc :s)
           c (wc :c)
           k (wc :du)
-          wcid (wc :id)
+;          wcid (wc :id)
           ps (into [] (flatten (map get-input-prices prices-and-indexes)))
           b-input (wc :input-exponents)
           b-labor (wc :labor-exponents)
@@ -514,11 +517,11 @@
       (condp = input-count-r
         1 (merge wc (solution-1 a s c k ps b λ p-i))
         2 (merge wc (solution-2 a s c k ps b λ p-i))
-        3 (merge wc (solution-3 a s c k ps b λ p-i wcid))
-        4 (merge wc (solution-4 a s c k ps b λ p-i wcid))
-        5 (merge wc (solution-5 a s c k ps b λ p-i wcid))
-        6 (merge wc (solution-6 a s c k ps b λ p-i wcid))
-        7 (merge wc (solution-7 a s c k ps b λ p-i wcid))
+        3 (merge wc (solution-3 a s c k ps b λ p-i))
+        4 (merge wc (solution-4 a s c k ps b λ p-i))
+        5 (merge wc (solution-5 a s c k ps b λ p-i))
+        6 (merge wc (solution-6 a s c k ps b λ p-i))
+        7 (merge wc (solution-7 a s c k ps b λ p-i))
         (str "unexpected input-count value: " input-count-r)))))
 
 
@@ -593,7 +596,8 @@
                                  :wcs
                                  (map :pollutant-demand)
                                  flatten
-                                 (apply +))]
+                                 (apply +)
+                                 vector)]
       [final-demands
        input-quantity
        [(sum-input-quantities all-quantities 1 :nature-quantity)]
@@ -623,14 +627,14 @@
                                 (map :output)
                                 (reduce +)
                                 vector)
-         pollutant-supply (/ (:pollutant-supply t) (count (:ccs t)))]
+         pollutant-supply (vector (/ (:pollutant-supply t) (count (:ccs t))))]
      (vector final-producers input-producers natural-resources-supply labor-supply public-good-supply pollutant-supply))))
 
 
 (defn iterate-plan [t]
-  (let [t2 (assoc t :ccs (map (partial consume (t :final-goods) (t :private-good-prices) (t :public-goods-types) (t :public-goods-prices) (count (t :ccs)))
+  (let [t2 (assoc t :ccs (map (partial consume (t :final-goods) (t :private-good-prices) (t :public-goods-types) (t :public-goods-prices) (t :pollutant-types) (t :pollutant-prices) (count (t :ccs)))
                               (t :ccs))
-                    :wcs (map (partial proposal (t :private-good-prices) (t :intermediate-good-prices) (t :nature-prices) (t :labor-prices) (t :public-goods-prices))
+                    :wcs (map (partial proposal (t :private-good-prices) (t :intermediate-good-prices) (t :nature-prices) (t :labor-prices) (t :public-goods-prices) (t :pollutant-prices))
                               (t :wcs)))
         {private-good-prices :prices, final-surpluses :surpluses} (update-surpluses-prices "final" (t2 :final-goods) (t2 :private-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :pollutant-supply) (t2 :price-delta) (t2 :pdlist))
         {input-prices :prices, input-surpluses :surpluses} (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :intermediate-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :pollutant-supply) (t2 :price-delta) (t2 :pdlist))
@@ -686,7 +690,9 @@
           labor-check (check-supplies (:labor-surplus t) (:labor-supply t) (:labor-types t) surplus-threshold)
           public-goods-check (check-producers (:public-good-surpluses t) public-good-producers (:public-goods-types t))
           pollutant-check (check-supplies (:pollutant-surpluses t) (:pollutant-supply t) (:pollutant-types t) surplus-threshold)]
-      (every? nil? [final-goods-check im-goods-check nature-check labor-check public-goods-check pollutant-check]))))
+      [final-goods-check im-goods-check nature-check labor-check public-goods-check pollutant-check]
+      ;(every? nil? [final-goods-check im-goods-check nature-check labor-check public-goods-check pollutant-check])
+      )))
 
 
 (defn total-surplus [surplus-list]
@@ -741,19 +747,23 @@
 ;; -------------------------
 ;; Views-
 
-(defn setup-ex001-button-pg []
+#_(defn setup-ex001-button-pg []
   [:input {:type "button" :value "Setup Ex001 w/Public Goods"
            :on-click #(swap! globals setup globals "ex001pg")}])
+
+(defn setup-1dot3 []
+  [:input {:type "button" :value "Setup"
+           :on-click #(swap! globals setup globals "ex1dot3")}])
 
 (defn iterate-button []
   [:input {:type "button" :value "Iterate and check"
            :on-click #(swap! globals proceed globals)}])
 
 (defn show-globals []
-    (let [keys-to-show [:private-good-prices :threshold-met :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist]
+    (let [keys-to-show [:private-good-prices :threshold-met :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :pollutant-prices]
         ]
      [:div " "
-           (setup-ex001-button-pg)
+           (setup-1dot3)
            "  "
            (iterate-button)
            "  "
@@ -761,7 +771,8 @@
            [:table
             (map (fn [x] [:tr [:td (str (first x))]
                           [:td (str (second x))]])
-                 (sort (select-keys @globals keys-to-show))
+                 ;(sort (select-keys @globals keys-to-show))
+                   (sort @globals)
                  )]
             [:p]
      ]))
