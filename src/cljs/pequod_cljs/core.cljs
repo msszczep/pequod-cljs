@@ -172,6 +172,7 @@
                :delta-delay 5
                :natural-resources-supply 1000
                :labor-supply 1000
+               :pollutant-supply 1000
                :final-goods private-goods
                :intermediate-inputs intermediate-inputs
                :nature-types nature-types
@@ -194,26 +195,36 @@
         public-good-exponents (cc :public-good-exponents)
         pollution-supply-coefficients (cc :pollution-supply-coefficients)
         income (cc :income)
+        all-exponents (->> pollution-supply-coefficients
+                           (concat utility-exponents public-good-exponents)
+                           (map #(Math/abs %)))
         final-demands (mapv (fn [final-good]
-                             (/ (* income (nth utility-exponents (dec final-good)))
-                                (* (apply + (concat utility-exponents public-good-exponents pollution-supply-coefficients))
-                                   (nth private-good-prices (dec final-good)))))
-                           final-goods)
+                              (/ (* income (nth utility-exponents (dec final-good)))
+                                 (* (apply + all-exponents)
+                                    (nth private-good-prices (dec final-good)))))
+                            final-goods)
         public-good-demands (mapv (fn [public-good]
                                     (/ (* income (nth public-good-exponents (dec public-good)))
-                                       (* (apply + (concat utility-exponents public-good-exponents pollution-supply-coefficients))
+                                       (* (apply + all-exponents)
                                           (/ (nth public-goods-prices (dec public-good))
                                              num-of-ccs))))
-                             public-goods)
+                                  public-goods)
         pollutant-supply (mapv (fn [pollutant]
-                                    (/ (* income (nth pollution-supply-coefficients (dec pollutant)))
-                                       (* (apply + (concat utility-exponents public-good-exponents pollution-supply-coefficients))
-                                          (/ (nth pollutant-prices (dec pollutant))
-                                             num-of-ccs))))
-                             pollutants)]
+                                 (/ (* income (nth pollution-supply-coefficients (dec pollutant)))
+                                    (* (apply + all-exponents)
+                                       (/ (nth pollutant-prices (dec pollutant))
+                                          num-of-ccs))))
+                               pollutants)]
+    (println "pollutant-supply:")
+    (println pollutant-supply)
+    (println "pollutant-prices:")
+    (println pollutant-prices)
     (assoc cc :final-demands final-demands
               :public-good-demands public-good-demands
-              :pollutant-supply pollutant-supply)))
+              :pollutant-supply pollutant-supply
+              :income (+ income
+                         (* (/ (first pollutant-supply) num-of-ccs)
+                            (first pollutant-prices))))))
 
 
 (defn assign-new-proposal [production-inputs xs]
@@ -397,7 +408,7 @@
        (.indexOf (f production-inputs))
        (nth input-quantities)))
 
-
+; remove abs / replace with Math/abs ?
 (defn get-deltas [J price-delta pdlist]
   (letfn [(abs [n] (max n (- n)))]
     (max 0.001 (min price-delta (abs (* price-delta (nth pdlist J)))))))
@@ -607,6 +618,7 @@
 
 
 (defn get-supply-list [t]
+  
   (letfn [(get-producers [t industry product]
             (->> t
                  :wcs
@@ -690,8 +702,8 @@
           labor-check (check-supplies (:labor-surplus t) (:labor-supply t) (:labor-types t) surplus-threshold)
           public-goods-check (check-producers (:public-good-surpluses t) public-good-producers (:public-goods-types t))
           pollutant-check (check-supplies (:pollutant-surpluses t) (:pollutant-supply t) (:pollutant-types t) surplus-threshold)]
-      [final-goods-check im-goods-check nature-check labor-check public-goods-check pollutant-check]
-      ;(every? nil? [final-goods-check im-goods-check nature-check labor-check public-goods-check pollutant-check])
+;      [final-goods-check im-goods-check nature-check labor-check public-goods-check pollutant-check]
+      (every? nil? [final-goods-check im-goods-check nature-check labor-check public-goods-check pollutant-check])
       )))
 
 
@@ -760,7 +772,7 @@
            :on-click #(swap! globals proceed globals)}])
 
 (defn show-globals []
-    (let [keys-to-show [:private-good-prices :threshold-met :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :pollutant-prices]
+    (let [keys-to-show [:private-good-prices :threshold-met :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :pollutant-prices :surplus-list :supply-list :demand-list]
         ]
      [:div " "
            (setup-1dot3)
@@ -771,8 +783,8 @@
            [:table
             (map (fn [x] [:tr [:td (str (first x))]
                           [:td (str (second x))]])
-                 ;(sort (select-keys @globals keys-to-show))
-                   (sort @globals)
+                 (sort (select-keys @globals keys-to-show))
+;                   (sort @globals)
                  )]
             [:p]
      ]))
