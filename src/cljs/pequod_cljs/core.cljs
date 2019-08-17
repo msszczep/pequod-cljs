@@ -172,7 +172,7 @@
                :delta-delay 5
                :natural-resources-supply 1000
                :labor-supply 1000
-               :pollutant-supply 1000
+               :pollutant-supply 100
                :final-goods private-goods
                :intermediate-inputs intermediate-inputs
                :nature-types nature-types
@@ -215,10 +215,6 @@
                                        (/ (nth pollutant-prices (dec pollutant))
                                           num-of-ccs))))
                                pollutants)]
-    (println "pollutant-supply:")
-    (println pollutant-supply)
-    (println "pollutant-prices:")
-    (println pollutant-prices)
     (assoc cc :final-demands final-demands
               :public-good-demands public-good-demands
               :pollutant-supply pollutant-supply
@@ -441,7 +437,8 @@
                                          (filter #(= 2 (% :industry)))
                                          (map :output)
                                          (reduce +))
-                     "pollutants" (/ pollutant-supply (count ccs)))
+                     "pollutants" (/ (reduce + (mapv first (mapv :pollutant-supply ccs)))
+                                       (count ccs)) )
             demand (condp = type
                      "final"  (->> ccs
                                    (mapv :final-demands)
@@ -639,7 +636,8 @@
                                 (map :output)
                                 (reduce +)
                                 vector)
-         pollutant-supply (vector (/ (:pollutant-supply t) (count (:ccs t))))]
+         pollutant-supply (vector (/ (reduce + (mapv first (mapv :pollutant-supply (:ccs t))))
+                               (count (:ccs t)))) ]
      (vector final-producers input-producers natural-resources-supply labor-supply public-good-supply pollutant-supply))))
 
 
