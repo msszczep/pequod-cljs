@@ -8,11 +8,11 @@
               [goog.string.format]))
 
 (def globals
-  (atom {:init-private-good-price 100
-         :init-intermediate-price 100
+  (atom {:init-private-good-price 150
+         :init-intermediate-price 150
          :init-labor-price        150
          :init-nature-price       150
-         :init-pollutant-price    50
+         :init-pollutant-price    150
          :private-goods             4
          :inputs                    4
          :resources                 1
@@ -42,9 +42,9 @@
          :wcs                      []
          :ccs                      []
          :iteration                0
-         :natural-resources-supply 0
-         :labor-supply             0
-         :pollutant-supply         0}))
+         :natural-resources-supply 10
+         :labor-supply             10
+         :pollutant-supply         10}))
 
 (defn standardize-prices [t]
   (assoc t
@@ -179,7 +179,7 @@
                :delta-delay 5
                :natural-resources-supply 1000
                :labor-supply 1000
-               :pollutant-supply 100
+               :pollutant-supply 1000
                :private-goods private-goods
                :intermediate-inputs intermediate-inputs
                :nature-types nature-types
@@ -230,17 +230,19 @@
 (defn consume [private-goods private-good-prices pollutants pollutant-prices num-of-ccs cc]
   (let [utility-exponents (cc :utility-exponents)
         pollution-supply-coefficients (cc :pollution-supply-coefficients)
-        income (cc :income)
+        base-income (cc :base-income)
         all-exponents (->> pollution-supply-coefficients
                            (concat utility-exponents))
         final-demands (mapv (fn [final-good]
-                              (/ (* income (nth utility-exponents (dec final-good)))
+                              (/ (* base-income (nth utility-exponents (dec final-good)))
                                  (* (+ (apply + utility-exponents)
-                                       (- (apply + pollution-supply-coefficients)))
+                                       ; (- (apply + pollution-supply-coefficients))
+                                       )
                                     (nth private-good-prices (dec final-good)))))
                             private-goods)
-        pollutant-supply (mapv (fn [pollutant]
-                                 (/ (* income (nth pollution-supply-coefficients (dec pollutant)))
+        pollutant-supply 
+        (mapv (fn [pollutant]
+                                 (/ (* base-income (nth pollution-supply-coefficients (dec pollutant)))
                                     (* (+ (apply + utility-exponents)
                                           (- (apply + pollution-supply-coefficients)))
                                        (/ (nth pollutant-prices (dec pollutant))
@@ -248,7 +250,9 @@
                                pollutants)]
     (assoc cc :final-demands final-demands
               :pollutant-supply pollutant-supply
-              :income (+ income
+              :base-income base-income
+              :adjusted-income
+                       (+ base-income
                          (* (/ (first pollutant-supply) num-of-ccs)
                             (first pollutant-prices))))))
 
@@ -467,7 +471,8 @@
                                          (reduce +))
                      "nature" natural-resources-supply
                      "labor"  labor-supply
-                     "pollutants"  (/ (reduce + (mapv first (mapv :pollutant-supply ccs)))
+                     "pollutants" 
+                                   (/ (reduce + (mapv first (mapv :pollutant-supply ccs)))
                                       (count ccs)))
             demand (condp = type
                      "final" (->> ccs
@@ -509,14 +514,17 @@
             new-delta (if (or (<= delta 1) (= type "final")) delta
                           (last (take-while (partial < 1)
                                             (iterate #(/ % 2.0) delta))))
-            new-price (if (= type "pollutants")
+            new-price (cond (pos? surplus) (* (- 1 new-delta) (nth prices (dec (first inputs))))
+                            (neg? surplus) (* (+ 1 new-delta) (nth prices (dec (first inputs))))
+                            :else (nth prices (dec (first inputs))))
+                      #_(if (= type "pollutants")
                         (cond (neg? surplus) (* (- 1 new-delta) (nth prices (dec (first inputs))))
                               (pos? surplus) (* (+ 1 new-delta) (nth prices (dec (first inputs))))
                               :else (nth prices (dec (first inputs))))
                         (cond (pos? surplus) (* (- 1 new-delta) (nth prices (dec (first inputs))))
                               (neg? surplus) (* (+ 1 new-delta) (nth prices (dec (first inputs))))
                               :else (nth prices (dec (first inputs)))))]
-            (if (= type "pollutants")
+            #_(if (= type "pollutants")
               (println "pollutant - supply demand surplus" supply demand surplus))
         (recur (rest inputs)
                (assoc prices J new-price)
@@ -811,7 +819,7 @@
 
 #_[:iteration :demand-list :pdlist :input-prices :nature-prices :labor-prices :final-prices :supply-list :threshold-met :nature-surpluses :natural-resources-supply :nature-types :surplus-threshold] 
 (defn show-globals []
-    (let [keys-to-show [:private-good-prices :threshold-met :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :pollutant-prices :surplus-list :supply-list :demand-list :pollutant-supply :pollutant-surpluses :pollutant-types :labor-supply :wcs]
+    (let [keys-to-show [:private-good-prices :threshold-met :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :pollutant-prices :surplus-list :supply-list :demand-list :pollutant-supply :nature-supply :pollutant-surpluses :pollutant-types :labor-supply :wcs]
         ]
      [:div #_" "
            #_(setup-random-button)
