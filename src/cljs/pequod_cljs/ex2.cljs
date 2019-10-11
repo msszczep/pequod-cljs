@@ -12,8 +12,8 @@
   :cy 7.816114419058129,
   :public-good-exponents [0.1589606550542937],
   :public-good-demands [0],
-  :pollution-supply-coefficients [-0.14516232995790718],
-  :income 5000}
+  :pollution-supply-coefficients [0.14516232995790718],
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -25,8 +25,8 @@
   :cy 7.835660744327954,
   :public-good-exponents [0.1611902262754466],
   :public-good-demands [0],
-  :pollution-supply-coefficients [-0.13810497722366072],
-  :income 5000}
+  :pollution-supply-coefficients [0.13810497722366072],
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -39,7 +39,7 @@
   :public-good-exponents [0.09765466883095542],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.12449561307390583],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -52,7 +52,7 @@
   :public-good-exponents [0.09544035179257893],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.14976405278884547],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -65,7 +65,7 @@
   :public-good-exponents [0.1613223804391446],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.13215241916989945],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -78,7 +78,7 @@
   :public-good-exponents [0.14729085288090116],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.13055065834128882],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -91,7 +91,7 @@
   :public-good-exponents [0.15589948518889127],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.13345411041620145],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -104,7 +104,7 @@
   :public-good-exponents [0.12827354701555438],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.16576343553076373],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -117,7 +117,7 @@
   :public-good-exponents [0.16237868401963945],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.10182096339903131],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -130,7 +130,7 @@
   :public-good-exponents [0.14803839132230284],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.14251041555659202],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -143,7 +143,7 @@
   :public-good-exponents [0.10483509714246819],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.16218800833449476],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -156,7 +156,7 @@
   :public-good-exponents [0.15901736768260538],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.1537173652457811],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -169,7 +169,7 @@
   :public-good-exponents [0.16479719704505685],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.08683070077092961],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -182,7 +182,7 @@
   :public-good-exponents [0.1168837800068254],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.1385479013321443],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -195,7 +195,7 @@
   :public-good-exponents [0.15648979292746784],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.10445296680641812],
-  :income 5000}])
+  :base-income 5000}])
 
 (def ccs2
 [{:effort 1,
@@ -210,7 +210,7 @@
   :public-good-exponents [0.16272543018824231],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.18771668132772779],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -223,7 +223,7 @@
   :public-good-exponents [0.16299741223636752],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.20763376114344975],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -236,7 +236,7 @@
   :public-good-exponents [0.13048171497175604],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.2774617635816541],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -249,7 +249,7 @@
   :public-good-exponents [0.1346783780674263],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.27124846048991613],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -262,7 +262,7 @@
   :public-good-exponents [0.11191406713521515],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.17711725319865118],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -275,7 +275,7 @@
   :public-good-exponents [0.11962209693601866],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.30464481705811186],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -288,7 +288,7 @@
   :public-good-exponents [0.15053405430297245],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.180238824762822],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -301,7 +301,7 @@
   :public-good-exponents [0.11830066971020546],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.31935723965211876],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -314,7 +314,7 @@
   :public-good-exponents [0.13205431092562028],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.3283622669868985],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -327,7 +327,7 @@
   :public-good-exponents [0.15040860933695194],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.2591685516092739],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -340,7 +340,7 @@
   :public-good-exponents [0.14167682052204025],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.2017887230560678],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -353,7 +353,7 @@
   :public-good-exponents [0.12662370884925125],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.23323917583372505],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -366,7 +366,7 @@
   :public-good-exponents [0.15764275249596388],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.20044134112340145],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -379,7 +379,7 @@
   :public-good-exponents [0.1587198176995328],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.2903859323661791],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -392,7 +392,7 @@
   :public-good-exponents [0.11609132290935728],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.2940269902845527],
-  :income 5000}]
+  :base-income 5000}]
 )
 
 (def ccs3
@@ -408,7 +408,7 @@
   :public-good-exponents [0.10113793005501812],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.49077432856208947],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -421,7 +421,7 @@
   :public-good-exponents [0.11425749243217068],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.3690416331955424],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -434,7 +434,7 @@
   :public-good-exponents [0.09053382607256073],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.25151518707186865],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -447,7 +447,7 @@
   :public-good-exponents [0.08548868230452031],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.29881377773227247],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -460,7 +460,7 @@
   :public-good-exponents [0.15070977876153463],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.2686878512288235],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -473,7 +473,7 @@
   :public-good-exponents [0.16001363503584526],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.39956965016116974],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -486,7 +486,7 @@
   :public-good-exponents [0.0912851592644523],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.4834516049244512],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -499,7 +499,7 @@
   :public-good-exponents [0.14196275303634653],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.3862567769133734],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -512,7 +512,7 @@
   :public-good-exponents [0.1321652232029099],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.3286022723386332],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -525,7 +525,7 @@
   :public-good-exponents [0.14662116836073208],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.38204115233810887],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -538,7 +538,7 @@
   :public-good-exponents [0.09519593447227839],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.34342466172102487],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -551,7 +551,7 @@
   :public-good-exponents [0.12114514285589323],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.371368461201096],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -564,7 +564,7 @@
   :public-good-exponents [0.13030336504119708],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.47760389681667426],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -577,7 +577,7 @@
   :public-good-exponents [0.10131247067207697],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.4128527277293281],
-  :income 5000}
+  :base-income 5000}
  {:effort 1,
   :num-workers 10,
   :utility-exponents
@@ -590,11 +590,11 @@
   :public-good-exponents [0.10397626151861245],
   :public-good-demands [0],
   :pollution-supply-coefficients [0.4881010780513487],
-  :income 5000}]
+  :base-income 5000}]
 )
  
 
-  (def wcs
+  (def wcs1
 [#_{:effort 0.5,
   :cq 0.25,
   :ce 1,
