@@ -188,7 +188,7 @@
                :pollutant-types pollutant-types
                :surplus-threshold 0.02
                :ccs ex2/ccs1
-               :wcs ex2/wcs1
+               :wcs ex2/wcs2
                ))))
 
 
@@ -671,6 +671,8 @@
        flatten
        (apply +)))
 
+#_(defn show-product-of-demand)
+
 (defn iterate-plan [t]
   (let [t2 (assoc t :ccs (map (partial consume (t :private-goods) (t :private-good-prices) (t :pollutant-types) (t :pollutant-prices) (count (t :ccs)))
                               (t :ccs))
@@ -830,7 +832,7 @@
 
 #_[:iteration :demand-list :pdlist :input-prices :nature-prices :labor-prices :final-prices :supply-list :threshold-met :nature-surpluses :natural-resources-supply :nature-types :surplus-threshold] 
 (defn show-globals []
-    (let [keys-to-show [:private-good-prices :threshold-met :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :pollutant-prices :surplus-list :supply-list :demand-list :pollutant-supply :nature-supply :pollutant-surpluses :pollutant-types :labor-supply :wcs :show-all-pollutant-supply :show-sum-of-exponents]
+    (let [keys-to-show [:private-good-prices :threshold-met :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :pollutant-prices :surplus-list :supply-list :demand-list :pollutant-supply :nature-supply :pollutant-surpluses :pollutant-types :labor-supply :wcs :show-all-pollutant-supply :show-sum-of-exponents :ccs]
         ]
      [:div #_" "
            #_(setup-random-button)
