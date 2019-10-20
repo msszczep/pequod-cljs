@@ -19,13 +19,13 @@
                                     (get-random-subset nature-types)
                                     (get-random-subset labor-types))
           input-exponents (when (pos? (count (first production-inputs)))
-                            (let [xz (/ 0.2 (count (first production-inputs)))]
+                            (let [xz (/ 0.3 (count (first production-inputs)))]
                               (vec (take (count (first production-inputs))
                                          (repeatedly #(+ xz (rand xz)))))))
-          nature-exponents (let [rz (/ 0.2 (count (second production-inputs)))]
+          nature-exponents (let [rz (/ 0.3 (count (second production-inputs)))]
                              (vec (take (count (second production-inputs))
                                         (repeatedly #(+ 0.05 rz (rand rz))))))
-          labor-exponents (let [lz (/ 0.2 (count (last production-inputs)))]
+          labor-exponents (let [lz (/ 0.3 (count (last production-inputs)))]
                             (vec (take (count (last production-inputs))
                                        (repeatedly #(+ 0.05 lz (rand lz))))))]
       (merge wc {:production-inputs production-inputs

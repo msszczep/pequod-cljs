@@ -3,7 +3,7 @@
               [secretary.core :as secretary :include-macros true]
               [accountant.core :as accountant]
 ;              [pequod-cljs.ex001data :as ex001]
-              [pequod-cljs.ex001ppgdata :as ex001pg]
+              [pequod-cljs.ex002 :as ex002]
 ;              [pequod-cljs.ex1dot3 :as ex1dot3]
               [goog.string :as gstring]
               [goog.string.format]))
@@ -17,8 +17,8 @@
 
          :private-goods             4
          :intermediate-inputs       4
-         :resources                 1
-         :labors                    1
+         :resources                 2
+         :labors                    2
          :public-goods              1
 
          :private-good-prices      []
@@ -79,11 +79,11 @@
                :labor-types labor-types
                :public-goods-types public-goods-types
                :surplus-threshold 0.02
-               :ccs ex001pg/ccs
+               :ccs ex002/ccs
                     #_(condp = button-type
                       "ex001" ex001/ccs
                       "ex001pg" ex001pg/ccs)
-               :wcs ex001pg/wcs
+               :wcs ex002/wcs
                #_(condp = button-type 
                  "ex001" ex001/wcs
                  "ex001pg" ex001pg/wcs)))))
@@ -273,7 +273,7 @@
 
 
 (defn solution-8 [a s c k ps b λ p-i]
-  (let [[b1 b2 b3 b4 b5 b6 b7 p8] b
+  (let [[b1 b2 b3 b4 b5 b6 b7 b8] b
         [p1 p2 p3 p4 p5 p6 p7 p8] (flatten ps)
         output (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (* c (Math/log k)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* c (Math/log c))) (- (* b1 k (Math/log b1))) (* b1 k (Math/log p1)) (- (* b1 k (Math/log λ))) (- (* b2 k (Math/log b2))) (* b2 k (Math/log p2)) (- (* b2 k (Math/log λ))) (- (* b3 k (Math/log b3))) (* b3 k (Math/log p3)) (- (* b3 k (Math/log λ))) (- (* b4 k (Math/log b4))) (* b4 k (Math/log p4)) (- (* b4 k (Math/log λ))) (- (* b5 k (Math/log b5))) (* b5 k (Math/log p5)) (- (* b5 k (Math/log λ))) (- (* b6 k (Math/log b6))) (* b6 k (Math/log p6)) (- (* b6 k (Math/log λ))) (- (* b7 k (Math/log b7))) (* b7 k (Math/log p7)) (- (* b7 k (Math/log λ))) (- (* b8 k (Math/log b8))) (* b8 k (Math/log p8)) (- (* b8 k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5) (* k b6) (* k b7) (* k b8))))
         x1 (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (* b2 k (Math/log b1)) (* b3 k (Math/log b1)) (* b4 k (Math/log b1)) (* b5 k (Math/log b1)) (* b6 k (Math/log b1)) (* b7 k (Math/log b1)) (* b8 k (Math/log b1)) (* c (Math/log b1)) (- (* k (Math/log b1))) (- (* b2 k (Math/log b2))) (- (* b3 k (Math/log b3))) (- (* b4 k (Math/log b4))) (- (* b5 k (Math/log b5))) (- (* b6 k (Math/log b6))) (- (* b7 k (Math/log b7))) (- (* b8 k (Math/log b8))) (- (* c (Math/log c))) (* c (Math/log k)) (- (* b2 k (Math/log p1))) (- (* b3 k (Math/log p1))) (- (* b4 k (Math/log p1))) (- (* b5 k (Math/log p1))) (- (* b6 k (Math/log p1))) (- (* b7 k (Math/log p1))) (- (* b8 k (Math/log p1))) (* k (Math/log p1)) (- (* c (Math/log p1))) (* b2 k (Math/log p2)) (* b3 k (Math/log p3)) (* b4 k (Math/log p4)) (* b5 k (Math/log p5)) (* b6 k (Math/log p6)) (* b7 k (Math/log p7)) (* b8 k (Math/log p8)) (* c (Math/log s)) (- (* k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2) (* k b3) (* k b4) (* k b5) (* k b6) (* k b7) (* k b8))))
@@ -343,7 +343,7 @@
                      "private-goods"  (->> ccs
                                    (mapv :private-good-demands)
                                    (mapv #(nth % (dec (first inputs))))
-                                   (reduce +))                                 
+                                   (reduce +))
                      "intermediate" (->> wcs
                                          (filter #(contains? #{0, 1} (:industry %)))
                                          (filter #(contains? (set (first (:production-inputs %)))
@@ -359,9 +359,9 @@
                                    flatten
                                    (reduce +))
                      "labor" (->> wcs
-                                  #_(filter #(contains? (set (last (:production-inputs %)))
-                                                        (first inputs)))
                                   (filter #(contains? #{0, 1} (:industry %)))
+                                  (filter #(contains? (set (last (:production-inputs %)))
+                                                      (first inputs)))
                                   (map (juxt :production-inputs :labor-quantities))
                                   (map (partial get-input-quantity last inputs))
                                   (reduce +))
@@ -375,13 +375,18 @@
                        "public-goods" 10)
             surplus (- supply demand)
             delta (get-deltas (+ j-offset J) price-delta pdlist)
-            new-delta (cond (<= delta 1)            delta
-                            (= type "private-goods")        delta
+            new-delta (cond (<= delta 1)                    delta
+                            ;(= type "private-goods")        delta
                             :else                   (last (take-while (partial < 1)
                                                                       (iterate #(/ % 2.0) delta))))
             new-price (cond (pos? surplus) (* (- 1 new-delta) (nth prices (dec (first inputs))))
                             (neg? surplus) (* (+ 1 new-delta) (nth prices (dec (first inputs))))
                             :else (nth prices (dec (first inputs))))]
+        #_(println "type:" type)
+        #_(println "inputs:" inputs)
+        #_(println "supply:" supply)
+        #_(println "demand:" demand)
+        #_(println "====")
         (recur (rest inputs)
                (assoc prices J new-price)
                (conj surpluses surplus)
@@ -425,6 +430,7 @@
         5 (merge wc (solution-5 a s c k ps b λ p-i))
         6 (merge wc (solution-6 a s c k ps b λ p-i))
         7 (merge wc (solution-7 a s c k ps b λ p-i))
+        8 (merge wc (solution-8 a s c k ps b λ p-i))
         (str "unexpected input-count value: " input-count-r)))))
 
 
@@ -578,8 +584,8 @@
           nature-check (check-supplies (:nature-surpluses t) (:natural-resources-supply t) (:nature-types t) surplus-threshold)
           labor-check (check-supplies (:labor-surplus t) (:labor-supply t) (:labor-types t) surplus-threshold)
           public-goods-check (check-producers (:public-good-surpluses t) public-good-producers (:public-goods-types t))]
-;      [private-goods-check im-goods-check nature-check labor-check public-goods-check]
-      (every? nil? [private-goods-check im-goods-check nature-check labor-check public-goods-check])
+      [private-goods-check im-goods-check nature-check labor-check public-goods-check]
+      #_(every? nil? [private-goods-check im-goods-check nature-check labor-check public-goods-check])
       )))
 
 
