@@ -382,11 +382,11 @@
             new-price (cond (pos? surplus) (* (- 1 new-delta) (nth prices (dec (first inputs))))
                             (neg? surplus) (* (+ 1 new-delta) (nth prices (dec (first inputs))))
                             :else (nth prices (dec (first inputs))))]
-        #_(println "type:" type)
-        #_(println "inputs:" inputs)
-        #_(println "supply:" supply)
-        #_(println "demand:" demand)
-        #_(println "====")
+        (println "type:" type)
+        (println "inputs:" inputs)
+        (println "supply:" supply)
+        (println "demand:" demand)
+        (println "====")
         (recur (rest inputs)
                (assoc prices J new-price)
                (conj surpluses surplus)
@@ -500,8 +500,8 @@
                            (t :public-goods-types))]
       [private-good-demands
        input-quantity
-       [(sum-input-quantities all-quantities 1 :nature-quantity)]
-       [(sum-input-quantities all-quantities 1 :labor-quantity)]
+       [(sum-input-quantities all-quantities 1 :nature-quantity) (sum-input-quantities all-quantities 2 :nature-quantity)]
+       [(sum-input-quantities all-quantities 1 :labor-quantity) (sum-input-quantities all-quantities 2 :labor-quantity)]
        public-good-demands])))
 
 
@@ -513,13 +513,21 @@
                                (= product (% :product))))
                  (map :output)
                  flatten
+                 (reduce +)))
+          (get-supply [f t content-type]
+            (->> t
+                 :wcs
+                 (filter #(contains? (set (f (:production-inputs %)))
+                                             content-type))
+                 (map :nature-quantities)
+                 flatten
                  (reduce +)))]
    (let [private-goods (:private-goods t)
          private-producers (mapv (partial get-producers t 0) private-goods)
          intermediate-inputs (:intermediate-inputs t)
          input-producers (mapv (partial get-producers t 1) intermediate-inputs)
-         natural-resources-supply (vector (:natural-resources-supply t))
-         labor-supply (vector (:labor-supply t))
+         natural-resources-supply (mapv (partial get-supply second t) (:nature-types t))
+         labor-supply (mapv (partial get-supply last t) (:labor-types t))
          public-good-supply (->> t
                                 :wcs
                                 (filter #(= 2 (% :industry)))
