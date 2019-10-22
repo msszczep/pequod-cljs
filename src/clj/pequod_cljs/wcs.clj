@@ -6,6 +6,14 @@
                           {:industry industry :product %})))
        flatten))
 
+; for however many inputs we have
+;  apportion 95 points among those inputs
+;  do some randomization such that it's within a suitable range
+;  the sum must be greater than 0.5, less than 1
+
+; range for 0.5 / number of inputs (length of flattened production-inputs)
+;  up to 1 / number of inputs
+
 
 (defn continue-setup-wcs [intermediate-inputs nature-types labor-types wc]
   "Assumes wc is a map"
@@ -14,20 +22,23 @@
                  shuffle
                  (take (rand-nth input-seq))
                  sort
+                 vec))
+          (rand-range [start end]
+            (+ start (clojure.core/rand (- end start))))
+          (generate-exponents [n f inputs]
+            (->> #(rand-range (/ 0.5 n) (/ 1 n))
+                 repeatedly
+                 (take (count (f inputs)))
                  vec))]
     (let [production-inputs (vector (get-random-subset intermediate-inputs)
                                     (get-random-subset nature-types)
                                     (get-random-subset labor-types))
-          input-exponents (when (pos? (count (first production-inputs)))
-                            (let [xz (/ 0.3 (count (first production-inputs)))]
-                              (vec (take (count (first production-inputs))
-                                         (repeatedly #(+ xz (rand xz)))))))
-          nature-exponents (let [rz (/ 0.3 (count (second production-inputs)))]
-                             (vec (take (count (second production-inputs))
-                                        (repeatedly #(+ 0.05 rz (rand rz))))))
-          labor-exponents (let [lz (/ 0.3 (count (last production-inputs)))]
-                            (vec (take (count (last production-inputs))
-                                       (repeatedly #(+ 0.05 lz (rand lz))))))]
+          production-inputs-count (->> production-inputs
+                                       flatten
+                                       count)
+          input-exponents (generate-exponents production-inputs-count first production-inputs)
+          nature-exponents (generate-exponents production-inputs-count second production-inputs)
+          labor-exponents (generate-exponents production-inputs-count last production-inputs)]
       (merge wc {:production-inputs production-inputs
                  :xe 0.05
                  :c 0.05
