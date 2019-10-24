@@ -654,6 +654,26 @@
   (let [t-plus (iterate-plan t)]
     (rest-of-to-do t-plus)))
 
+
+(defn proceed-iterate-five [t]
+  (loop [t-temp t 
+         i 5]
+    (if (= 0 i)
+      t-temp
+      (let [t-plus (iterate-plan t-temp)]
+        (recur (rest-of-to-do t-plus)
+               (dec i))))))
+
+
+(defn proceed-iterate-ten [t]
+  (loop [t-temp t 
+         i 10]
+    (if (= 0 i)
+      t-temp
+      (let [t-plus (iterate-plan t-temp)]
+        (recur (rest-of-to-do t-plus)
+               (dec i))))))
+
 ;; -------------------------
 ;; Views-
 
@@ -668,7 +688,16 @@
 (defn iterate-button []
   [:input {:type "button" :value "Iterate and check"
            :on-click #(swap! globals proceed globals)}])
-<
+
+(defn iterate-five-times-button []
+  [:input {:type "button" :value "Iterate 5X"
+           :on-click #(swap! globals proceed-iterate-five globals)}])
+
+(defn iterate-ten-times-button []
+  [:input {:type "button" :value "Iterate 10X"
+           :on-click #(swap! globals proceed-iterate-ten globals)}])
+
+
 (defn show-globals []
     (let [keys-to-show [:private-good-prices :threshold-met :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :surplus-list :supply-list :demand-list]
         ]
@@ -676,6 +705,10 @@
            (setup-1dot3)
            "  "
            (iterate-button)
+           "  "
+           (iterate-five-times-button)
+           "  "
+           (iterate-ten-times-button)
            "  "
            [:p]
            [:table
