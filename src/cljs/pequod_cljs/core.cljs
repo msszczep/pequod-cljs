@@ -19,7 +19,7 @@
          :intermediate-inputs       4
          :resources                 2
          :labors                    2
-         :public-goods              1
+         :public-goods              2
 
          :private-good-prices      []
          :intermediate-good-prices []
@@ -84,21 +84,22 @@
 
 
 (defn consume [private-goods private-good-prices public-goods public-goods-prices num-of-ccs cc]
+  ;(println "consume:" public-goods public-goods-prices (cc :income) (cc :public-good-exponents) (cc :utility-exponents))
+  ;(println "consume:" private-goods private-good-prices (cc :income) (cc :public-good-exponents) (cc :utility-exponents))
   (let [utility-exponents (cc :utility-exponents)
-        public-good-exponents (vector (first (cc :public-good-exponents)))
+        public-good-exponents (cc :public-good-exponents)
         income (cc :income)
         private-good-demands (mapv (fn [private-good]
                               (/ (* income (nth utility-exponents (dec private-good)))
-                                 (* (+ (apply + (concat utility-exponents public-good-exponents)))
+                                 (* (apply + (concat utility-exponents public-good-exponents))
                                     (nth private-good-prices (dec private-good)))))
                             private-goods)
         public-good-demands (mapv (fn [public-good]
                                     (/ (* income (nth public-good-exponents (dec public-good)))
-                                       (* (+ (apply + (concat utility-exponents public-good-exponents)))
+                                       (* (apply + (concat utility-exponents public-good-exponents))
                                           (/ (nth public-goods-prices (dec public-good))
                                              num-of-ccs))))
                                   public-goods)]
-                                  (println "concat test" (concat utility-exponents public-good-exponents))
     (assoc cc :private-good-demands private-good-demands
               :public-good-demands public-good-demands)))
 
@@ -359,7 +360,7 @@
                                   (map (juxt :production-inputs :labor-quantities))
                                   (map (partial get-input-quantity last inputs))
                                   (reduce +))
-                     "public-goods" (/ (reduce + (mapv first (mapv :public-good-demands ccs)))
+                     "public-goods" (/ (reduce + (flatten (mapv :public-good-demands ccs)))
                                        (count ccs)))
             j-offset (condp = type
                        "private-goods" 0
@@ -370,22 +371,29 @@
             surplus (- supply demand)
             delta (get-deltas (+ j-offset J) price-delta pdlist)
             new-delta (cond (<= delta 1)                    delta
-                            ;(= type "private-goods")        delta
                             :else                   (last (take-while (partial < 1)
                                                                       (iterate #(/ % 2.0) delta))))
             new-price (cond (pos? surplus) (* (- 1 new-delta) (nth prices (dec (first inputs))))
                             (neg? surplus) (* (+ 1 new-delta) (nth prices (dec (first inputs))))
                             :else (nth prices (dec (first inputs))))]
-;        (println "type:" type)
-;        (println "inputs:" inputs)
-;        (println "supply:" supply)
-;        (println "demand:" demand)
-;        (println "====")
+        (if (= type "public-goods")
+          (do 
+            (println "type:" type)
+            (println "inputs:" inputs)
+            (println "prices:" prices)            
+            (println "supply:" supply)
+            (println "demand:" demand)
+            (println "price-delta:" price-delta)
+            (println "pdlist:" pdlist)
+            (println "surplus:" surplus)
+            (println "delta:" delta)
+            (println "new-delta:" new-delta)
+            (println "new-price:" new-price)
+            (println "====")))
         (recur (rest inputs)
                (assoc prices J new-price)
                (conj surpluses surplus)
                (inc J))))))
-; TODO: Fix new-price / new-delta
 
 
 ; Q: does lambda change?
@@ -523,17 +531,13 @@
                  flatten
                  (reduce +)))]
    (let [private-goods (:private-goods t)
+         public-goods (:public-goods-types t)
          private-producers (mapv (partial get-producers t 0) private-goods)
          intermediate-inputs (:intermediate-inputs t)
          input-producers (mapv (partial get-producers t 1) intermediate-inputs)
          natural-resources-supply (mapv (partial get-supply second t) (:nature-types t))
          labor-supply (mapv (partial get-supply last t) (:labor-types t))
-         public-good-supply (->> t
-                                :wcs
-                                (filter #(= 2 (% :industry)))
-                                (map :output)
-                                (reduce +)
-                                vector)]
+         public-good-supply (mapv (partial get-producers t 2) public-goods)]
      (vector private-producers input-producers natural-resources-supply labor-supply public-good-supply))))
 
 
@@ -664,7 +668,7 @@
            :on-click #(swap! globals proceed globals)}])
 
 (defn show-globals []
-    (let [keys-to-show [:private-good-prices :threshold-met :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :surplus-list :supply-list :demand-list :public-good-output-list]
+    (let [keys-to-show [:private-good-prices :threshold-met :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :surplus-list :supply-list :demand-list :public-good-output-list :wcs]
         ]
      [:div " "
            (setup-1dot3)
