@@ -693,11 +693,10 @@
   [:input {:type "button" :value "Iterate 10X"
            :on-click #(swap! globals proceed-iterate-ten globals)}])
 
-#_(defn truncate-number [n]
-  (format "%.2f" n))
 
-#_(if (contains? #{:iteration :threshold-met :price-delta} (first x))
-                                       (flatten (second x)))
+(defn truncate-number [n]
+  (gstring/format "%.2f" n))
+
 
 (defn show-globals []
     (let [keys-to-show [:private-good-prices :threshold-met :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :surplus-list :supply-list :demand-list]
@@ -714,7 +713,10 @@
            [:p]
            [:table
             (map (fn [x] [:tr [:td (str (first x))]
-                          [:td (str (second x))]])
+                          [:td (str (if (contains? #{:iteration :threshold-met :price-delta} (first x))
+                                       (second x)
+                                       (partition-all 4 (map truncate-number (flatten (second x)))))
+)]])
                  (sort (select-keys @globals keys-to-show))
 ;                   (sort @globals)
                  )]
