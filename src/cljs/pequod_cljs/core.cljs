@@ -341,22 +341,22 @@
                                    (mapv #(nth % (dec (first inputs))))
                                    (reduce +))
                      "intermediate" (->> wcs
-                                         (filter #(contains? #{0, 1} (:industry %)))
+;                                         (filter #(contains? #{0, 1} (:industry %)))
                                          (filter #(contains? (set (first (:production-inputs %)))
-;                                                             (first inputs)
+                                                             (first inputs)
                                                              ))
                                          (map (juxt :production-inputs :input-quantities))
                                          (map (partial get-input-quantity first inputs))
                                          (reduce +))
                      "nature" (->> wcs
-                                   (filter #(contains? #{0, 1} (:industry %)))
+                                   ; (filter #(contains? #{0, 1} (:industry %)))
                                    (filter #(contains? (set (second (:production-inputs %)))
                                                        (first inputs)))
                                    (map :nature-quantities)
                                    flatten
                                    (reduce +))
                      "labor" (->> wcs
-                                  (filter #(contains? #{0, 1} (:industry %)))
+                                  ; (filter #(contains? #{0, 1} (:industry %)))
                                   (filter #(contains? (set (last (:production-inputs %)))
                                                       (first inputs)))
                                   (map (juxt :production-inputs :labor-quantities))
@@ -376,18 +376,18 @@
                             ;(= type "private-goods")        delta
                             :else                   (last (take-while (partial < 1)
                                                                       (iterate #(/ % 2.0) delta))))
-            new-price (cond (pos? surplus) (* (- 1 new-delta ) (nth prices (dec (first inputs))))
-                            (neg? surplus) (* (+ 1 new-delta ) (nth prices (dec (first inputs))))
+            new-price (cond (pos? surplus) (* (- 1 new-delta) (nth prices (dec (first inputs))))
+                            (neg? surplus) (* (+ 1 new-delta) (nth prices (dec (first inputs))))
                             :else (nth prices (dec (first inputs))))]
-;        (println "type:" type)
+        (println "type:" type)
 ;        (println "pdlist:" pdlist)
-;        (println "inputs:" inputs)
+        (println "inputs:" inputs)
 ;        (println "supply:" supply)
 ;        (println "demand:" demand)
-;        (println "delta:" delta)
-;        (println "new-delta:" new-delta)
+        (println "delta:" delta)
+        (println "new-delta:" new-delta)
 ;        (println "new-price:" new-price)
-;        (println "====")
+        (println "====")
         (recur (rest inputs)
                (assoc prices J new-price)
                (conj surpluses surplus)
@@ -596,10 +596,6 @@
           nature-check (check-supplies (:nature-surpluses t) (:natural-resources-supply t) (:nature-types t) surplus-threshold)
           labor-check (check-supplies (:labor-surpluses t) (:labor-supply t) (:labor-types t) surplus-threshold)
           public-good-check (check-producers (:public-good-surpluses t) public-good-producers (:public-good-types t))]
-      (println "nature supply" (:natural-resources-supply t))
-      (println "nature surpluses" (:nature-surpluses t))
-      (println "labor supply" (:labor-supply t))
-      (println "labor surpluses" (:labor-surpluses t))
       [private-goods-check im-goods-check nature-check labor-check public-good-check]
       #_(every? nil? [private-goods-check im-goods-check nature-check labor-check public-good-check])
       )))
@@ -697,6 +693,11 @@
   [:input {:type "button" :value "Iterate 10X"
            :on-click #(swap! globals proceed-iterate-ten globals)}])
 
+#_(defn truncate-number [n]
+  (format "%.2f" n))
+
+#_(if (contains? #{:iteration :threshold-met :price-delta} (first x))
+                                       (flatten (second x)))
 
 (defn show-globals []
     (let [keys-to-show [:private-good-prices :threshold-met :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :surplus-list :supply-list :demand-list]
