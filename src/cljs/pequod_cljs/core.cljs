@@ -3,7 +3,8 @@
               [secretary.core :as secretary :include-macros true]
               [accountant.core :as accountant]
 ;              [pequod-cljs.ex001data :as ex001]
-              [pequod-cljs.ex002 :as ex002]
+;              [pequod-cljs.ex002 :as ex002]
+              [pequod-cljs.ex003 :as ex003]
 ;              [pequod-cljs.ex1dot3 :as ex1dot3]
               [goog.string :as gstring]
               [goog.string.format]))
@@ -71,16 +72,16 @@
         initialize-prices
         (assoc :price-delta 0.1
                :delta-delay 5
-               :natural-resources-supply (repeat (t :resources) 1000)
-               :labor-supply (repeat (t :labors) 1000)
+               :natural-resources-supply (repeat (t :resources) 10000)
+               :labor-supply (repeat (t :labors) 10000)
                :private-goods private-goods
                :intermediate-inputs intermediate-inputs
                :nature-types nature-types
                :labor-types labor-types
                :public-good-types public-good-types
                :surplus-threshold 0.02
-               :ccs ex002/ccs
-               :wcs ex002/wcs))))
+               :ccs ex003/ccs
+               :wcs ex003/wcs))))
 
 
 (defn consume [private-goods private-good-prices public-goods public-good-prices num-of-ccs cc]
@@ -332,7 +333,9 @@
                      "nature" (nth natural-resources-supply J)
                      "labor"  (nth labor-supply J)
                      "public-goods" (->> wcs
-                                         (filter #(= 2 (% :industry)))
+                                         (filter #(and (= 2 (% :industry))
+                                                       (= (first inputs)
+                                                          (% :product))))
                                          (map :output)
                                          (reduce +)) )
             demand (condp = type
@@ -352,8 +355,8 @@
                                    ; (filter #(contains? #{0, 1} (:industry %)))
                                    (filter #(contains? (set (second (:production-inputs %)))
                                                        (first inputs)))
-                                   (map :nature-quantities)
-                                   flatten
+                                   (map (juxt :production-inputs :nature-quantities))
+                                   (map (partial get-input-quantity second inputs))
                                    (reduce +))
                      "labor" (->> wcs
                                   ; (filter #(contains? #{0, 1} (:industry %)))
@@ -362,7 +365,11 @@
                                   (map (juxt :production-inputs :labor-quantities))
                                   (map (partial get-input-quantity last inputs))
                                   (reduce +))
-                     "public-goods" (/ (reduce + (mapv first (mapv :public-good-demands ccs)))
+                     "public-goods" (/ (->> ccs
+                                           (mapv :public-good-demands)
+                                           (mapv #(nth % (dec (first inputs))))
+                                           (reduce +)
+                                           )
                                        (count ccs)))
             j-offset (condp = type
                        "private-goods" 0
@@ -371,7 +378,7 @@
                        "labor" 10
                        "public-goods" 12)
             surplus (- supply demand)
-            delta (get-deltas (+ j-offset J) price-delta pdlist)
+            delta (get-deltas j-offset price-delta pdlist)
             new-delta (cond (<= delta 1)                    delta
                             ;(= type "private-goods")        delta
                             :else                   (last (take-while (partial < 1)
@@ -379,15 +386,15 @@
             new-price (cond (pos? surplus) (* (- 1 new-delta) (nth prices (dec (first inputs))))
                             (neg? surplus) (* (+ 1 new-delta) (nth prices (dec (first inputs))))
                             :else (nth prices (dec (first inputs))))]
-;        (println "type:" type)
-;        (println "pdlist:" pdlist)
-;        (println "inputs:" inputs)
-;        (println "supply:" supply)
-;        (println "demand:" demand)
-;        (println "delta:" delta)
-;        (println "new-delta:" new-delta)
-;        (println "new-price:" new-price)
-;        (println "====")
+        (println "type:" type)
+        (println "pdlist:" pdlist)
+        (println "inputs:" inputs)
+        (println "supply:" supply)
+        (println "demand:" demand)
+        (println "delta:" delta)
+        (println "new-delta:" new-delta)
+        (println "new-price:" new-price)
+        (println "====")
         (recur (rest inputs)
                (assoc prices J new-price)
                (conj surpluses surplus)
@@ -487,7 +494,7 @@
                              (mapv (partial reduce +)))
           all-quantities (->> t
                               :wcs
-                              (filter #(not= 2 (% :industry)))
+;                              (filter #(not= 2 (% :industry)))
                               (map get-inputs-and-quantities)
                               flatten)
           input-quantity [(sum-input-quantities all-quantities 1 :input-quantity)

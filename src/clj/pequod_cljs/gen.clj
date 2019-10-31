@@ -6,7 +6,7 @@
 
 
 (defn -main [& args]
-  #_(clojure.pprint/pprint 
+  (clojure.pprint/pprint 
                          (ccs/create-ccs-bulk 80 10 4 2) 
                          )
   (clojure.pprint/pprint (wcs/create-wcs-bulk 40 40 40))

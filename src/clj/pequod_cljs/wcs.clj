@@ -59,7 +59,7 @@
 (defn create-wcs-bulk [num-ind-0 num-ind-1 num-ind-2]
   (->> (merge (create-wcs num-ind-0 [1 2 3 4] 0)
               (create-wcs num-ind-1 [1 2 3 4] 1)
-              (create-wcs num-ind-2 [1] 2))
+              (create-wcs num-ind-2 [1 2] 2))
        flatten
        (map (partial continue-setup-wcs
                      [1 2 3 4] ; intermediate-inputs
