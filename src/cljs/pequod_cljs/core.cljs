@@ -2,12 +2,10 @@
     (:require [reagent.core :as reagent :refer [atom]]
               [secretary.core :as secretary :include-macros true]
               [accountant.core :as accountant]
-;              [pequod-cljs.ex001data :as ex001]
-;              [pequod-cljs.ex002 :as ex002]
-              [pequod-cljs.ex003 :as ex003]
-;              [pequod-cljs.ex1dot3 :as ex1dot3]
+              [pequod-cljs.ex004 :as ex004]
               [goog.string :as gstring]
               [goog.string.format]))
+
 
 (def globals
   (atom {:init-private-good-price 100
@@ -80,12 +78,11 @@
                :labor-types labor-types
                :public-good-types public-good-types
                :surplus-threshold 0.02
-               :ccs ex003/ccs
-               :wcs ex003/wcs))))
+               :ccs ex004/ccs
+               :wcs ex004/wcs))))
 
 
 (defn consume [private-goods private-good-prices public-goods public-good-prices num-of-ccs cc]
-  ; (println "consume:" public-goods public-good-prices (cc :income) (vector (first (cc :public-good-exponents))))
   (let [utility-exponents (cc :utility-exponents)
         public-good-exponents (cc :public-good-exponents)
         income (cc :income)
@@ -100,7 +97,6 @@
                                           (/ (nth public-good-prices (dec public-good))
                                              num-of-ccs))))
                                   public-goods)]
-    ; (println "public-good-demands:" public-good-demands)
     (assoc cc :private-good-demands private-good-demands
               :public-good-demands public-good-demands)))
 
@@ -310,7 +306,6 @@
 
 (defn update-surpluses-prices
   [type inputs prices wcs ccs natural-resources-supply labor-supply price-delta pdlist]
-  ;(println "natural-resources-supply:" natural-resources-supply)
   (loop [inputs inputs
          prices prices
          surpluses []
@@ -344,7 +339,6 @@
                                    (mapv #(nth % (dec (first inputs))))
                                    (reduce +))
                      "intermediate" (->> wcs
-;                                         (filter #(contains? #{0, 1} (:industry %)))
                                          (filter #(contains? (set (first (:production-inputs %)))
                                                              (first inputs)
                                                              ))
@@ -352,14 +346,12 @@
                                          (map (partial get-input-quantity first inputs))
                                          (reduce +))
                      "nature" (->> wcs
-                                   ; (filter #(contains? #{0, 1} (:industry %)))
                                    (filter #(contains? (set (second (:production-inputs %)))
                                                        (first inputs)))
                                    (map (juxt :production-inputs :nature-quantities))
                                    (map (partial get-input-quantity second inputs))
                                    (reduce +))
                      "labor" (->> wcs
-                                  ; (filter #(contains? #{0, 1} (:industry %)))
                                   (filter #(contains? (set (last (:production-inputs %)))
                                                       (first inputs)))
                                   (map (juxt :production-inputs :labor-quantities))
@@ -368,8 +360,7 @@
                      "public-goods" (/ (->> ccs
                                            (mapv :public-good-demands)
                                            (mapv #(nth % (dec (first inputs))))
-                                           (reduce +)
-                                           )
+                                           (reduce +))
                                        (count ccs)))
             j-offset (condp = type
                        "private-goods" 0
@@ -379,22 +370,12 @@
                        "public-goods" 12)
             surplus (- supply demand)
             delta (get-deltas j-offset price-delta pdlist)
-            new-delta (cond (<= delta 1)                    delta
-                            ;(= type "private-goods")        delta
-                            :else                   (last (take-while (partial < 1)
-                                                                      (iterate #(/ % 2.0) delta))))
+            new-delta (cond (<= delta 1) delta
+                            :else        (last (take-while (partial < 1)
+                                                           (iterate #(/ % 2.0) delta))))
             new-price (cond (pos? surplus) (* (- 1 new-delta) (nth prices (dec (first inputs))))
                             (neg? surplus) (* (+ 1 new-delta) (nth prices (dec (first inputs))))
                             :else (nth prices (dec (first inputs))))]
-        (println "type:" type)
-        (println "pdlist:" pdlist)
-        (println "inputs:" inputs)
-        (println "supply:" supply)
-        (println "demand:" demand)
-        (println "delta:" delta)
-        (println "new-delta:" new-delta)
-        (println "new-price:" new-price)
-        (println "====")
         (recur (rest inputs)
                (assoc prices J new-price)
                (conj surpluses surplus)
@@ -463,7 +444,6 @@
                                           (flatten demand-list))
                               (partition 2)
                               (mapv mean))]
-;    (println "update-pdlist" supply-list demand-list surplus-list)  
     (->> (interleave (flatten surplus-list) averaged-s-and-d)
          (partition 2)
          (mapv #(/ (first %) (last %))))))
@@ -494,7 +474,6 @@
                              (mapv (partial reduce +)))
           all-quantities (->> t
                               :wcs
-;                              (filter #(not= 2 (% :industry)))
                               (map get-inputs-and-quantities)
                               flatten)
           input-quantity [(sum-input-quantities all-quantities 1 :input-quantity)
@@ -513,17 +492,6 @@
        public-good-demands])))
 
 
-(defn report-public-good-outputs [wcs]
-  (->> wcs
-       (filter #(= 2 (:industry %)))
-       (map :output)))
-
-
-(defn report-public-good-demands [ccs]
-  (->> ccs
-       (map :public-good-demands)))
-
-
 (defn get-supply-list [t]
   (letfn [(get-producers [t industry product]
             (->> t
@@ -532,8 +500,7 @@
                                (= product (% :product))))
                  (map :output)
                  flatten
-                 (reduce +)))
-          ]
+                 (reduce +)))]
    (let [private-goods (:private-goods t)
          private-producers (mapv (partial get-producers t 0) private-goods)
          intermediate-inputs (:intermediate-inputs t)
@@ -541,8 +508,13 @@
          natural-resources-supply (t :natural-resources-supply)
          labor-supply (t :labor-supply)
          public-good-supply (mapv (partial get-producers t 2) (:public-good-types t))]
-     (vector private-producers input-producers natural-resources-supply labor-supply public-good-supply))))
-; 
+     (vector private-producers input-producers natural-resources-supply labor-supply public-good-supply)))) 
+
+
+(defn report-threshold [surplus-list supply-list]
+  (->> (interleave (flatten surplus-list) (flatten supply-list))
+       (partition 2)
+       (mapv #(* 100 (/ (first %) (last %))))))
 
 
 (defn iterate-plan [t]
@@ -560,9 +532,8 @@
         demand-list (get-demand-list t2)
         new-price-deltas (update-price-deltas supply-list demand-list surplus-list)
         new-pdlist (update-pdlist supply-list demand-list surplus-list)
-        iteration (inc (:iteration t2))
-        public-good-output-list (report-public-good-outputs (t2 :wcs))
-        public-good-demand-list (report-public-good-demands (t2 :ccs))]
+        threshold-report (report-threshold surplus-list supply-list)
+        iteration (inc (:iteration t2))]
     (assoc t2 :private-good-prices private-good-prices
               :private-good-surpluses private-good-surpluses
               :intermediate-good-prices intermediate-good-prices
@@ -576,10 +547,9 @@
               :demand-list demand-list
               :surplus-list surplus-list
               :supply-list supply-list
+              :threshold-report threshold-report
               :price-deltas new-price-deltas
               :pdlist new-pdlist
-              :public-good-output-list public-good-output-list
-              :public-good-demand-list public-good-demand-list
               :iteration iteration)))
 
 
@@ -604,8 +574,8 @@
           nature-check (check-supplies (:nature-surpluses t) (:natural-resources-supply t) (:nature-types t) surplus-threshold)
           labor-check (check-supplies (:labor-surpluses t) (:labor-supply t) (:labor-types t) surplus-threshold)
           public-good-check (check-producers (:public-good-surpluses t) public-good-producers (:public-good-types t))]
-      [private-goods-check im-goods-check nature-check labor-check public-good-check]
-      #_(every? nil? [private-goods-check im-goods-check nature-check labor-check public-good-check])
+    ;  [private-goods-check im-goods-check nature-check labor-check public-good-check]
+      (every? nil? [private-goods-check im-goods-check nature-check labor-check public-good-check])
       )))
 
 
@@ -653,6 +623,7 @@
                   :price-delta price-delta
                   :delta-delay delta-delay)]
     t-updated))
+
 
 (defn proceed [t]
   (let [t-plus (iterate-plan t)]
@@ -707,7 +678,7 @@
 
 
 (defn show-globals []
-    (let [keys-to-show [:private-good-prices :threshold-met :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :surplus-list :supply-list :demand-list]
+    (let [keys-to-show [:private-good-prices :threshold-met :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :surplus-list :supply-list :demand-list :threshold-report]
         ]
      [:div " "
            (setup-1dot3)
