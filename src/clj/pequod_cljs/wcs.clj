@@ -1,9 +1,9 @@
 (ns pequod-cljs.wcs)
 
-; TODO remove 2 and count goods
+
 (defn create-wcs [worker-councils goods industry]
   (->> goods
-       (map #(vec (repeat (/ worker-councils 2 (count goods))
+       (map #(vec (repeat worker-councils
                           {:industry industry :product %})))
        flatten))
 
@@ -61,8 +61,8 @@
               (create-wcs num-ind-1 [1 2 3 4] 1)
               (create-wcs num-ind-2 [1 2] 2))
        flatten
-       (map (partial continue-setup-wcs
-                     [1 2 3 4] ; intermediate-inputs
-                     [1 2] ; nature-types
-                     [1 2] ; labor-types
-))))
+       (mapv (partial continue-setup-wcs
+                      [1 2 3 4] ; intermediate-inputs
+                      [1 2] ; nature-types
+                      [1 2] ; labor-types
+  ))))

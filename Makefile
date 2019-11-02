@@ -5,6 +5,10 @@ launch:
 core:
 	emacs src/cljs/pequod_cljs/core.cljs &
 
+# make councils NAMESPACE=ex001
+councils:
+	lein run -m pequod-cljs.gen $(NAMESPACE) > src/cljs/pequod_cljs/$(NAMESPACE).cljs
+
 doo:
 	emacs src/cljs/pequod_cljs/core.cljs &
 	emacs test/cljs/pequod_cljs/core_test.cljs &
