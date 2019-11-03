@@ -2,16 +2,16 @@
     (:require [reagent.core :as reagent :refer [atom]]
               [secretary.core :as secretary :include-macros true]
               [accountant.core :as accountant]
-              [pequod-cljs.ex004 :as ex004]
+              [pequod-cljs.ex005 :as ex005]
               [goog.string :as gstring]
               [goog.string.format]))
 
 
 (def globals
-  (atom {:init-private-good-price 100
-         :init-intermediate-price 100
-         :init-labor-price        150
-         :init-nature-price       150
+  (atom {:init-private-good-price 1000
+         :init-intermediate-price 1000
+         :init-labor-price        10
+         :init-nature-price       10
          :init-public-good-price  1000
 
          :private-goods             4
@@ -78,8 +78,8 @@
                :labor-types labor-types
                :public-good-types public-good-types
                :surplus-threshold 0.02
-               :ccs ex004/ccs
-               :wcs ex004/wcs))))
+               :ccs ex005/ccs
+               :wcs ex005/wcs))))
 
 
 (defn consume [private-goods private-good-prices public-goods public-good-prices num-of-ccs cc]
