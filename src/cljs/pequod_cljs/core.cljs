@@ -32,7 +32,7 @@
          :labor-surpluses          []
          :public-good-surpluses    []
 
-         :threshold-met            false
+         :threshold-met?           false
          :pdlist                   []
          :delta-delay              0
          :price-deltas             []
@@ -574,8 +574,8 @@
           nature-check (check-supplies (:nature-surpluses t) (:natural-resources-supply t) (:nature-types t) surplus-threshold)
           labor-check (check-supplies (:labor-surpluses t) (:labor-supply t) (:labor-types t) surplus-threshold)
           public-good-check (check-producers (:public-good-surpluses t) public-good-producers (:public-good-types t))]
-    ;  [private-goods-check im-goods-check nature-check labor-check public-good-check]
-      (every? nil? [private-goods-check im-goods-check nature-check labor-check public-good-check])
+      [(every? nil? [private-goods-check im-goods-check nature-check labor-check public-good-check])
+       (mapv nil? [private-goods-check im-goods-check nature-check labor-check public-good-check])]
       )))
 
 
@@ -602,7 +602,7 @@
 
 (defn rest-of-to-do [t]
   (let [surplus-total (total-surplus (:surplus-list t))
-        threshold (check-surpluses t)
+        [threshold-met? threshold-granular] (check-surpluses t)
         delta-delay (:delta-delay t)
         price-delta (:price-delta t)
         {price-delta :price-delta
@@ -619,9 +619,10 @@
                                       :delta-delay delta-delay})
         delta-delay (if (pos? delta-delay)
                       (dec delta-delay) delta-delay)
-        t-updated (assoc t :threshold-met threshold
-                  :price-delta price-delta
-                  :delta-delay delta-delay)]
+        t-updated (assoc t :threshold-met? threshold-met?
+                           :threshold-granular threshold-granular
+                           :price-delta price-delta
+                           :delta-delay delta-delay)]
     t-updated))
 
 
@@ -649,6 +650,16 @@
         (recur (rest-of-to-do t-plus)
                (dec i))))))
 
+(defn proceed-iterate-fifty [t]
+  (loop [t-temp t
+         i 50]
+    (if (= 0 i)
+      t-temp
+      (let [t-plus (iterate-plan t-temp)]
+        (recur (rest-of-to-do t-plus)
+               (dec i))))))
+
+
 ;; -------------------------
 ;; Views-
 
@@ -661,7 +672,7 @@
            :on-click #(swap! globals setup globals "ex1dot3")}])
 
 (defn iterate-button []
-  [:input {:type "button" :value "Iterate and check"
+  [:input {:type "button" :value "Iterate 1X"
            :on-click #(swap! globals proceed globals)}])
 
 (defn iterate-five-times-button []
@@ -672,13 +683,17 @@
   [:input {:type "button" :value "Iterate 10X"
            :on-click #(swap! globals proceed-iterate-ten globals)}])
 
+(defn iterate-fifty-times-button []
+  [:input {:type "button" :value "Iterate 50X"
+           :on-click #(swap! globals proceed-iterate-fifty globals)}])
+
 
 (defn truncate-number [n]
   (gstring/format "%.3f" n))
 
 
 (defn show-globals []
-    (let [keys-to-show [:private-good-prices :threshold-met :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :surplus-list :supply-list :demand-list :threshold-report]
+    (let [keys-to-show [:private-good-prices :threshold-met? :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :surplus-list :supply-list :demand-list :threshold-report :threshold-granular]
         ]
      [:div " "
            (setup-1dot3)
@@ -689,10 +704,12 @@
            "  "
            (iterate-ten-times-button)
            "  "
+           (iterate-fifty-times-button)
+           "  "
            [:p]
            [:table
             (map (fn [x] [:tr [:td (str (first x))]
-                          [:td (str (if (contains? #{:iteration :threshold-met :price-delta} (first x))
+                          [:td (str (if (contains? #{:iteration :threshold-met? :price-delta :threshold-granular} (first x))
                                        (second x)
                                        (partition-all 4 (map truncate-number (flatten (second x)))))
 )]])
