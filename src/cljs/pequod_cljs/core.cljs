@@ -2,7 +2,7 @@
     (:require [reagent.core :as reagent :refer [atom]]
               [secretary.core :as secretary :include-macros true]
               [accountant.core :as accountant]
-              [pequod-cljs.ex005 :as ex005]
+              [pequod-cljs.ex006 :as ex006]
               [goog.string :as gstring]
               [goog.string.format]))
 
@@ -14,11 +14,11 @@
          :init-nature-price       10
          :init-public-good-price  1000
 
-         :private-goods             4
-         :intermediate-inputs       4
-         :resources                 2
-         :labors                    2
-         :public-goods              2
+         :private-goods             5
+         :intermediate-inputs       5
+         :resources                 5
+         :labors                    5
+         :public-goods              5
 
          :private-good-prices      []
          :intermediate-good-prices []
@@ -78,8 +78,8 @@
                :labor-types labor-types
                :public-good-types public-good-types
                :surplus-threshold 0.02
-               :ccs ex005/ccs
-               :wcs ex005/wcs))))
+               :ccs ex006/ccs
+               :wcs ex006/wcs))))
 
 
 (defn consume [private-goods private-good-prices public-goods public-good-prices num-of-ccs cc]
@@ -364,10 +364,10 @@
                                        (count ccs)))
             j-offset (condp = type
                        "private-goods" 0
-                       "intermediate" 4
-                       "nature" 8
-                       "labor" 10
-                       "public-goods" 12)
+                       "intermediate" 5
+                       "nature" 10
+                       "labor" 15
+                       "public-goods" 20)
             surplus (- supply demand)
             delta (get-deltas j-offset price-delta pdlist)
             new-delta (cond (<= delta 1) delta
@@ -439,7 +439,7 @@
          (mapv #(Math/abs (/ (first %) (last %)))))))
 
 
-(defn update-pdlist [supply-list demand-list surplus-list]  
+(defn update-pdlist [supply-list demand-list surplus-list]
   (let [averaged-s-and-d (->> (interleave (flatten supply-list)
                                           (flatten demand-list))
                               (partition 2)
@@ -468,7 +468,10 @@
                  (filter #(and (= pos (:key %)) (= type (:type %))))
                  (map :value)
                  (reduce +)))]
-    (let [private-good-demands (->> t
+    (let [im-goods-to-use (:intermediate-inputs t) ; already a vector from range
+          resources-to-use (range 1 (inc (:resources t)))
+          labors-to-use (range 1 (inc (:labors t)))
+          private-good-demands (->> t
                              :private-goods
                              (mapv (fn [i] (mapv #(nth (:private-good-demands %) (dec i)) (:ccs t))))
                              (mapv (partial reduce +)))
@@ -476,10 +479,9 @@
                               :wcs
                               (map get-inputs-and-quantities)
                               flatten)
-          input-quantity [(sum-input-quantities all-quantities 1 :input-quantity)
-                          (sum-input-quantities all-quantities 2 :input-quantity)
-                          (sum-input-quantities all-quantities 3 :input-quantity)
-                          (sum-input-quantities all-quantities 4 :input-quantity)]
+          input-quantity (mapv (fn [n] (sum-input-quantities all-quantities n :input-quantity)) im-goods-to-use)
+          nature-quantity (mapv (fn [n] (sum-input-quantities all-quantities n :nature-quantity)) resources-to-use)
+          labor-quantity (mapv (fn [n] (sum-input-quantities all-quantities n :labor-quantity)) labors-to-use)
           public-good-demands
                      (mapv (fn [public-good]
                              (mean (map #(nth (:public-good-demands %) (dec public-good))
@@ -487,8 +489,8 @@
                            (t :public-good-types))]
       [private-good-demands
        input-quantity
-       [(sum-input-quantities all-quantities 1 :nature-quantity) (sum-input-quantities all-quantities 2 :nature-quantity)]
-       [(sum-input-quantities all-quantities 1 :labor-quantity) (sum-input-quantities all-quantities 2 :labor-quantity)]
+       nature-quantity
+       labor-quantity
        public-good-demands])))
 
 
@@ -711,7 +713,7 @@
             (map (fn [x] [:tr [:td (str (first x))]
                           [:td (str (if (contains? #{:iteration :threshold-met? :price-delta :threshold-granular} (first x))
                                        (second x)
-                                       (partition-all 4 (map truncate-number (flatten (second x)))))
+                                       (partition-all 5 (map truncate-number (flatten (second x)))))
 )]])
                  (sort (select-keys @globals keys-to-show))
 ;                   (sort @globals)

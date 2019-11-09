@@ -3,7 +3,7 @@
 
 (defn create-wcs [worker-councils goods industry]
   (->> goods
-       (map #(vec (repeat worker-councils
+       (map #(vec (repeat (/ worker-councils (count goods))
                           {:industry industry :product %})))
        flatten))
 
@@ -18,12 +18,13 @@
 
 (defn continue-setup-wcs [intermediate-inputs nature-types labor-types wc]
   "Assumes wc is a map"
-  (letfn [(get-random-subset [input-seq]
-            (->> input-seq
-                 shuffle
-                 (take (rand-nth input-seq))
-                 sort
-                 vec))
+  (letfn [(get-random-subset [input-seq input-type]
+            (let [take-num (if (= input-type :intermediate-inputs) 4 2)]
+              (->> input-seq
+                   shuffle
+                   (take (inc (rand-int take-num)))
+                   sort
+                   vec)))
           (rand-range [start end]
             (+ start (clojure.core/rand (- end start))))
           (generate-exponents [n f inputs]
@@ -31,9 +32,9 @@
                  repeatedly
                  (take (count (f inputs)))
                  vec))]
-    (let [production-inputs (vector (get-random-subset intermediate-inputs)
-                                    (get-random-subset nature-types)
-                                    (get-random-subset labor-types))
+    (let [production-inputs (vector (get-random-subset intermediate-inputs :intermediate-inputs)
+                                    (get-random-subset nature-types :nature-types)
+                                    (get-random-subset labor-types :labor-types))
           production-inputs-count (->> production-inputs
                                        flatten
                                        count)
@@ -57,12 +58,12 @@
 
 
 (defn create-wcs-bulk [num-ind-0 num-ind-1 num-ind-2]
-  (->> (merge (create-wcs num-ind-0 [1 2 3 4] 0)
-              (create-wcs num-ind-1 [1 2 3 4] 1)
-              (create-wcs num-ind-2 [1 2] 2))
+  (->> (merge (create-wcs num-ind-0 [1 2 3 4 5] 0)
+              (create-wcs num-ind-1 [1 2 3 4 5] 1)
+              (create-wcs num-ind-2 [1 2 3 4 5] 2))
        flatten
        (mapv (partial continue-setup-wcs
-                      [1 2 3 4] ; intermediate-inputs
-                      [1 2] ; nature-types
-                      [1 2] ; labor-types
+                      [1 2 3 4 5] ; intermediate-inputs
+                      [1 2 3 4 5] ; nature-types
+                      [1 2 3 4 5] ; labor-types
   ))))
