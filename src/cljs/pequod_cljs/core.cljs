@@ -717,6 +717,11 @@
            "  "
            (iterate-fifty-times-button)
            "  "
+           (str "#WCs: " (count (get @globals :wcs)))
+           "  "
+           (str "#CCs: " (count (get @globals :ccs)))
+           "  "
+           (str "Threshold-met?: " (get @globals :threshold-met?))
            [:p]
            #_[:table
             (map (fn [x] [:tr [:td (str (first x))]
@@ -811,8 +816,7 @@
 
 (defn home-page []
   [:div [:h2 "Welcome to pequod-cljs"]
-   [:div [:a {:href "/about"} "go to about"]
-    [:p]
+   [:div
     (show-globals)]])
 
 (defn about-page []
