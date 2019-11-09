@@ -693,9 +693,18 @@
 (defn truncate-number [n]
   (gstring/format "%.3f" n))
 
+(defn partition-by-five [seq-to-use]
+  (if (empty? seq-to-use)
+    seq-to-use
+    (->> seq-to-use
+         flatten
+         (mapv truncate-number)
+         (partition-all 5)
+         (mapv (partial into [])))))
 
 (defn show-globals []
     (let [keys-to-show [:private-good-prices :threshold-met? :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :surplus-list :supply-list :demand-list :threshold-report :threshold-granular]
+          td-cell-style {:border "1px solid #ddd" :text-align "center" :vertical-align "middle" :padding "8px"}
         ]
      [:div " "
            (setup-1dot3)
@@ -709,16 +718,94 @@
            (iterate-fifty-times-button)
            "  "
            [:p]
-           [:table
+           #_[:table
             (map (fn [x] [:tr [:td (str (first x))]
                           [:td (str (if (contains? #{:iteration :threshold-met? :price-delta :threshold-granular} (first x))
                                        (second x)
                                        (partition-all 5 (map truncate-number (flatten (second x)))))
 )]])
                  (sort (select-keys @globals keys-to-show))
-;                   (sort @globals)
                  )]
-            [:p]
+            #_[:p]
+           [:table {:style {:width "100%" :padding "8px" :border "1px solid #ddd"}}
+             [:tr 
+               [:th {:style td-cell-style} "Iteration: " (get @globals :iteration)]
+               [:th {:style td-cell-style} "Private Goods"]
+               [:th {:style td-cell-style} "Intermediate Inputs"]
+               [:th {:style td-cell-style} "Nature"]
+               [:th {:style td-cell-style} "Labor"]
+               [:th {:style td-cell-style} "Public Goods"]
+             ]
+             [:tr {:style {:border "1px solid #ddd"}}
+              [:td {:style (assoc td-cell-style :font-weight "bold")} "Prices"]
+              [:td {:style td-cell-style} (or (str (mapv truncate-number (get @globals :private-good-prices))) "")]
+              [:td {:style td-cell-style} (or (str (mapv truncate-number (get @globals :intermediate-good-prices))) "")]
+               [:td {:style td-cell-style} (or (str (mapv truncate-number (get @globals :nature-prices))) "")]
+               [:td {:style td-cell-style} (or (str (mapv truncate-number (get @globals :labor-prices))) "")]
+               [:td {:style td-cell-style} (or (str (mapv truncate-number (get @globals :public-good-prices))) "")]
+             ]
+             [:tr {:style {:border "1px solid #ddd"}}
+              [:td {:style (assoc td-cell-style :font-weight "bold")} "PD List"]
+              [:td {:style td-cell-style} (str (or (take 1 (partition-by-five (get @globals :pdlist))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 1 (take 2 (partition-by-five (get @globals :pdlist)))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 2 (take 3 (partition-by-five (get @globals :pdlist)))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 3 (take 4 (partition-by-five (get @globals :pdlist)))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 4 (take 5 (partition-by-five (get @globals :pdlist)))) "[]"))]
+             ]
+             [:tr {:style {:border "1px solid #ddd"}}
+              [:td {:style (assoc td-cell-style :font-weight "bold")} "Price Deltas"]
+              [:td {:style td-cell-style} (str (or (mapv truncate-number (take 1 (get @globals :price-deltas))) "-"))]
+              [:td {:style td-cell-style} (str (or (mapv truncate-number (drop 1 (take 2 (get @globals :price-deltas)))) "-"))]
+              [:td {:style td-cell-style} (str (or (mapv truncate-number (drop 2 (take 3 (get @globals :price-deltas)))) "-"))]
+              [:td {:style td-cell-style} (str (or (mapv truncate-number (drop 3 (take 4 (get @globals :price-deltas)))) "-"))]
+              [:td {:style td-cell-style} (str (or (mapv truncate-number (drop 4 (take 5 (get @globals :price-deltas)))) "-"))]
+             ]
+             [:tr {:style {:border "1px solid #ddd"}}
+              [:td {:style (assoc td-cell-style :font-weight "bold")} "Supply"]
+              [:td {:style td-cell-style} (str (or (take 1 (partition-by-five (get @globals :supply-list))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 1 (take 2 (partition-by-five (get @globals :supply-list)))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 2 (take 3 (partition-by-five (get @globals :supply-list)))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 3 (take 4 (partition-by-five (get @globals :supply-list)))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 4 (take 5 (partition-by-five (get @globals :supply-list)))) "[]"))]
+             ]
+             [:tr {:style {:border "1px solid #ddd"}}
+              [:td {:style (assoc td-cell-style :font-weight "bold")} "Demand"]
+              [:td {:style td-cell-style} (str (or (take 1 (partition-by-five (get @globals :demand-list))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 1 (take 2 (partition-by-five (get @globals :demand-list)))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 2 (take 3 (partition-by-five (get @globals :demand-list)))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 3 (take 4 (partition-by-five (get @globals :demand-list)))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 4 (take 5 (partition-by-five (get @globals :demand-list)))) "[]"))]
+             ]
+             [:tr {:style {:border "1px solid #ddd"}}
+              [:td {:style (assoc td-cell-style :font-weight "bold")} "Surplus"]
+              [:td {:style td-cell-style} (str (or (take 1 (partition-by-five (get @globals :surplus-list))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 1 (take 2 (partition-by-five (get @globals :surplus-list)))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 2 (take 3 (partition-by-five (get @globals :surplus-list)))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 3 (take 4 (partition-by-five (get @globals :surplus-list)))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 4 (take 5 (partition-by-five (get @globals :surplus-list)))) "[]"))]
+             ]
+             [:tr {:style {:border "1px solid #ddd"}}
+              [:td {:style (assoc td-cell-style :font-weight "bold")} "Threshold Report"]
+              [:td {:style td-cell-style} (str (or (take 1 (partition-by-five (get @globals :threshold-report))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 1 (take 2 (partition-by-five (get @globals :threshold-report)))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 2 (take 3 (partition-by-five (get @globals :threshold-report)))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 3 (take 4 (partition-by-five (get @globals :threshold-report)))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 4 (take 5 (partition-by-five (get @globals :threshold-report)))) "[]"))]
+             ]
+             [:tr {:style {:border "1px solid #ddd"}}
+              [:td {:style (assoc td-cell-style :font-weight "bold")} "Threshold Met?"]
+              [:td {:style (assoc td-cell-style :background (if (first (take 1 (get @globals :threshold-granular))) "green" "red"))} 
+                   (str (or (take 1 (get @globals :threshold-granular)) "-"))]
+              [:td {:style (assoc td-cell-style :background (if (first (drop 1 (take 2 (get @globals :threshold-granular)))) "green" "red"))} 
+                   (str (or (drop 1 (take 2 (get @globals :threshold-granular))) "-"))]
+              [:td {:style (assoc td-cell-style :background (if (first (drop 2 (take 3 (get @globals :threshold-granular)))) "green" "red"))} 
+                   (str (or (drop 2 (take 3 (get @globals :threshold-granular))) "-"))]
+              [:td {:style (assoc td-cell-style :background (if (first (drop 3 (take 4 (get @globals :threshold-granular)))) "green" "red"))} 
+                   (str (or (drop 3 (take 4 (get @globals :threshold-granular))) "-"))]
+              [:td {:style (assoc td-cell-style :background (if (first (drop 4 (take 5 (get @globals :threshold-granular)))) "green" "red"))} 
+                   (str (or (drop 4 (take 5 (get @globals :threshold-granular))) "-"))]
+             ]
+           ]
      ]))
 
 
