@@ -4,6 +4,14 @@
               [accountant.core :as accountant]
               [pequod-cljs.ex006 :as ex006]
               [pequod-cljs.ex007 :as ex007]
+              [pequod-cljs.ex008 :as ex008]
+              [pequod-cljs.ex009 :as ex009]
+              [pequod-cljs.ex010 :as ex010]
+              [pequod-cljs.ex011 :as ex011]
+              [pequod-cljs.ex012 :as ex012]
+              [pequod-cljs.ex013 :as ex013]
+              [pequod-cljs.ex014 :as ex014]
+              [pequod-cljs.ex015 :as ex015]
               [goog.string :as gstring]
               [goog.string.format]))
 
@@ -62,7 +70,6 @@
 
 ; TODO: don't hard code labor supply or nature supply
 (defn setup [t _ experiment]
-  (println "experiment:" @experiment)
   (let [intermediate-inputs (vec (range 1 (inc (t :intermediate-inputs))))
         nature-types (vec (range 1 (inc (t :resources))))
         labor-types (vec (range 1 (inc (t :labors))))
@@ -83,10 +90,26 @@
                :ccs (case @experiment
                       "ex006" ex006/ccs
                       "ex007" ex007/ccs
+                      "ex008" ex008/ccs
+                      "ex009" ex009/ccs
+                      "ex010" ex010/ccs
+                      "ex011" ex011/ccs
+                      "ex012" ex012/ccs
+                      "ex013" ex013/ccs
+                      "ex014" ex014/ccs
+                      "ex015" ex015/ccs
                       ex006/ccs)
                :wcs (case @experiment
                       "ex006" ex006/wcs
                       "ex007" ex007/wcs
+                      "ex008" ex008/wcs
+                      "ex009" ex009/wcs
+                      "ex010" ex010/wcs
+                      "ex011" ex011/wcs
+                      "ex012" ex012/wcs
+                      "ex013" ex013/wcs
+                      "ex014" ex014/wcs
+                      "ex015" ex015/wcs
                       ex006/wcs)))))
 
 
@@ -682,7 +705,16 @@
                :id :experiment
                :on-change #(reset! experiment-to-use (-> % .-target .-value))}
           [:option {:key :ex006} "ex006"]
-          [:option {:key :ex007} "ex007"]]]
+          [:option {:key :ex007} "ex007"]
+          [:option {:key :ex008} "ex008"]
+          [:option {:key :ex009} "ex009"]
+          [:option {:key :ex010} "ex010"]
+          [:option {:key :ex011} "ex011"]
+          [:option {:key :ex012} "ex012"]
+          [:option {:key :ex013} "ex013"]
+          [:option {:key :ex014} "ex014"]
+          [:option {:key :ex015} "ex015"]
+          ]]
          [:td [:input {:type "button" :value "Setup"
               :on-click #(swap! globals setup globals experiment-to-use)}]]
          [:td [:input {:type "button" :value "Iterate 1X"
