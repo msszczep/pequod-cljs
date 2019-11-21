@@ -673,41 +673,32 @@
 ;; -------------------------
 ;; Views-
 
-#_(defn setup-ex001-button-pg []
-  [:input {:type "button" :value "Setup Ex001 w/Public Goods"
-           :on-click #(swap! globals setup globals "ex001pg")}])
-
 (defn all-buttons []
   (let [experiment-to-use (atom "ex006")]
     [:div
-     [:select {:field :list
+     [:table
+       [:tr
+         [:td [:select {:field :list
                :id :experiment
                :on-change #(reset! experiment-to-use (-> % .-target .-value))}
-      [:option {:key :ex006} "ex006"]
-      [:option {:key :ex007} "ex007"]]
-     " "
-     [:input {:type "button" :value "Setup"
-              :on-click #(swap! globals setup globals experiment-to-use)}]
-     " "
-     [:input {:type "button" :value "Iterate 1X"
-           :on-click #(swap! globals proceed globals)}]
-     " "
-     [:input {:type "button" :value "Iterate 5X"
-           :on-click #(swap! globals proceed-iterate-five globals)}]
-     " "
-     [:input {:type "button" :value "Iterate 10X"
-           :on-click #(swap! globals proceed-iterate-ten globals)}]
-     " "
-     [:input {:type "button" :value "Iterate 50X"
-           :on-click #(swap! globals proceed-iterate-fifty globals)}]
-     "  "
-     (str "Exp: " (count (get @globals :experiment)))
-     "  "
-     (str "#WCs: " (count (get @globals :wcs)))
-     "  "
-     (str "#CCs: " (count (get @globals :ccs)))
-     "  "
-     (str "Threshold-met?: " (get @globals :threshold-met?))]))
+          [:option {:key :ex006} "ex006"]
+          [:option {:key :ex007} "ex007"]]]
+         [:td [:input {:type "button" :value "Setup"
+              :on-click #(swap! globals setup globals experiment-to-use)}]]
+         [:td [:input {:type "button" :value "Iterate 1X"
+           :on-click #(swap! globals proceed globals)}]]
+         [:td [:input {:type "button" :value "Iterate 5X"
+           :on-click #(swap! globals proceed-iterate-five globals)}]]
+         [:td [:input {:type "button" :value "Iterate 10X"
+           :on-click #(swap! globals proceed-iterate-ten globals)}]]
+         [:td [:input {:type "button" :value "Iterate 50X"
+           :on-click #(swap! globals proceed-iterate-fifty globals)}]] 
+         [:td "WCs:"]
+         [:td (count (get @globals :wcs))]
+         [:td "CCs:"]
+         [:td (count (get @globals :ccs))]
+         [:td "Threshold met?"]
+         [:td (get @globals :threshold-met?)]]]]))
 
 
 (defn truncate-number [n]
@@ -726,18 +717,10 @@
     (let [keys-to-show [:private-good-prices :threshold-met? :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :surplus-list :supply-list :demand-list :threshold-report :threshold-granular]
           td-cell-style {:border "1px solid #ddd" :text-align "center" :vertical-align "middle" :padding "8px"}
         ]
-     [:div " "
+     [:div [:h4 "Welcome to pequod-cljs"]
+           " "
            (all-buttons)
            [:p]
-           #_[:table
-            (map (fn [x] [:tr [:td (str (first x))]
-                          [:td (str (if (contains? #{:iteration :threshold-met? :price-delta :threshold-granular} (first x))
-                                       (second x)
-                                       (partition-all 5 (map truncate-number (flatten (second x)))))
-)]])
-                 (sort (select-keys @globals keys-to-show))
-                 )]
-            #_[:p]
            [:table {:style {:width "100%" :padding "8px" :border "1px solid #ddd"}}
              [:tr 
                [:th {:style td-cell-style} "Iteration: " (get @globals :iteration)]
@@ -821,9 +804,7 @@
 
 
 (defn home-page []
-  [:div
-   [:h4 "Welcome to pequod-cljs"]
-   (show-globals)])
+  (show-globals))
 
 (defn about-page []
   [:div [:h2 "About pequod-cljs"]
