@@ -621,6 +621,21 @@
        (reduce +)))
 
 
+(defn check-wc-exponents [wc]
+  (let [sum-all-exponents (reduce + 
+                            (concat (:labor-exponents wc)
+                                    (:input-exponents wc)
+                                    (:nature-exponents wc)))]
+    (< sum-all-exponents 1)))
+
+
+(defn check-cc-exponents [cc]
+  (let [sum-all-exponents (reduce + 
+                            (concat (:utility-exponents cc)
+                                    (:public-good-exponents cc)))]
+    (< sum-all-exponents 1)))
+
+
 (defn adjust-delta [price-delta raise-or-lower]
   (let [price-delta-adjustment-fn
          (if (= raise-or-lower "raise") + -)
@@ -730,9 +745,7 @@
          [:td "WCs:"]
          [:td (count (get @globals :wcs))]
          [:td "CCs:"]
-         [:td (count (get @globals :ccs))]
-         [:td "Threshold met?"]
-         [:td (get @globals :threshold-met?)]]]]))
+         [:td (count (get @globals :ccs))]]]]))
 
 
 (defn truncate-number [n]
@@ -748,11 +761,13 @@
          (mapv (partial into [])))))
 
 (defn show-globals []
-    (let [keys-to-show [:private-good-prices :threshold-met? :iteration :price-deltas :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :price-delta :price-deltas :pdlist :surplus-list :supply-list :demand-list :threshold-report :threshold-granular]
-          td-cell-style {:border "1px solid #ddd" :text-align "center" :vertical-align "middle" :padding "8px"}
+    (let [td-cell-style {:border "1px solid #ddd" :text-align "center" :vertical-align "middle" :padding "8px"}
         ]
      [:div [:h4 "Welcome to pequod-cljs"]
            " "
+           ;[:h4 (str (frequencies (map check-wc-exponents (get @globals :wcs))))]
+           ;[:h4 (str (frequencies (map check-cc-exponents (get @globals :ccs))))]
+           ;" "
            (all-buttons)
            [:p]
            [:table {:style {:width "100%" :padding "8px" :border "1px solid #ddd"}}
