@@ -587,26 +587,28 @@
 
 
 (defn check-surpluses [t]
-  (letfn [(check-producers [surpluses producers inputs]
+  (letfn [(check-producers-previous [surpluses producers inputs]
             (some #(> (Math/abs (nth surpluses (dec %)))
                       (* (:surplus-threshold t)
                          (reduce + (map :output producers))))
-                  inputs))
+                    inputs))
+          (check-producers [surpluses supplies inputs]
+            (some #(> (Math/abs (nth surpluses (dec %)))
+                      (* (:surplus-threshold t) (nth supplies (dec %))))
+                    inputs))
           (check-supplies [surpluses supply inputs surplus-threshold]
             (some #(> (Math/abs (nth surpluses (dec %)))
                       (* surplus-threshold (nth supply (dec %))))
-                  inputs))
+                    inputs))
           (get-producers [wcs industry]
             (filter #(= industry (% :industry))) wcs)]
     (let [surplus-threshold (:surplus-threshold t)
-          private-good-producers (get-producers (:wcs t) 0)
-          im-producers (get-producers (:wcs t) 1)
-          public-good-producers (get-producers (:wcs t) 2)
-          private-goods-check (check-producers (:private-good-surpluses t) private-good-producers (:private-goods t))
-          im-goods-check (check-producers (:intermediate-good-surpluses t) im-producers (:intermediate-inputs t))
+          [private-good-supply im-supply _ _ public-good-supply] (get-supply-list t)
+          private-goods-check (check-producers (:private-good-surpluses t) private-good-supply (:private-goods t))
+          im-goods-check (check-producers (:intermediate-good-surpluses t) im-supply (:intermediate-inputs t))
           nature-check (check-supplies (:nature-surpluses t) (:natural-resources-supply t) (:nature-types t) surplus-threshold)
           labor-check (check-supplies (:labor-surpluses t) (:labor-supply t) (:labor-types t) surplus-threshold)
-          public-good-check (check-producers (:public-good-surpluses t) public-good-producers (:public-good-types t))]
+          public-good-check (check-producers (:public-good-surpluses t) public-good-supply (:public-good-types t))]
       [(every? nil? [private-goods-check im-goods-check nature-check labor-check public-good-check])
        (mapv nil? [private-goods-check im-goods-check nature-check labor-check public-good-check])]
       )))
