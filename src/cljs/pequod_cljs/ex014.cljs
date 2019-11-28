@@ -7376,7 +7376,7 @@
  {:effort 0.5,
   :cq 0.25,
   :ce 1,
-  :labor-exponents [0.31819492385861914],
+  :labor-exponents [0.21819492385861914],
   :industry 1,
   :output 0,
   :s 1,
@@ -7387,7 +7387,7 @@
   :production-inputs [[1] [1] [5]],
   :input-exponents [0.2800602621994829],
   :xe 0.05,
-  :nature-exponents [0.33180717268999876],
+  :nature-exponents [0.23180717268999876],
   :a 0.25}
  {:effort 0.5,
   :cq 0.25,

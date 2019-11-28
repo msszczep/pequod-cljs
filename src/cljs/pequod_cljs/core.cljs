@@ -12,6 +12,9 @@
               [pequod-cljs.ex013 :as ex013]
               [pequod-cljs.ex014 :as ex014]
               [pequod-cljs.ex015 :as ex015]
+              [pequod-cljs.ex016 :as ex016]
+              [pequod-cljs.ex017 :as ex017]
+              [pequod-cljs.ex018 :as ex018]
               [goog.string :as gstring]
               [goog.string.format]))
 
@@ -68,6 +71,14 @@
       :price-deltas (vec (repeat 5 0.05))
       :pdlist (vec (repeat (+ private-goods im-inputs resources labor public-goods) 0.05)))))
 
+(defn add-ids-to-wcs [wcs]
+  (loop [i 1
+         wcs wcs
+         updated-wcs []]
+    (if (empty? wcs)
+      updated-wcs
+      (recur (inc i) (rest wcs) (conj updated-wcs (assoc (first wcs) :id i))))))
+
 ; TODO: don't hard code labor supply or nature supply
 (defn setup [t _ experiment]
   (let [intermediate-inputs (vec (range 1 (inc (t :intermediate-inputs))))
@@ -98,19 +109,26 @@
                       "ex013" ex013/ccs
                       "ex014" ex014/ccs
                       "ex015" ex015/ccs
+                      "ex016" ex016/ccs
+                      "ex017" ex017/ccs
+                      "ex018" ex018/ccs
                       ex006/ccs)
-               :wcs (case @experiment
-                      "ex006" ex006/wcs
-                      "ex007" ex007/wcs
-                      "ex008" ex008/wcs
-                      "ex009" ex009/wcs
-                      "ex010" ex010/wcs
-                      "ex011" ex011/wcs
-                      "ex012" ex012/wcs
-                      "ex013" ex013/wcs
-                      "ex014" ex014/wcs
-                      "ex015" ex015/wcs
-                      ex006/wcs)))))
+               :wcs (add-ids-to-wcs
+                      (case @experiment
+                         "ex006" ex006/wcs
+                         "ex007" ex007/wcs
+                         "ex008" ex008/wcs
+                         "ex009" ex009/wcs
+                         "ex010" ex010/wcs
+                         "ex011" ex011/wcs
+                         "ex012" ex012/wcs
+                         "ex013" ex013/wcs
+                         "ex014" ex014/wcs
+                         "ex015" ex015/wcs
+                         "ex016" ex016/wcs
+                         "ex017" ex017/wcs
+                         "ex018" ex018/wcs
+                         ex006/wcs))))))
 
 
 (defn consume [private-goods private-good-prices public-goods public-good-prices num-of-ccs cc]
@@ -587,12 +605,7 @@
 
 
 (defn check-surpluses [t]
-  (letfn [(check-producers-previous [surpluses producers inputs]
-            (some #(> (Math/abs (nth surpluses (dec %)))
-                      (* (:surplus-threshold t)
-                         (reduce + (map :output producers))))
-                    inputs))
-          (check-producers [surpluses supplies inputs]
+  (letfn [(check-producers [surpluses supplies inputs]
             (some #(> (Math/abs (nth surpluses (dec %)))
                       (* (:surplus-threshold t) (nth supplies (dec %))))
                     inputs))
@@ -713,6 +726,24 @@
 ;; -------------------------
 ;; Views-
 
+
+(defn check-quantities [[id input-quantities nature-quantities labor-quantities]]
+  (let [i (apply + input-quantities)
+        n (apply + nature-quantities)
+        l (apply + labor-quantities)]
+   (< 5 i)))
+
+
+(defn sum-quantities [[id input-quantities nature-quantities labor-quantities input-exponents nature-exponents labor-exponents]]
+  (let [i (apply + input-quantities)
+        n (apply + nature-quantities)
+        l (apply + labor-quantities)
+        ie (apply + input-exponents)
+        ne (apply + nature-exponents)
+        le (apply + labor-exponents)]
+    [id (+ ie ne le) (+ i n l)]))
+
+
 (defn all-buttons []
   (let [experiment-to-use (atom "ex006")]
     [:div
@@ -731,6 +762,9 @@
           [:option {:key :ex013} "ex013"]
           [:option {:key :ex014} "ex014"]
           [:option {:key :ex015} "ex015"]
+          [:option {:key :ex016} "ex016"]
+          [:option {:key :ex017} "ex017"]
+          [:option {:key :ex018} "ex018"]
           ]]
          [:td [:input {:type "button" :value "Setup"
               :on-click #(swap! globals setup globals experiment-to-use)}]]
@@ -765,9 +799,6 @@
         ]
      [:div [:h4 "Welcome to pequod-cljs"]
            " "
-           ;[:h4 (str (frequencies (map check-wc-exponents (get @globals :wcs))))]
-           ;[:h4 (str (frequencies (map check-cc-exponents (get @globals :ccs))))]
-           ;" "
            (all-buttons)
            [:p]
            [:table {:style {:width "100%" :padding "8px" :border "1px solid #ddd"}}
@@ -849,6 +880,10 @@
                    (str (or (drop 4 (take 5 (get @globals :threshold-granular))) "-"))]
              ]
            ]
+;      [:p (str (filter check-quantities (map (juxt :id :input-quantities :nature-quantities :labor-quantities) (get @globals :wcs))))]
+;      [:p (str (reverse (sort-by second (map sum-quantities (map (juxt :id :input-quantities :nature-quantities :labor-quantities :input-exponents :nature-exponents :labor-exponents) (get @globals :wcs))))))]
+;      [:p (str (map (juxt :id :input-quantities :nature-quantities :labor-quantities :input-exponents :nature-exponents :labor-exponents) (get @globals :wcs)))]
+;      [:p (str (get @globals :wcs))]
      ]))
 
 
