@@ -31,6 +31,8 @@
          :resources                 5
          :labors                    5
          :public-goods              5
+         ; to scale up the number of categories, simply adjust
+         ; this ^^ set of numbers
 
          :private-good-prices      []
          :intermediate-good-prices []
@@ -354,7 +356,7 @@
 
 
 (defn update-surpluses-prices
-  [type inputs prices wcs ccs natural-resources-supply labor-supply price-delta pdlist]
+  [type inputs prices wcs ccs natural-resources-supply labor-supply price-delta pdlist offset-1 offset-2 offset-3 offset-4]
   (loop [inputs inputs
          prices prices
          surpluses []
@@ -413,10 +415,10 @@
                                        (count ccs)))
             j-offset (condp = type
                        "private-goods" 0
-                       "intermediate" 5
-                       "nature" 10
-                       "labor" 15
-                       "public-goods" 20)
+                       "intermediate" offset-1
+                       "nature" (+ offset-1 offset-2)
+                       "labor" (+ offset-1 offset-2 offset-3)
+                       "public-goods" (+ offset-1 offset-2 offset-3 offset-4))
             surplus (- supply demand)
             delta (get-deltas j-offset price-delta pdlist)
             new-delta (cond (<= delta 1) delta
@@ -573,11 +575,11 @@
                               (t :ccs))
                     :wcs (map (partial proposal (t :private-good-prices) (t :intermediate-good-prices) (t :nature-prices) (t :labor-prices) (t :public-good-prices))
                               (t :wcs)))
-        {private-good-prices :prices, private-good-surpluses :surpluses} (update-surpluses-prices "private-goods" (t2 :private-goods) (t2 :private-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
-        {intermediate-good-prices :prices, intermediate-good-surpluses :surpluses} (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :intermediate-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
-        {nature-prices :prices, nature-surpluses :surpluses} (update-surpluses-prices "nature" (t2 :nature-types) (t2 :nature-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
-        {labor-prices :prices, labor-surpluses :surpluses} (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
-        {public-good-prices :prices, public-good-surpluses :surpluses} (update-surpluses-prices "public-goods" (t2 :public-good-types) (t2 :public-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist))
+        {private-good-prices :prices, private-good-surpluses :surpluses} (update-surpluses-prices "private-goods" (t2 :private-goods) (t2 :private-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
+        {intermediate-good-prices :prices, intermediate-good-surpluses :surpluses} (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :intermediate-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
+        {nature-prices :prices, nature-surpluses :surpluses} (update-surpluses-prices "nature" (t2 :nature-types) (t2 :nature-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
+        {labor-prices :prices, labor-surpluses :surpluses} (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
+        {public-good-prices :prices, public-good-surpluses :surpluses} (update-surpluses-prices "public-goods" (t2 :public-good-types) (t2 :public-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
         surplus-list (vector private-good-surpluses intermediate-good-surpluses nature-surpluses labor-surpluses public-good-surpluses)
         supply-list (get-supply-list t2)
         demand-list (get-demand-list t2)
