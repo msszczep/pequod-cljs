@@ -1,0 +1,220 @@
+mitchells@mitchells-ThinkPad-T410:~/Desktop/pequod-v/pequod-cljs$ git diff
+diff --git a/src/cljs/pequod_cljs/core.cljs b/src/cljs/pequod_cljs/core.cljs
+index 2941ec4..ae0742d 100644
+--- a/src/cljs/pequod_cljs/core.cljs
++++ b/src/cljs/pequod_cljs/core.cljs
+@@ -11,14 +11,17 @@
+          :init-intermediate-price 100
+          :init-labor-price        150
+          :init-nature-price       150
++         :public-good-price       100
+          :finals                    4
+          :inputs                    4
+          :resources                 1
+          :labors                    1
++         :public-goods              1
+          :final-prices             []
+          :input-prices             []
+          :labor-prices             []
+          :nature-prices            []
++         :public-goods-prices      []
+          :old-final-prices         []
+          :old-input-prices         []
+          :old-nature-prices        []
+@@ -27,6 +30,7 @@
+          :input-surpluses          []
+          :nature-surpluses         []
+          :labor-surpluses          []
++         :public-goods-surpluses   []
+          :threshold-met            false
+          :pdlist                   []
+          :delta-delay              0
+@@ -58,16 +62,19 @@
+   (let [finals (t :finals)
+         inputs (t :inputs)
+         resources (t :resources)
+-        labor (t :labors)]
++        labor (t :labors)
++        public-goods (t :public-goods)]
+     (assoc t
+       :final-prices (vec (repeat finals (t :init-final-price)))
+       :input-prices (vec (repeat inputs (t :init-intermediate-price)))
+       :nature-prices (vec (repeat resources (t :init-nature-price)))
+       :labor-prices (vec (repeat labor (t :init-labor-price)))
++      :public-good-prices (vec (repeat public-goods (t :public-good-price)))
+       :price-deltas (vec (repeat 4 0.05))
+       :pdlist (vec (repeat (+ finals inputs resources labor) 0.05)))))
+ 
+ (defn create-ccs [consumer-councils workers-per-council finals]
++  "Note: ccs does NOT create public-ggod-exponents in current iteration"
+   (let [effort 1
+         cz (/ 0.5 finals)
+         utility-exponents (->> #(+ cz (rand cz))
+@@ -79,7 +86,9 @@
+                     :income (* 500 effort workers-per-council)
+                     :cy (+ 6 (rand 9))
+                     :utility-exponents (vec %)
+-                    :final-demands (vec (repeat 5 0)))
++                    :final-demands (vec (repeat 5 0))
++; make pollutant a negative exponent between 0 and -1 in consumer function
++                    )
+          utility-exponents)))
+ 
+ (defn create-wcs [worker-councils goods industry]
+@@ -88,7 +97,7 @@
+                           {:industry industry :product %})))
+        flatten))
+ 
+-(defn continue-setup-wcs [intermediate-inputs nature-types labor-types wc]
++(defn continue-setup-wcs [intermediate-inputs nature-types labor-types public-goods wc]
+   "Assumes wc is a map"
+   (letfn [(get-random-subset [input-seq]
+             (->> input-seq
+@@ -98,7 +107,8 @@
+                  vec))]
+     (let [production-inputs (vector (get-random-subset intermediate-inputs)
+                                     (get-random-subset nature-types)
+-                                    (get-random-subset labor-types))
++                                    (get-random-subset labor-types)
++                                    (get-random-subset public-goods))
+           input-exponents (when (pos? (count (first production-inputs)))
+                             (let [xz (/ 0.2 (count (first production-inputs)))]
+                               (vec (take (count (first production-inputs))
+@@ -106,7 +116,11 @@
+           nature-exponents (let [rz (/ 0.2 (count (second production-inputs)))]
+                              (vec (take (count (second production-inputs))
+                                         (repeatedly #(+ 0.05 rz (rand rz))))))
+-          labor-exponents (let [lz (/ 0.2 (count (last production-inputs)))]
++          labor-exponents (let [lz (/ 0.2 (count (nth production-inputs 2)))]
++                            (vec (take (count (nth production-inputs 2))
++                                       (repeatedly #(+ 0.05 lz (rand lz))))))
++          public-good-exponents
++                          (let [lz (/ 0.2 (count (last production-inputs)))]
+                             (vec (take (count (last production-inputs))
+                                        (repeatedly #(+ 0.05 lz (rand lz))))))]
+       (merge wc {:production-inputs production-inputs
+@@ -115,6 +129,7 @@
+                  :input-exponents input-exponents
+                  :nature-exponents nature-exponents
+                  :labor-exponents labor-exponents
++                 :public-good-exponents public-good-exponents
+                  :cq 0.25
+                  :ce 1
+                  :du 7
+@@ -122,6 +137,8 @@
+                  :a 0.25
+                  :effort 0.5
+                  :output 0
++;                 :pollution 1
++;                 :pollution-exponent 0.01
+                  :labor-quantities [0]}))))
+ 
+ 
+@@ -163,6 +180,7 @@
+         nature-types (vec (range 1 (inc (t :resources))))
+         labor-types (vec (range 1 (inc (t :labors))))
+         final-goods (vec (range 1 (inc (t :finals))))
++        public-good-types (vec (range 1 (inc (t :public-goods))))
+         ccs (create-ccs 100 10 4)]
+     (-> t
+         initialize-prices
+@@ -174,6 +192,7 @@
+                :intermediate-inputs intermediate-inputs
+                :nature-types nature-types
+                :labor-types labor-types
++               :public-good-types public-good-types
+                :surplus-threshold 0.02
+                :ccs (if (= button-type "random") ccs ex001/ccs)
+                :wcs
+@@ -192,20 +211,24 @@
+   (let [adj-input-exponent (rand-nth [0.01 -0.01])
+         adj-nature-exponent (rand-nth [0.01 -0.01])
+         adj-labor-exponent (rand-nth [0.01 -0.01])
++        adj-public-good-exponent (rand-nth [0.01 -0.01])
+         input-exponents (:input-exponents wc)
+         labor-exponents (:labor-exponents wc)
+-        nature-exponents (:nature-exponents wc)]
++        nature-exponents (:nature-exponents wc)
++        public-good-exponents (:public-good-exponents wc)]
+     (merge wc
+            {:input-exponents
+               (mapv (partial + adj-input-exponent) input-exponents)
+             :labor-exponents
+               (mapv (partial + adj-labor-exponent) labor-exponents)
+             :nature-exponents
+-              (mapv (partial + adj-nature-exponent) nature-exponents)})))
++              (mapv (partial + adj-nature-exponent) nature-exponents)
++            :public-good-exponents
++              (mapv (partial + public-good-exponent) public-good-exponents)})))
+ 
+ 
+ (defn reset-all-but-prices [t _ button-type]
+-  (assoc t :ccs ex001/ccs
++  (assoc t :ccs ex001/ccs ; fix this?
+            :delta-delay 5
+            :demand-list []
+            :final-surpluses []
+@@ -214,6 +237,7 @@
+            :labor-surpluses []
+            :lorenz-gini-tuple [[] 0]
+            :nature-surpluses []
++           :public-goods-surpluses []
+            :pdlist [0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5]
+            :price-deltas [0.5 0.5 0.5 0.5]
+            :supply-list []
+@@ -238,6 +262,7 @@
+ (defn assign-new-proposal [production-inputs xs]
+   (let [num-input-quantities (count (first production-inputs))
+         num-nature-quantities (count (second production-inputs))
++        num-labor-quantities (count (nth production-inputs 2))
+         input-quantities (->> xs
+                               (take num-input-quantities)
+                               (into []))
+@@ -247,8 +272,11 @@
+                                (into []))
+         labor-quantities (->> xs
+                               (drop (+ num-input-quantities num-nature-quantities))
++                              (into []))
++        public-good-quantities (->> xs
++                               (drop (+ num-input-quantities num-nature-quantities num-labor-quantities))
+                               (into []))]
+-    [input-quantities nature-quantities labor-quantities]))
++    [input-quantities nature-quantities labor-quantities public-good-quantities]))
+ 
+ 
+ (defn solution-1 [a s c k ps b λ p-i]
+@@ -257,13 +285,14 @@
+         output (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (- (* b1 k (Math/log b1))) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (* c (Math/log s)) (- (* c (Math/log λ))) (- (* b1 k (Math/log λ)))) (+ c (- k) (* k b1))))
+         x1 (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (* c (Math/log b1)) (- (* k (Math/log b1))) (- (* c (Math/log c))) (* c (Math/log k)) (- (* c (Math/log p1))) (* k (Math/log p1)) (* c (Math/log s)) (- (* k (Math/log λ)))) (+ c (- k) (* k b1))))
+         effort (Math/pow Math/E (/ (+ (- (* (Math/log a))) (- (* b1 (Math/log b1))) (- (* (Math/log c))) (* b1 (Math/log c)) (* (Math/log k)) (- (* b1 (Math/log k))) (* b1 (Math/log p1)) (* (Math/log s)) (- (* b1 (Math/log s))) (- (* (Math/log λ)))) (+ c (- k) (* k b1))))
+-        [input-qs nature-qs labor-qs] (assign-new-proposal p-i [x1])]
++        [input-qs nature-qs labor-qs pg-qs] (assign-new-proposal p-i [x1])]
+     {:output output
+      :x1 x1
+      :effort effort
+      :input-quantities input-qs
+      :nature-quantities nature-qs
+-     :labor-quantities labor-qs}))
++     :labor-quantities labor-qs
++     :public-good-quantities pg-qs}))
+ 
+ 
+ (defn solution-2 [a s c k ps b λ p-i]
+@@ -273,14 +302,15 @@
+         x1 (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (* c (Math/log b1)) (- (* k (Math/log b1))) (* b2 k (Math/log b1)) (- (* b2 k (Math/log b2))) (- (* c (Math/log c))) (* c (Math/log k)) (- (* c (Math/log p1))) (* k (Math/log p1)) (- (* b2 k (Math/log p1))) (* b2 k (Math/log p2)) (* c (Math/log s)) (- (* k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2))))
+         x2 (Math/pow Math/E (/ (+ (- (* k (Math/log a))) (- (* b1 k (Math/log b1))) (* c (Math/log b2)) (- (* k (Math/log b2))) (* b1 k (Math/log b2)) (- (* c (Math/log c))) (* c (Math/log k)) (* b1 k (Math/log p1)) (- (* c (Math/log p2))) (* k (Math/log p2)) (- (* b1 k (Math/log p2))) (* c (Math/log s)) (- (* k (Math/log λ)))) (+ c (- k) (* k b1) (* k b2))))
+         effort (Math/pow Math/E (/ (+ (- (* (Math/log a))) (- (* b1 (Math/log b1))) (- (* b2 (Math/log b2))) (- (* (Math/log c))) (* b1 (Math/log c)) (* b2 (Math/log c)) (* (Math/log k)) (- (* b1 (Math/log k))) (- (* b2 (Math/log k))) (* b1 (Math/log p1)) (* b2 (Math/log p2)) (* (Math/log s)) (- (* b1 (Math/log s))) (- (* b2 (Math/log s))) (- (* (Math/log λ)))) (+ c (- k) (* k b1) (* k b2))))
+-        [input-qs nature-qs labor-qs] (assign-new-proposal p-i [x1 x2])]
++        [input-qs nature-qs labor-qs pg-qs] (assign-new-proposal p-i [x1 x2])]
+     {:output output
+      :x1 x1
+      :x2 x2
+      :effort effort
+      :input-quantities input-qs
+      :nature-quantities nature-qs
+-     :labor-quantities labor-qs}))
++     :labor-quantities labor-qs
++     :public-good-quantities pg-qs}))
+ 
+ 
+ (defn solution-3 [a s c k ps b λ p-i]

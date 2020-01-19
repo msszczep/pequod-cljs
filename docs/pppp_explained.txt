@@ -1,0 +1,202 @@
+; Participatory Planning Procedure Prototype (PPPP, AKA Pequod)
+;
+; See the Info tab for the model in NetLogo for model purpose,
+; etc. The agents, variables, procedures, and reporters of the model
+; are documented directly below, with some minor information
+; documented within the code.
+;
+; Documentation is in-progress. The text "@..." occurs where more
+; information will be added.
+;
+;
+;
+; @AGENTS
+;
+; The primary agents of the model are councils whose collective
+; behavior affects prices and quantities for supply and demand.
+;
+; cc - consumer council
+; wc - worker council
+;
+;
+;
+; @VARIABLES
+;
+; CONSUMER COUNCILS
+;
+; effort             - allows for differential consumption comensurate with
+;                      effort; not yet impleted...not currently tied
+;                      to the effort of the consumers vis-a-vis their
+;                      worker council
+; df[N]              - proposed consumption quantities (demands) of the given good
+; income             - scales effort and acts as a budget constraint in optimizing
+;                      the utility function
+; cy                 - scalar for entire product in utility function; interpreted as
+;                      the total factor of utility
+; yf[N]              - exponents in utility function representing the utility
+;                      elastisticty of consumption of the given good
+; final-demands      - list of df[N]
+; utility-multiplier - INTERFACE PARAMETER allowing additional zeros
+;                      to be added to consumer utility; currently unused
+;
+; WORKER COUNCILS
+;
+; industry       - numerical index (1 is final and 2 is intermediate); is
+;                  not industry in the sense of manufacturing, etc
+; product        - numerical index; more like an industry; see product-price
+;                  reporter for interpretation
+; qf[N]          - (obsolete)
+; qi[N]          - (deprecated) see [P]-quantities
+; qn             - (deprecated) see [P]-quantities
+; ql             - (deprecated) see [P]-quantities
+; effort         - scales labor to output; allows consumers who are workers to
+;                  receive consumption comensurate with effort; not currently tied to
+;                  the effort of the consumers vis-a-vis their worker council
+; output         - quantity of the firm's final good
+; xf[N]          - (obsolete)
+; xi[N]          - (deprecated) see [P]-exponents
+; xn             - (deprecated) see [P]-exponents
+; xl             - (deprecated) see [P]-exponents
+; xe             - exponent for effort in the production function
+; cq             - scalar for entire product in production function; sometimes
+;                  interpreted as technology scalar or the total factor of
+;                  productivity; coefficient in production function; controllable
+;                  parameter
+; ce             - coefficient for disutility of effort; controllable parameter;
+;                  interpreted as being "unpleasentness elastisitcity"
+; du             - exponent for disutility of effort; controllable parameter
+; [P]-quantities - quantities for category P from {input, nature,
+;                  labor} (orders for firm)
+; [P]-exponents  - exponents in C-D production function for category P
+;                  from {input, nature, labor}
+; k              - alias for du
+; S              - alias for ce
+; A              - alias for cq
+;
+; GLOBALS
+;
+; prices              - (deprecated)
+; totals              - (deprecated)
+; price-f[N]          - (deprecated) see [P]-prices
+; price-i[N]          - (deprecated) see [P]-prices
+; price-n             - (deprecated) see [P]-prices
+; price-l             - (deprecated) see [P]-prices
+; surplus-f[N]        - (deprecated) see [P]-surpluses
+; surplus-i[N]        - (deprecated) see [P]-surpluses
+; surplus-n           - (deprecated) see [P]-surpluses
+; surplus-l           - (deprecated) see [P]-surpluses
+; lorenz-points       - along with GINI, used to measure income inequality
+; gini-index-reserve  - along with Lorenz values, used to measure income inequality
+; final-goods         - list of the economy's final goods (currently a
+;                       numerical index)
+; intermediate-inputs - list of the economy's intermediate goods
+;                       (currently a numerical index)
+; nature-types      - list of the economy's natural nature categories
+;                       (currently a numerical index)
+; labor-types         - list of the economy's labor nature categories
+;                       (currently a numerical index)
+; [P]-prices          - prices for category P from {final, input, nature,
+;                       labor}
+; [P]-surpluses       - surpluses for category P from {final, input,
+;                       nature, labor}
+; threshold-met?      - signals end of iterations once equilibrium is
+;                       obtained
+; experiment-number   - seed for random number generator; facilitates experimental reproducability
+; surplus-threshold   - interface value; the difference between values at which the model stops
+;
+;
+;
+; @PROCEDURES
+;
+; reset-prices           - part of setup
+; standardize-prices     - interface item; sets prices to defaults
+; randomize-prices       - uses experiment-number to seed random prices
+; randomize-councils     - randomly changes experiment-number
+; setup                  - standard procedure to set up agents and world, along with default variable values
+; factory-sort [x]       - (obsolete)
+; propose-c              - set proposed consumption quantities (demands)
+; propose-f              - (deprecated) alias for produce-final-goods
+; produce-final-goods    - updates the values for the final goods
+; propose-i              - (deprecated) alias for produce-input-goods
+; produce-input-goods    - updates the values for the input goods
+; propose-p              - (obsolete)
+; go                     - iterates (updates ticks) until the surplus threshold is met
+; check-surpluses        - compares differences between each nature and good to the surplus-threshold value
+; iterate-plan           - the heart of the model; invokes the planning/proposal procedures and updates the interface
+; list-prices            - tuplifies prices
+; round-prices           - rounds the prices
+; color-ccs              - pretties agents
+; color-wcs              - pretties agents
+; plot-if-small [x]      - used in Quantity History graph
+; update-lorenz-and-gini - @... ; borrowed from Uri Wilensky's SugarScape 3 Model in the Social Sciences library
+; normalize-prices       - (obsolete)
+; planning-bureau-3      - a core procedure; updates resource quantities and prices; located in the price-adjustment.nls include
+; planning-bureau-2      - (obsolete)
+; planning-bureau        - (obsolete)
+;
+;
+;
+; @REPORTERS
+;
+; x-sum                 - (obsolete)
+; consumer-utility      - reports consumer utility
+; GDP                   - the global sum of production
+; final-demand [x]      - reports the given item from the final-demands tuple
+; final-producers [x]   - reports the given item from the final-producers tuple
+; input-producers [x]   - reports the given item from the input-producers tuple
+; pf1s                  - reports the WCs for final good 1
+; pf2s                  - reports the WCs for final good 2
+; pfs                   - reports all final good WCs
+; pi1s                  - reports the WCs for intermediate good 1
+; pi2s                  - reports the WCs for intermediate good 2
+; pis                   - reports all intermediate good WCs
+; invoice               - one of four details for WC debugging @...
+; productivity          - one of four details for WC debugging @...
+; check-bounds [x]      - sets upper and lower bounds on the input
+; labor-supply          - reports the sum of all workers in CCs
+; pf1                   - reports the current prices of final good 1
+; pf2                   - reports the current prices of final good 2
+; pi1                   - reports the current prices of intermediate good 1
+; pi2                   - reports the current prices of intermediate good 2
+; pn                    - reports the current prices for the nature input
+; pl                    - reports the current prices for the labor input
+; gini                  - report the GINI
+; gini-people           - used in GINI analysis
+; gini-wealth           - used in GINI analysis
+; input [x]             - (unused)
+; nature [x]          - (unused)
+; labor [x]             - (unused)
+; final-surplus [x]     - reports the given item from the final-surplus tuple
+; input-surplus [x]     - reports the given item from the input-surplus tuple
+; nature-surplus [x]  - reports the given item from the nature-surplus tuple
+; labor-surplus [x]     - reports the given item from the labor-surplus tuple
+; final-price [x]       - reports the given item from the final-price tuple
+; input-price [x]       - reports the given item from the input-price tuple
+; nature-price [x]    - reports the given item from the nature-price tuple
+; labor-price [x]       - reports the given item from the labor-price tuple
+; input-quantity [x]    - reports the given item from the input-quantity tuple
+; nature-quantity [x] - reports the given item from the nature-quantity tuple
+; labor-quantity [x]    - reports the given item from the labor-quantity tuple
+; input-exponent [x]    - reports the given item from the input-exponent tuple
+; nature-exponent [x] - reports the given item from the nature-exponent tuple
+; labor-exponent [x]    - reports the given item from the labor-exponent tuple
+; effort-exponent       - creates alias for xe of WCs
+; product-price         - allows WCs to find their own prices of outputs
+; price-list            - tuplifies prices
+; supply-list           - tuplifies economic input values
+; demand-list           - tuplifies economic demand values
+; surplus-list          - tuplifies economic surplus values
+; percent-surplus-list  - reports the surplus:supply ratio as a percentage
+; total-surplus         - reports the total surplus as the sum of all the surpluses
+; space-list [listx]    - reduces the given listx tuple; used in interface reporters
+; produce               - (obsolete)
+; deltas                - (obsolete)
+; normal-price-vector   - (obsolete)
+;
+;
+;
+; @INCLUDES
+;
+; price-adjustment.nls     - procedures: planning-bureau-3
+; production-proposals.nls - procedures: produce-final-goods, produce-input-goods
+;

@@ -1,0 +1,29 @@
+Hi, folks.
+
+I need some help on a problem.
+
+You'll recall that two phone-calls ago, I wasn't sure how to add public-goods to the 
+get-supply-list and get-demand-list functions in pequod-cljs (the Netlogo equivalents
+of the reporters supply-list and demand-list in pequod2.nlogo).  At the time, we said
+that both reporters were simply reporter functions and had nothing to do with the 
+innards of the procedure and could be safely ignored.  
+
+It turns out, upon further investigation, that this is not the case.  The reporters 
+_are_ being used -- in the price-change and other-price-change functions which 
+adjust the price-deltas and pdlist variables.  We missed it because that functionality
+appears in a different file in Netlog -- in price-adjustment.nls, rather than the main
+pequod2.nlogo.
+
+I suspect that this is related to the cascade of errors I'm currently seeing, so we
+need to return to updating get-demand-list.  get-supply-list has been updated
+to include in public goods: we simply get all the worker councils with industry = 2,
+get their outputs, add them all up, put the sum in a vector, and put that vector as 
+part of the supply-list output.  However, I need some guidance on how to update
+get-demand-list; how do I code for the aggregate demand for the public goods, or
+how should I?   
+
+We discuss via email, or we can wait until Monday or later in the week if it works
+for folks.
+
+Thanks.
+-- Mitchell

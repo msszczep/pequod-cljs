@@ -1,0 +1,669 @@
+__includes [ "proposal-assignment.nls"
+             "price-adjustment.nls"
+             "production-proposals.nls"
+
+             "solution1.nls"
+             "solution2.nls"
+             "solution3.nls"
+             "solution4.nls"
+             "solution5.nls"
+             "solution6.nls"
+             "solution7.nls"
+             "solution8.nls"
+;             "solution9.nls"          ;;; odd solutions for effort are unusually long
+             "solution10.nls"
+;             "solution11.nls"         ;;; NetLogo parser cannot handle procedures of this length at present
+             "solution12.nls"
+              ]
+
+; keyword for defining the "turtles": group and individual units
+breed [ccs cc]
+breed [wcs wc]
+
+; define the variables for each cc
+ccs-own [ effort ; an integer reflecting the effort rating commensurate with
+                 ; additional consumption rights - not yet implemented?
+          df1 ; proposed consumption (demands) of the given good - UNUSED
+          df2 ; proposed consumption (demands) of the given good - UNUSED
+          income ; an integer that scales effort and acts as a budget constraint
+                 ; in optimizing the utility function (a measure that is to
+                 ; be maximized in any situation involving choice)
+          cy ; scalar for entire product in utility function; interpreted as
+             ; the total factor of utility - why is it called "cy"?
+          yf1 ; exponents in utility function representing the utility
+              ; elastisticty of consumption of the given good - UNUSED
+          yf2 ; exponents in utility function representing the utility
+              ; elastisticty of consumption of the given good - UNUSED
+          num-workers ; number of workers per council
+          final-demands ;  list of final demands
+          utility-exponents ; ???
+          ]
+
+; define the variables for each wc
+wcs-own [ industry ; numerical index (1 is final and 2 is intermediate); is
+                   ; not industry in the sense of manufacturing, etc
+          production-inputs ; like the variable says: a list of production inputs
+          product ; numerical index; more like an industry; see product-price
+                  ; reporter for interpretation
+          qf1 ; obsolete, unused
+          qf2 ; obsolete, unused
+          qi1 ; deprecated, unused, see [P]-quantities
+          qi2 ; (deprecated), unused, see [P]-quantities
+          qn ; (deprecated), unused, see [P]-quantities
+          ql ; (deprecated), unused, see [P]-quantities
+          effort ; - scales labor to output; allows consumers who are workers to
+          ; receive consumption commensurate with effort; not currently tied to
+          ; the effort of the consumers vis-a-vis their worker council
+          output ; quantity of the firm's final good - integer?
+          xf1 ; obsolete, unused
+          xf2 ; obsolete, unused
+          xi1 ; deprecated, unused, see [P]-exponents
+          xi2 ; deprecated, unused, see [P]-exponents
+          xn ; deprecated, unused, see [P]-exponents
+          xl ; deprecated, unused, see [P]-exponents
+          xe ; exponent for effort in the production function
+          z ; unexplained, apparently unused
+          x1 ; unexplained
+          x2 ; unexplained
+          x3 ; unexplained
+          x4 ; unexplained
+          x5 ; unexplained
+          x6 ; unexplained
+          c
+          ef ; unexplained, apparently unused
+          x7 ; unexplained, apparently unused
+          x8 ; unexplained, apparently unused
+          x9 ; unexplained, apparently unused
+          x10 ; unexplained, apparently unused
+          x11 ; unexplained, apparently unused
+          x12 ; unexplained, apparently unused
+          base-color ; color of factories?
+          cq ; scalar for entire product in production function; sometimes
+             ; interpreted as technology scalar or the total factor of
+             ; productivity; coefficient in production function; controllable
+             ; parameter
+          ce ; coefficient for disutility of effort; controllable parameter;
+             ; interpreted as being "unpleasantness elasticity"
+          du ; exponent for disutility of effort; controllable parameter
+
+          ; quantities from {input, nature, labor} (orders for firm)
+          input-quantities
+          nature-quantities
+          labor-quantities
+
+          ; exponents in C-D production function for category P from
+          ; {input, nature, labor}
+          input-exponents
+          nature-exponents
+          labor-exponents
+
+          k ; alias for du
+          S ; alias for ce
+          A ; alias for cq
+          ]
+
+globals [ final-goods ; list of the economy's final goods (currently a
+                      ; numerical index)
+          intermediate-inputs ; list of the economy's intermediate goods
+                              ; (currently a numerical index)
+          nature-types ; list of the economy's natural nature categories
+                       ; (currently a numerical index)
+          labor-types ; list of the economy's labor nature categories
+                      ; (currently a numerical index)
+          ; prices for category P from {final, input, nature, labor}
+          final-prices
+          input-prices
+          nature-prices
+          labor-prices
+
+          ; ???
+          old-final-prices
+          old-input-prices
+          old-nature-prices
+          old-labor-prices
+
+          ; surpluses for category P from {final, input, nature, labor}
+          final-surpluses
+          input-surpluses
+          nature-surpluses
+          labor-surpluses
+
+          threshold-met? ; signals end of iterations once equilibrium is
+                         ; obtained
+          pdlist ; price delta list?
+          price-deltas ; list of price differences?
+          delta-delay ; ????
+          lorenz-points ; list: along with GINI, used to measure income inequality
+          gini-index-reserve ; list: along with Lorenz values, used to measure income inequality
+        ]
+
+to initialize-prices
+  ; clear price lists
+  ; populate each list with the initial final price some number of times
+
+  set final-prices (list)
+  repeat finals [set final-prices lput init-final-price final-prices]
+  set input-prices (list)
+  repeat inputs [set input-prices lput init-intermediate-price input-prices]
+  set nature-prices (list)
+  repeat resources [set nature-prices lput init-nature-price nature-prices]
+  set labor-prices (list)
+  repeat labors [set labor-prices lput init-labor-price labor-prices]
+
+  ; list of price differences for each price set
+  set price-deltas (list 0.05 0.05 0.05 0.05)
+  set pdlist (list)
+  let pp 0
+
+  ; map 0.05 to pdlist for number of finals/inputs/resources/labors
+  while [pp < sum (list finals inputs resources labors)] [ set pdlist lput 0.05 pdlist set pp pp + 1]
+end
+
+; this should go above initialize-prices
+to standardize-prices
+  set init-final-price 80
+  set init-intermediate-price 80
+  set init-nature-price 80
+  set init-labor-price 80
+end
+
+to randomize-prices
+  set init-final-price 40 + random 40
+  set init-intermediate-price 40 + random 60
+  set init-nature-price 30 + random 30
+  set init-labor-price 30 + random 30
+end
+
+to randomize-councils
+  set experiment-number random 99999
+end
+
+to setup
+  ca ;; What is this? - is it user defined?
+  random-seed experiment-number ;; facilitates reproduction of results
+
+  initialize-prices
+
+  set price-delta 0.1
+  set delta-delay 5
+
+  set threshold-met? false
+
+  set final-goods (list)
+  let fg 0
+  ; set "range" for final goods to the length of finals
+  while [finals > fg] [
+    set fg fg + 1
+    set final-goods lput fg final-goods
+  ]
+
+  ; ditto for intermediate inputs
+  set intermediate-inputs (list)
+  let ii 0
+  while [inputs > ii] [
+    set ii ii + 1
+    set intermediate-inputs lput ii intermediate-inputs
+  ]
+
+  ; ditto for nature types
+  set nature-types (list)
+  let rr 0
+  while [resources > rr] [
+    set rr rr + 1
+    set nature-types lput rr nature-types
+  ]
+
+  ; ditto for labor types -- jeez, this is so redundant
+  set labor-types (list)
+  let ll 0
+  while [labors > ll] [
+    set ll ll + 1
+    set labor-types lput ll labor-types
+  ]
+
+  ; initialize type of surpluses with an empty list
+  set final-surpluses (list)
+  set input-surpluses (list)
+  set nature-surpluses (list)
+  set labor-surpluses (list)
+
+  create-ccs consumer-councils [
+    set num-workers workers-per-council ; user configured value
+    set effort 1
+    set income 500 * effort * num-workers
+
+    set cy (6 + random-float 9) ; adjusting demand
+    set utility-exponents (list) ; adjusting demand
+    let cz .5 / finals ; finals is a user-defined update
+    repeat finals [ set utility-exponents lput (cz + random-float cz) utility-exponents ]
+    set final-demands (list 0 0 0 0 0)
+
+    set size 0.5 + (log num-workers 10)
+    set color yellow
+    set shape "house"
+    move-house
+  ]
+
+  foreach final-goods [
+    create-wcs (worker-councils / 2) / length final-goods
+    [ set industry 0
+      set product ?
+      set base-color (55 + 10 * product)
+    ]
+  ]
+  ; near-duplicate of final-goods?
+  foreach intermediate-inputs [
+    create-wcs (worker-councils / 2) / length intermediate-inputs
+    [ set industry 1
+      set product ?
+      set base-color (5 + 10 * product)
+    ]
+  ]
+
+  ask wcs [
+    ; show wcs graphic
+    set xcor random-pxcor
+    set ycor max list min-pycor (6 + industry * -10 + product * -2)
+    set shape "factory"
+    set color base-color
+
+    let l1 (n-of (one-of intermediate-inputs) intermediate-inputs)
+    let l2 (n-of (one-of nature-types) nature-types)
+    let l3 (n-of (one-of labor-types) labor-types)
+
+    set production-inputs (list l1 l2 l3 )
+    if input-count = 9 [ set l1 remove one-of l1 l1 set production-inputs (list l1 l2 l3) ]             ;;change 9's to 8's
+    if input-count = 11 [ set l1 remove one-of l1 l1 set production-inputs (list l1 l2 l3) ]           ;;change 11's to 10's
+    ; why are the above lines necessary?
+
+    set xe .05
+    set c xe
+    ; why declare a variable twice in effect?
+
+    set input-exponents (list)
+    if length item 0 production-inputs > 0 [
+    ; what's the syntax of the above?
+      let xz .2 / length item 0 production-inputs
+      foreach item 0 production-inputs [ set input-exponents lput (xz + random-float xz) input-exponents ]
+    ]
+
+    set nature-exponents (list)
+    let rz .1 / length item 1 production-inputs
+    foreach item 1 production-inputs [ set nature-exponents lput (0.05 + rz + random-float rz) nature-exponents ]
+
+    set labor-exponents (list)
+    let lz .1 / length item 2 production-inputs
+    foreach item 2 production-inputs [ set labor-exponents lput (0.05 + lz + random-float lz) labor-exponents ]
+
+    set cq cq-init ;7
+    set ce ce-init ;1
+    set du du-init ;.25
+
+    set k du
+    set S ce
+    set A cq
+
+    set effort .5
+    set output 0
+
+    set labor-quantities (list ql)
+  ]
+
+  update-lorenz-and-gini
+  reset-ticks
+end
+; end setup
+
+; what is world-width? how is it determined
+to-report unit-width
+  report world-width / (consumer-councils + 1)
+end
+
+to move-house
+  set xcor min-pxcor + (unit-width * who)
+  set ycor min list max-pycor cy
+end
+
+; obsolete evidently
+to factory-sort [x]
+  ask wcs [
+    set xcor min-pxcor + 5
+    set heading 90
+    fd position self sort-on [x] wcs
+  ]
+end
+
+; reports the sum of the exponents
+to-report x-sum
+  report sum (list sum input-exponents sum nature-exponents sum labor-exponents)
+end
+
+; report consumer demand
+to-report consumer-utility
+  let util-list (list)
+  foreach final-goods [
+    let fq ( final-demand ? ) ^ (utility-exponent ? )
+    set util-list lput fq util-list
+  ]
+  report cy * (reduce * util-list)
+end
+
+to-report GDP
+  report sum map [ final-price ? * sum [output] of final-producers ? ] final-goods
+end
+
+;;; wc reporter for number of inputs to production function (x's)
+to-report input-count
+  report length (sentence item 0 production-inputs item 1 production-inputs item 2 production-inputs)
+end
+
+to-report utility-exponent [x]
+  report item (x - 1) utility-exponents
+end
+
+to consume
+  set final-demands (list)
+  foreach final-goods [
+    let fq ( (utility-exponent ? * income) / (sum utility-exponents * final-price ?) )
+    set final-demands lput fq final-demands  ;;(50 * fq) final-demands
+  ]
+end
+
+to proposal [ pc ]
+  let p [input-count] of pc
+  if p = 1 [ produce-1 pc ]
+  if p = 2 [ produce-2 pc ]
+  if p = 3 [ produce-3 pc ]
+  if p = 4 [ produce-4 pc ]
+  if p = 5 [ produce-5 pc ]
+  if p = 6 [ produce-6 pc ]
+  if p = 7 [ produce-7 pc ]
+  if p = 8 [ produce-8 pc ]
+  if p = 10 [ produce-10 pc ]
+  if p = 12 [ produce-12 pc ]
+end
+
+to go
+  iterate-plan
+  update-lorenz-and-gini
+  check-surpluses
+  if threshold-met? [stop ]
+  if total-surplus < (100) and delta-delay <= 0 [lower-delta]
+  if total-surplus > (100000) and delta-delay <= 0 [raise-delta]
+  if delta-delay > 0 [set delta-delay delta-delay - 1]
+  record-prices
+  tick
+end
+
+to record-prices
+  set old-final-prices final-prices
+  set old-input-prices input-prices
+  set old-nature-prices nature-prices
+  set old-labor-prices labor-prices
+end
+
+to raise-delta
+    set price-delta precision min (list 0.1 (price-delta + 0.01)) 2
+    set delta-delay 10
+end
+
+to lower-delta
+  set price-delta precision max (list 0.01 (price-delta - 0.01)) 2
+  set delta-delay 5
+end
+
+to iterate-plan
+  ask wcs [ proposal self ]
+  ask ccs [consume]
+  color-wcs
+  color-ccs
+  planning-bureau
+  set price-deltas (list price-change 0 price-change 1 price-change 2 price-change 3)
+  set pdlist (list)
+  let pp 0
+  while [pp < sum (list finals inputs resources labors)] [ set pdlist lput other-price-change pp pdlist set pp pp + 1]
+end
+
+to check-surpluses
+  set threshold-met? true
+  foreach final-goods [
+    let I ?
+    if abs final-surplus I > (surplus-threshold * sum [output] of final-producers I) [set threshold-met? false]
+  ]
+  foreach intermediate-inputs [
+    let I ?
+    if abs input-surplus I > (surplus-threshold * sum [output] of input-producers I) [set threshold-met? false]
+  ]
+  foreach nature-types [
+    let I ?
+    if abs nature-surplus I > (surplus-threshold * natural-resources-supply) [set threshold-met? false]
+  ]
+  foreach labor-types [
+    let I ?
+    if abs labor-surplus I > (surplus-threshold * labor-supply) [set threshold-met? false]
+  ]
+end
+
+to-report mean-utility
+  report mean [consumer-utility] of ccs
+end
+
+to-report final-demand [x]
+  report item (x - 1) final-demands
+end
+
+to-report final-producers [x]
+  report wcs with [industry = 0 and product = x]
+end
+
+to-report input-producers [x]
+  report wcs with [industry = 1 and product = x]
+end
+
+to-report pfs
+  report wcs with [industry = 0]
+end
+
+to-report pis
+  report wcs with [industry = 1]
+end
+
+to-report productivity
+  let plist [ ]
+  foreach (sentence input-exponents nature-exponents labor-exponents) [set plist lput precision ? 3 plist]
+  report plist
+end
+
+to color-ccs
+  ask ccs [
+    set color scale-color yellow consumer-utility 0 150
+  ]
+end
+
+to color-wcs
+  ask wcs [
+    set color base-color - 1 + log check-bounds effort 10
+    set size 1 + log check-bounds (labor-quantity 1) 10
+  ]
+end
+
+to-report check-bounds [x]
+  if x > 10000 [report 10000]
+  ifelse x <= 0.0001 [report .0001][report x]
+end
+
+to plot-if-small [x]
+  if x < 100000 [plot x]
+end
+
+to-report labor-supply
+  report sum [num-workers] of ccs
+end
+
+to-report gini
+  report (gini-index-reserve / count gini-people) * 2
+end
+
+to-report gini-people
+  report ccs
+end
+
+to-report gini-wealth
+  report consumer-utility
+end
+
+to update-lorenz-and-gini
+  let num-people count gini-people
+  let sorted-wealths sort [gini-wealth] of gini-people
+  let total-wealth sum sorted-wealths
+  if total-wealth > 0 [
+    let wealth-sum-so-far 0
+    let index 0
+    set gini-index-reserve 0
+    set lorenz-points []
+    repeat num-people [
+      set wealth-sum-so-far (wealth-sum-so-far + item index sorted-wealths)
+      set lorenz-points lput ((wealth-sum-so-far / total-wealth) * 100) lorenz-points
+      set index (index + 1)
+      set gini-index-reserve
+        gini-index-reserve +
+        (index / num-people) -
+        (wealth-sum-so-far / total-wealth)
+    ]
+  ]
+end
+
+; what follows reads to me as highly redundant - can we improve this?
+to-report input [x]
+  report item x input-quantities
+end
+
+to-report nature [x]
+  report item x nature-quantities
+end
+
+to-report labor [x]
+  report item x labor-quantities
+end
+
+to-report final-surplus [x]
+  report item (x - 1) final-surpluses
+end
+
+to-report input-surplus [x]
+  report item (x - 1) input-surpluses
+end
+
+to-report nature-surplus [x]
+  report item (x - 1) nature-surpluses
+end
+
+to-report labor-surplus [x]
+  report item (x - 1) labor-surpluses
+end
+
+to-report final-price [x]
+  report item (x - 1) final-prices
+end
+
+to-report input-price [x]
+  report item (x - 1) input-prices
+end
+
+to-report nature-price [x]
+  report item (x - 1) nature-prices
+end
+
+to-report labor-price [x]
+  report item (x - 1) labor-prices
+
+end
+
+to-report input-quantity [x]
+  report item (x - 1) input-quantities
+end
+
+to-report nature-quantity [x]
+  report item (x - 1) nature-quantities
+end
+
+to-report labor-quantity [x]
+  report item (x - 1) labor-quantities
+end
+
+to-report input-exponent [x]
+  report item (x - 1) input-exponents
+end
+
+to-report nature-exponent [x]
+  report item (x - 1) nature-exponents
+end
+
+to-report labor-exponent [x]
+  report item (x - 1) labor-exponents
+end
+
+to-report effort-exponent
+  report xe
+end
+
+to-report product-price
+  if industry = 0 [report final-price product]
+  if industry = 1 [report input-price product]
+end
+
+to-report price-list
+  report (list final-prices input-prices nature-prices labor-prices )
+end
+
+to-report surplus-list
+  report (list final-surpluses input-surpluses nature-surpluses labor-surpluses )
+end
+
+to-report percent-surplus-list
+  report (map [100 * ?1 / ?2] reduce sentence surplus-list reduce sentence supply-list)
+end
+
+to-report total-surplus
+  report sum map abs reduce sentence surplus-list
+end
+
+to-report supply-list
+  report (list map [ sum [output] of final-producers ? ] final-goods
+               map [ sum [output] of input-producers ? ] intermediate-inputs
+               map [ natural-resources-supply ] nature-types
+               map [ labor-supply ] labor-types )
+end
+
+to-report final-demand-list
+  report map [ sum [final-demand ?] of ccs ] final-goods
+end
+
+to-report input-demand-list
+  report map [ sum [input-quantity (1 + position ? item 0 production-inputs)] of wcs with [member? ? item 0 production-inputs] ] intermediate-inputs
+end
+
+to-report nature-demand-list
+  report map [ sum [nature-quantity (1 + position ? item 1 production-inputs)] of wcs with [member? ? item 1 production-inputs] ] nature-types
+end
+
+to-report labor-demand-list
+  report map [ sum [labor-quantity (1 + position ? item 2 production-inputs)] of wcs with [member? ? item 2 production-inputs] ] labor-types
+end
+
+to-report demand-list
+  report (list map [ sum [final-demand ?] of ccs ] final-goods
+               map [ sum [input-quantity (1 + position ? item 0 production-inputs)] of wcs with [member? ? item 0 production-inputs] ] intermediate-inputs
+               map [ sum [nature-quantity (1 + position ? item 1 production-inputs)] of wcs with [member? ? item 1 production-inputs] ] nature-types
+               map [ sum [labor-quantity (1 + position ? item 2 production-inputs)] of wcs with [member? ? item 2 production-inputs] ] labor-types )
+end
+
+to-report space-list [somelist]
+  report butlast reduce sentence map [(list ? "        ")] somelist
+end
+
+to-report total-produced
+  ifelse industry = 0
+    [report cq * (input-quantity 1 ^ input-exponent 1) * (input-quantity 2 ^ input-exponent 2) * (nature-quantity 1 ^ nature-exponent 1) * (labor-quantity 1 ^ labor-exponent 1) * (effort ^ xe)]
+    [report cq * (nature-quantity 1 ^ nature-exponent 1) * (labor-quantity 1 ^ labor-exponent 1) * (effort ^ xe)]
+end
