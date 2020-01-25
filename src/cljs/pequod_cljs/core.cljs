@@ -91,7 +91,7 @@
         public-good-types (vec (range 1 (inc (t :public-goods))))]
     (-> t
         initialize-prices
-        (assoc :price-delta 0.1
+        (assoc :price-delta 0.05
                :delta-delay 5
                :natural-resources-supply (repeat (t :resources) 10000)
                :labor-supply (repeat (t :labors) 10000)
@@ -100,7 +100,7 @@
                :nature-types nature-types
                :labor-types labor-types
                :public-good-types public-good-types
-               :surplus-threshold 0.02
+               :surplus-threshold 0.05
                :ccs (case @experiment
                       "ex006" ex006/ccs
                       "ex007" ex007/ccs
@@ -669,18 +669,20 @@
 
 
 (defn rest-of-to-do [t]
-  (let [surplus-total (total-surplus (:surplus-list t))
+  (let [#_surplus-total ;(total-surplus (:surplus-list t))
         [threshold-met? threshold-granular] (check-surpluses t)
         delta-delay (:delta-delay t)
         price-delta (:price-delta t)
-        {price-delta :price-delta
-         delta-delay :delta-delay} (if (and (< surplus-total 100)
+        #_{price-delta :price-delta
+         delta-delay :delta-delay} 
+#_(if (and (< surplus-total 100)
                                               (<= delta-delay 0))
                                      (adjust-delta price-delta "lower")
                                      {:price-delta price-delta
                                       :delta-delay delta-delay})
-        {price-delta :price-delta
-         delta-delay :delta-delay} (if (and (> surplus-total 100000)
+        #_{price-delta :price-delta
+         delta-delay :delta-delay} 
+#_(if (and (> surplus-total 100000)
                                               (<= delta-delay 0))
                                      (adjust-delta price-delta "raise")
                                      {:price-delta price-delta
