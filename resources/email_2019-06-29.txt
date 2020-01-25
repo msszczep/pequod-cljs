@@ -1,0 +1,11 @@
+Hi, folks.
+
+Good news: I reviewed the code again, and I discovered a bug that affected the result.  
+The bug was in an entirely different part of the code (which I named "rest-of-to-do")
+which invoked a variable that was (1) incorrectly named, and (2) instead invoked a function
+that perversely _did_ work, most of the time.  Our work on public-goods exposed this
+bug, and by a lucky break, I found it and fixed it, and the numbers all told seem much
+more sane.
+
+Taking as input the workers' councils with the outliers adjusted below the 0.7 threshold
+for all, I started to run iterations.  The numbers are now much more realistic: .

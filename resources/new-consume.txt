@@ -1,0 +1,12 @@
+to consume
+  set final-demands (list)
+  foreach final-goods [
+    let fq ( (utility-exponent ? * income) / ((sum utility-exponents + sum pg-utility-exponents) * final-price ?) )
+    set final-demands lput fq final-demands  ;;(50 * fq) final-demands
+  ]
+  set public-demands (list)
+  foreach public-goods [
+    let pgq ( (pg-utility-exponent ? * income) / ((sum utility-exponents + sum pg-utility-exponents) * ( (public-goods-price ?) / count ccs ) ) )
+    set public-good-demands lput pgq public-demands
+  ]
+end

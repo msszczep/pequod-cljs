@@ -1,0 +1,35 @@
+app:cljs.user=> (create-ccs-bulk 1 10 4 1 1)
+({:effort 1,
+  :num-workers 10,
+  :utility-exponents
+  [0.16471326122599744
+   0.12257454839361871
+   0.08945758716970671
+   0.09838446246677687],
+  :final-demands [0 0 0 0 0],
+  :cy 8.756398605892556,
+  :public-good-exponents [0.15288512817234806],
+  :public-good-demands [0],
+  :income 5000, 
+  :pollution-supply-coefficient [-0.15542203462400278]})
+
+app:cljs.user=> (create-wcs-bulk 1 1 1)
+{:effort 0.5,
+  :cq 0.25,
+  :ce 1,
+  :labor-exponents [0.03632481038172393],
+  :industry 0,
+  :pollutant-exponents [0.047485145135275623],
+  :output 0,
+  :s 1,
+  :du 7,
+  :c 0.05,
+  :product 4,
+  :labor-quantities [0],
+  :production-inputs [[1 2 3] [1] [1] [1]],
+  :input-exponents
+  [0.05140728776820822 0.02895109108901662 0.06080316116384027],
+  :xe 0.05, 
+  :nature-exponents [0.08359336672891815], 
+  :a 0.25})
+

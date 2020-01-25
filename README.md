@@ -1,6 +1,10 @@
 # pequod-cljs
 
-This is the pequod-cljs project.
+This is the pequod-cljs project -- a Clojurescript rewrite of the Pequod library, which simulates the participatory planning procedure of a non-market, non-command-planning, democratically planned participatory eco nomy (parecon, or PEX).
+
+Documentation for the rationale of the library and some of its details, as originally articulated, appear in the `docs` directory of this repository.
+
+Some functionality in pequod-cljs was modeled on the [pequod-clj library](https://github.com/msszczep/pequod-clj) and the [pequod2 library in Netlogo](https://github.com/msszczep/pequod2). 
 
 ## Development mode
 
@@ -49,55 +53,4 @@ To run [cljs.test](https://github.com/clojure/clojurescript/blob/master/src/main
 lein doo
 ```
 
-For installation instructions of PhantomJS, please see [this](http://phantomjs.org/download.html).
-
-## Building for release
-
-```
-lein do clean, uberjar
-```
-
-## Deploying to Heroku
-
-Make sure you have [Git](http://git-scm.com/downloads) and [Heroku toolbelt](https://toolbelt.heroku.com/) installed, then simply follow the steps below.
-
-Optionally, test that your application runs locally with foreman by running.
-
-```
-foreman start
-```
-
-Now, you can initialize your git repo and commit your application.
-
-```
-git init
-git add .
-git commit -m "init"
-```
-create your app on Heroku
-
-```
-heroku create
-```
-
-optionally, create a database for the application
-
-```
-heroku addons:add heroku-postgresql
-```
-
-The connection settings can be found at your [Heroku dashboard](https://dashboard.heroku.com/apps/) under the add-ons for the app.
-
-deploy the application
-
-```
-git push heroku master
-```
-
-Your application should now be deployed to Heroku!
-For further instructions see the [official documentation](https://devcenter.heroku.com/articles/clojure).
-
-https://nvbn.github.io/2015/06/08/cljs-test/
-https://github.com/nvbn/cljs-test-example
-npm install karma karma-cljs-test --save-dev
 

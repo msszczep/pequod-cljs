@@ -1,0 +1,18 @@
+I. Capital goods
+  A. Add capital-goods global value to wcs
+  B. Update solutions code to accept capital-goods parameter
+  C. Update Mathematica scaling code to include capital-good
+  D. Convert that output to CLJ/CLJS
+  E. Create WCs with capital-goods output.
+  F. Update CCs?
+
+II. Pollution.
+  A. Add polution global value (randomly generate?)
+  B. Update solutions to accept pollution parameter
+  C. Update Mathematica scaling code to include pollution
+  D. Convert that to CLJ/CLJS
+  E. Update WCs with pollution value.
+  F. Update CC utility functions
+  G. Update CCs?
+
+III. Public good.

@@ -1,0 +1,46 @@
+I don’t know how aggregate demand for each private good was generated 
+(called for). In that case the code must have called for summing all 
+the CC demands for each of the two private final goods. For the public 
+good you need to change that command, and direct the program to calculate 
+the AVERAGE of all the CC demands for the public good. That average IS the 
+aggregate demand for the public good.
+
+From: mitchell@szcz.org [mailto:mitchell@szcz.org] 
+Sent: Sunday, May 26, 2019 9:44 PM
+To: Robin Hahnel; Michael Weisdorf
+Subject: RE: Need assistance regarding supply-list
+
+I want to focus on this definition for a moment:
+
+"Aggregate Demand: This is where things are different for the public good. 
+Instead of summing the individual demands, calculate the AVERAGE of all 
+demands for the public good coming from all of the consumer councils, CCs."
+
+Question: I currently don't have a public-good demand noted in the consumer 
+council data structure.  I think I need to add one.  If so, what should my 
+starting value be for public-good-demands?  For reference, here's an example 
+of a CC as currently noted:
+
+{:id 0, :cy 12.950838032319478, :effort 1, :final-demands [0 0 0 0 0], 
+:income 5000, :num-workers 10, :utility-exponents [0.1405350051197347 
+0.24012723273335457 0.13060457354838528 0.15357560280503046], 
+:public-good-exponents [0.023363354664267068]} 
+
+
+====
+
+Seems that maybe you've already moved past this, but just in case it helps:
+
+The demand for public goods of each consumer council can be initialized at 0, just 
+like the demand for private goods is currently. The actual demand is calculated 
+piece-wise, as each consumer council performs its optimization based on the current 
+price schedule and reports its proposed consumption for the planning period. Then 
+all of the individual demands for each good are summed, or in the case of public 
+goods averaged (as we've discussed at length) to come up with the aggregate demand 
+for each good. These variables are currently not stored globally, but are computed 
+as needed from the current consumption proposals, in the local scope of the 
+planning-bureau procedure--one local variable called 'demand' represents the 
+aggregate demand for each good within the loop that computes the price adjustment 
+for the final goods. A parallel loop structure should be created for public goods, 
+to make the necessary price adjustment for each public good in the model (currently 
+only one type, but potentially more than one in future).
