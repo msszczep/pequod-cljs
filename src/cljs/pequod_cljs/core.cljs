@@ -787,7 +787,10 @@
          [:td "WCs:"]
          [:td (count (get @globals :wcs))]
          [:td "CCs:"]
-         [:td (count (get @globals :ccs))]]]]))
+         [:td (count (get @globals :ccs))]
+         [:td "Threshold:"]
+         [:td (get @globals :surplus-threshold)]
+]]]))
 
 
 (defn truncate-number [n]
@@ -867,7 +870,7 @@
               [:td {:style td-cell-style} (str (or (drop 4 (take 5 (partition-by-five (get @globals :surplus-list)))) "[]"))]
              ]
              [:tr {:style {:border "1px solid #ddd"}}
-              [:td {:style (assoc td-cell-style :font-weight "bold")} "Threshold Report"]
+              [:td {:style (assoc td-cell-style :font-weight "bold")} "Percent Surplus"]
               [:td {:style td-cell-style} (str (or (take 1 (partition-by-five (get @globals :threshold-report))) "[]"))]
               [:td {:style td-cell-style} (str (or (drop 1 (take 2 (partition-by-five (get @globals :threshold-report)))) "[]"))]
               [:td {:style td-cell-style} (str (or (drop 2 (take 3 (partition-by-five (get @globals :threshold-report)))) "[]"))]
