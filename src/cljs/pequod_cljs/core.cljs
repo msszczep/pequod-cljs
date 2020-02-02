@@ -355,6 +355,7 @@
 
 
 (defn get-deltas [J price-delta pdlist]
+  (println "DEBUG get-deltas " J price-delta pdlist)
   (max 0.001 (min price-delta (Math/abs (* price-delta (nth pdlist J))))))
 
 
@@ -423,13 +424,14 @@
                        "labor" (+ offset-1 offset-2 offset-3)
                        "public-goods" (+ offset-1 offset-2 offset-3 offset-4))
             surplus (- supply demand)
-            delta (get-deltas j-offset price-delta pdlist)
+            delta (get-deltas (+ J j-offset) price-delta pdlist)
             new-delta (cond (<= delta 1) delta
                             :else        (last (take-while (partial < 1)
                                                            (iterate #(/ % 2.0) delta))))
             new-price (cond (pos? surplus) (* (- 1 new-delta) (nth prices (dec (first inputs))))
                             (neg? surplus) (* (+ 1 new-delta) (nth prices (dec (first inputs))))
                             :else (nth prices (dec (first inputs))))]
+        (println "DEBUG new-delta:" new-delta)
         (recur (rest inputs)
                (assoc prices J new-price)
                (conj surpluses surplus)
@@ -790,6 +792,8 @@
          [:td (count (get @globals :ccs))]
          [:td "Threshold:"]
          [:td (get @globals :surplus-threshold)]
+         [:td "Price-delta:"]
+         [:td (get @globals :price-delta)]
 ]]]))
 
 
