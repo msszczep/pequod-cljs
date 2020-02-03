@@ -1,0 +1,37 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2511
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 HelveticaNeue;\f1\fnil\fcharset0 HelveticaNeue-Bold;}
+{\colortbl;\red255\green255\blue255;\red38\green38\blue38;}
+{\*\expandedcolortbl;;\cssrgb\c20000\c20000\c20000;}
+\margl1440\margr1440\vieww23900\viewh15060\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs36 \cf2 \expnd0\expndtw0\kerning0
+It appears that the safety threshold is 
+\f1\b around
+\f0\b0  0.9, not 1.0.   \
+Question: Does this occur with experiments that do converge?  What\'92s the max there?\
+EX006: 0.90, EX007: 0.91, EX008: 0.90, EX009: 0.91, EX010: 0.94, EX011: 0.93, 
+\f1\b EX012: 0.96
+\f0\b0 , EX013: 0.91, 
+\f1\b EX014: 0.93
+\f0\b0 , EX015: 0.93\
+Apparently not.  Compare EX010 with EX012/EX014.\
+\
+Question/idea: Maybe it\'92s the number of councils above a given threshold?\
+\
+
+\f1\b EX012
+\f0\b0 : [182 0.9603345673333177 0] [281 0.9330254848346724 0] [240 0.9327515244396103 0] [106 0.9040434864390866 0] [170 0.8939087338775578 0] [290 0.8910718701921824 0] [12 0.8686608475969222 0] [109 0.8675498590790902 0] [17 0.8665520361854671 0] [40 0.8653337868121004 0] [84 0.8612546906999938 0] [239 0.8611782059491029 0]\
+
+\f1\b EX014
+\f0\b0 : [115 0.9300623587481008 0] [216 0.9196457414247552 0] [93 0.9173798596246039 0] [157 0.895298006200744 0] [290 0.8887324885656543 0] [269 0.8805309221813631 0] [96 0.8672652695988448 0] [48 0.8664223823142382 0] [253 0.8581435744007861 0] [160 0.8571702870791097 0] [261 0.8489206838805905 0] [207 0.8482140773301778 0]\
+
+\f1\b EX010
+\f0\b0 : [293 0.9411666693849406 0] [202 0.9347734512407777 0] [23 0.917432748912498 0] [7 0.9094358602126086 0] [287 0.9092360518495148 0] [246 0.9006639226027561 0] [27 0.891235603594214 0] [173 0.889984321811138 0] [166 0.878883308626464 0] [31 0.8783117641411087 0] [227 0.8719969923610342 0] [3 0.8577043379196233 0]\
+Apparently not. EX010 is apparently _worse_ than E014, but EX010 diverges while EX014 doesn\'92t.\
+\
+Question/Idea: Maybe it\'92s the _shape_ of the distribution of all of the councils?  Maybe it\'92s not that you have a fair amount of top-heavy councils.  Maybe it\'92s that divergent experiments don\'92t have a balance of \'93low-end\'94 WCs to oppose the overall \'93high-end\'94 councils?\
+\
+Idea: Adjust the sum of the exponents to less than 0.9 and see if that improves things\
+Idea: }

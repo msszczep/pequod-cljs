@@ -355,7 +355,6 @@
 
 
 (defn get-deltas [J price-delta pdlist]
-  (println "DEBUG get-deltas " J price-delta pdlist)
   (max 0.001 (min price-delta (Math/abs (* price-delta (nth pdlist J))))))
 
 
@@ -431,7 +430,6 @@
             new-price (cond (pos? surplus) (* (- 1 new-delta) (nth prices (dec (first inputs))))
                             (neg? surplus) (* (+ 1 new-delta) (nth prices (dec (first inputs))))
                             :else (nth prices (dec (first inputs))))]
-        (println "DEBUG new-delta:" new-delta)
         (recur (rest inputs)
                (assoc prices J new-price)
                (conj surpluses surplus)
