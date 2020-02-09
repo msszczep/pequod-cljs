@@ -427,7 +427,6 @@
                        "public-goods" (+ offset-1 offset-2 offset-3 offset-4))
             surplus (- supply demand)
             delta (get-deltas (+ J j-offset) price-delta pdlist)
-            _ (println "DEBUG delta: " delta)
             new-delta delta
                       #_(cond (<= delta 1) delta
                             :else        (last (take-while (partial < 1)
