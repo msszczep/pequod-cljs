@@ -21,11 +21,11 @@
 
 
 (def globals
-  (atom {:init-private-good-price 1000
-         :init-intermediate-price 1000
+  (atom {:init-private-good-price 1500
+         :init-intermediate-price 1500
          :init-labor-price        10
          :init-nature-price       10
-         :init-public-good-price  1000
+         :init-public-good-price  1500
 
          :private-goods             5
          :intermediate-inputs       5
@@ -72,7 +72,7 @@
       :labor-prices (vec (repeat labor (t :init-labor-price)))
       :public-good-prices (vec (repeat public-goods (t :init-public-good-price)))
       :price-deltas (vec (repeat 5 0.05))
-      :pdlist (vec (repeat (+ private-goods im-inputs resources labor public-goods) 0.05)))))
+      :pdlist (vec (repeat (+ private-goods im-inputs resources labor public-goods) 1)))))
 
 (defn add-ids-to-wcs [wcs]
   (loop [i 1
@@ -91,7 +91,7 @@
         public-good-types (vec (range 1 (inc (t :public-goods))))]
     (-> t
         initialize-prices
-        (assoc :price-delta 0.05
+        (assoc :price-delta 0.07
                :delta-delay 5
                :natural-resources-supply (repeat (t :resources) 10000)
                :labor-supply (repeat (t :labors) 10000)
@@ -357,6 +357,9 @@
 (defn get-deltas [J price-delta pdlist]
   (max 0.001 (min price-delta (Math/abs (* price-delta (nth pdlist J))))))
 
+#_(defn get-deltas [J price-delta pdlist]
+  (max 0.001 (min price-delta (Math/abs (nth pdlist J)))))
+
 
 (defn update-surpluses-prices
   [type inputs prices wcs ccs natural-resources-supply labor-supply price-delta pdlist offset-1 offset-2 offset-3 offset-4]
@@ -424,7 +427,9 @@
                        "public-goods" (+ offset-1 offset-2 offset-3 offset-4))
             surplus (- supply demand)
             delta (get-deltas (+ J j-offset) price-delta pdlist)
-            new-delta (cond (<= delta 1) delta
+            _ (println "DEBUG delta: " delta)
+            new-delta delta
+                      #_(cond (<= delta 1) delta
                             :else        (last (take-while (partial < 1)
                                                            (iterate #(/ % 2.0) delta))))
             new-price (cond (pos? surplus) (* (- 1 new-delta) (nth prices (dec (first inputs))))
@@ -839,7 +844,7 @@
               [:td {:style td-cell-style} (str (or (drop 3 (take 4 (partition-by-five (get @globals :pdlist)))) "[]"))]
               [:td {:style td-cell-style} (str (or (drop 4 (take 5 (partition-by-five (get @globals :pdlist)))) "[]"))]
              ]
-             [:tr {:style {:border "1px solid #ddd"}}
+             #_[:tr {:style {:border "1px solid #ddd"}}
               [:td {:style (assoc td-cell-style :font-weight "bold")} "Price Deltas"]
               [:td {:style td-cell-style} (str (or (mapv truncate-number (take 1 (get @globals :price-deltas))) "-"))]
               [:td {:style td-cell-style} (str (or (mapv truncate-number (drop 1 (take 2 (get @globals :price-deltas)))) "-"))]
