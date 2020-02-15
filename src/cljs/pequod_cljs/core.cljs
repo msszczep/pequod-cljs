@@ -91,7 +91,7 @@
         public-good-types (vec (range 1 (inc (t :public-goods))))]
     (-> t
         initialize-prices
-        (assoc :price-delta 0.12
+        (assoc :price-delta 0.10
                :delta-delay 5
                :natural-resources-supply (repeat (t :resources) 10000)
                :labor-supply (repeat (t :labors) 10000)
@@ -594,7 +594,7 @@
         new-pdlist (update-pdlist supply-list demand-list surplus-list)
         threshold-report (report-threshold surplus-list supply-list)
         iteration (inc (:iteration t2))
-        price-delta (if (< iteration 10) 0.12 0.05)]
+        price-delta (if (< iteration 10) 0.10 0.05)]
     (assoc t2 :private-good-prices private-good-prices
               :private-good-surpluses private-good-surpluses
               :intermediate-good-prices intermediate-good-prices
