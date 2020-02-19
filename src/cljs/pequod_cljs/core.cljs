@@ -51,7 +51,7 @@
          :pdlist                   []
          :delta-delay              0
          :price-deltas             []
-         :price-delta              0
+         ; :price-delta              0
          :wcs                      []
          :ccs                      []
          :iteration                0
@@ -91,7 +91,7 @@
         public-good-types (vec (range 1 (inc (t :public-goods))))]
     (-> t
         initialize-prices
-        (assoc :price-delta 0.10
+        (assoc ;:price-delta 0.14
                :delta-delay 5
                :natural-resources-supply (repeat (t :resources) 10000)
                :labor-supply (repeat (t :labors) 10000)
@@ -362,7 +362,7 @@
 
 
 (defn update-surpluses-prices
-  [type inputs prices wcs ccs natural-resources-supply labor-supply price-delta pdlist offset-1 offset-2 offset-3 offset-4]
+  [type inputs prices wcs ccs natural-resources-supply labor-supply pdlist offset-1 offset-2 offset-3 offset-4]
   (loop [inputs inputs
          prices prices
          surpluses []
@@ -426,7 +426,11 @@
                        "labor" (+ offset-1 offset-2 offset-3)
                        "public-goods" (+ offset-1 offset-2 offset-3 offset-4))
             surplus (- supply demand)
-            delta (get-deltas (+ J j-offset) price-delta pdlist)
+            price-delta-to-use (cond 
+                                 (> (/ (Math/abs (* 2 surplus)) (+ demand supply)) 0.5) 0.20
+                                 (> (/ (Math/abs (* 2 surplus)) (+ demand supply)) 0.05) 0.05
+                                 :else 0.02)
+            delta (get-deltas (+ J j-offset) price-delta-to-use pdlist)
             new-delta delta
                       #_(cond (<= delta 1) delta
                             :else        (last (take-while (partial < 1)
@@ -571,10 +575,10 @@
      (vector private-producers input-producers natural-resources-supply labor-supply public-good-supply)))) 
 
 
-(defn report-threshold [surplus-list supply-list]
-  (->> (interleave (flatten surplus-list) (flatten supply-list))
-       (partition 2)
-       (mapv #(* 100 (/ (first %) (last %))))))
+(defn report-threshold [surplus-list supply-list demand-list]
+  (->> (interleave (flatten surplus-list) (flatten supply-list) (flatten demand-list))
+       (partition 3)
+       (mapv #(* 100 (/ (Math/abs (* 2 (first %))) (+ (second %) (last %)))))))
 
 
 (defn iterate-plan [t]
@@ -582,19 +586,20 @@
                               (t :ccs))
                     :wcs (map (partial proposal (t :private-good-prices) (t :intermediate-good-prices) (t :nature-prices) (t :labor-prices) (t :public-good-prices))
                               (t :wcs)))
-        {private-good-prices :prices, private-good-surpluses :surpluses} (update-surpluses-prices "private-goods" (t2 :private-goods) (t2 :private-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
-        {intermediate-good-prices :prices, intermediate-good-surpluses :surpluses} (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :intermediate-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
-        {nature-prices :prices, nature-surpluses :surpluses} (update-surpluses-prices "nature" (t2 :nature-types) (t2 :nature-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
-        {labor-prices :prices, labor-surpluses :surpluses} (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
-        {public-good-prices :prices, public-good-surpluses :surpluses} (update-surpluses-prices "public-goods" (t2 :public-good-types) (t2 :public-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :price-delta) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
+        {private-good-prices :prices, private-good-surpluses :surpluses} (update-surpluses-prices "private-goods" (t2 :private-goods) (t2 :private-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
+        {intermediate-good-prices :prices, intermediate-good-surpluses :surpluses} (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :intermediate-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
+        {nature-prices :prices, nature-surpluses :surpluses} (update-surpluses-prices "nature" (t2 :nature-types) (t2 :nature-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
+        {labor-prices :prices, labor-surpluses :surpluses} (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
+        {public-good-prices :prices, public-good-surpluses :surpluses} (update-surpluses-prices "public-goods" (t2 :public-good-types) (t2 :public-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
         surplus-list (vector private-good-surpluses intermediate-good-surpluses nature-surpluses labor-surpluses public-good-surpluses)
         supply-list (get-supply-list t2)
         demand-list (get-demand-list t2)
         new-price-deltas (update-price-deltas supply-list demand-list surplus-list)
         new-pdlist (update-pdlist supply-list demand-list surplus-list)
-        threshold-report (report-threshold surplus-list supply-list)
+        threshold-report (report-threshold surplus-list supply-list demand-list)
         iteration (inc (:iteration t2))
-        price-delta (if (< iteration 10) 0.10 0.05)]
+        ; price-delta (if (< iteration 20) 0.14 0.06)
+]
     (assoc t2 :private-good-prices private-good-prices
               :private-good-surpluses private-good-surpluses
               :intermediate-good-prices intermediate-good-prices
@@ -611,7 +616,7 @@
               :threshold-report threshold-report
               :price-deltas new-price-deltas
               :pdlist new-pdlist
-              :price-delta price-delta
+;              :price-delta price-delta
               :iteration iteration)))
 
 
@@ -678,7 +683,7 @@
   (let [#_surplus-total ;(total-surplus (:surplus-list t))
         [threshold-met? threshold-granular] (check-surpluses t)
         delta-delay (:delta-delay t)
-        price-delta (:price-delta t)
+;        price-delta (:price-delta t)
         #_{price-delta :price-delta
          delta-delay :delta-delay} 
 #_(if (and (< surplus-total 100)
@@ -697,7 +702,7 @@
                       (dec delta-delay) delta-delay)
         t-updated (assoc t :threshold-met? threshold-met?
                            :threshold-granular threshold-granular
-                           :price-delta price-delta
+                           ;:price-delta price-delta
                            :delta-delay delta-delay)]
     t-updated))
 
@@ -796,8 +801,8 @@
          [:td (count (get @globals :ccs))]
          [:td "Threshold:"]
          [:td (get @globals :surplus-threshold)]
-         [:td "Price-delta:"]
-         [:td (get @globals :price-delta)]
+;         [:td "Price-delta:"]
+;         [:td (get @globals :price-delta)]
 ]]]))
 
 
