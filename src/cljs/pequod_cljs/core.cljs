@@ -91,8 +91,7 @@
         public-good-types (vec (range 1 (inc (t :public-goods))))]
     (-> t
         initialize-prices
-        (assoc ;:price-delta 0.14
-               :delta-delay 5
+        (assoc :delta-delay 5
                :natural-resources-supply (repeat (t :resources) 10000)
                :labor-supply (repeat (t :labors) 10000)
                :private-goods private-goods
@@ -576,7 +575,7 @@
 
 
 (defn report-threshold [surplus-list supply-list demand-list]
-  (->> (interleave (flatten surplus-list) (flatten supply-list) (flatten demand-list))
+  (->> (interleave (flatten surplus-list) (flatten demand-list) (flatten supply-list))
        (partition 3)
        (mapv #(* 100 (/ (Math/abs (* 2 (first %))) (+ (second %) (last %)))))))
 
@@ -597,9 +596,7 @@
         new-price-deltas (update-price-deltas supply-list demand-list surplus-list)
         new-pdlist (update-pdlist supply-list demand-list surplus-list)
         threshold-report (report-threshold surplus-list supply-list demand-list)
-        iteration (inc (:iteration t2))
-        ; price-delta (if (< iteration 20) 0.14 0.06)
-]
+        iteration (inc (:iteration t2))]
     (assoc t2 :private-good-prices private-good-prices
               :private-good-surpluses private-good-surpluses
               :intermediate-good-prices intermediate-good-prices
@@ -616,7 +613,6 @@
               :threshold-report threshold-report
               :price-deltas new-price-deltas
               :pdlist new-pdlist
-;              :price-delta price-delta
               :iteration iteration)))
 
 
@@ -680,10 +676,8 @@
 
 
 (defn rest-of-to-do [t]
-  (let [#_surplus-total ;(total-surplus (:surplus-list t))
-        [threshold-met? threshold-granular] (check-surpluses t)
+  (let [[threshold-met? threshold-granular] (check-surpluses t)
         delta-delay (:delta-delay t)
-;        price-delta (:price-delta t)
         #_{price-delta :price-delta
          delta-delay :delta-delay} 
 #_(if (and (< surplus-total 100)
@@ -702,7 +696,6 @@
                       (dec delta-delay) delta-delay)
         t-updated (assoc t :threshold-met? threshold-met?
                            :threshold-granular threshold-granular
-                           ;:price-delta price-delta
                            :delta-delay delta-delay)]
     t-updated))
 
@@ -801,8 +794,6 @@
          [:td (count (get @globals :ccs))]
          [:td "Threshold:"]
          [:td (get @globals :surplus-threshold)]
-;         [:td "Price-delta:"]
-;         [:td (get @globals :price-delta)]
 ]]]))
 
 
@@ -818,9 +809,18 @@
          (partition-all 5)
          (mapv (partial into [])))))
 
+(defn show-color [threshold-report-excerpt]
+  (let [tre (first threshold-report-excerpt)
+        red "#ff4d4d"]
+    (cond (empty? tre) red
+          (every? #(< % 5) tre) "lawngreen"
+          (every? #(< % 20) tre) "gold"
+          :else red)))
+
+
 (defn show-globals []
     (let [td-cell-style {:border "1px solid #ddd" :text-align "center" :vertical-align "middle" :padding "8px"}
-        ]
+          _ (show-color (take 1 (partition-by-five (get @globals :threshold-report))))]
      [:div [:h4 "Welcome to pequod-cljs"]
            " "
            (all-buttons)
@@ -883,31 +883,15 @@
               [:td {:style td-cell-style} (str (or (drop 4 (take 5 (partition-by-five (get @globals :surplus-list)))) "[]"))]
              ]
              [:tr {:style {:border "1px solid #ddd"}}
-              [:td {:style (assoc td-cell-style :font-weight "bold")} "Percent Surplus"]
-              [:td {:style td-cell-style} (str (or (take 1 (partition-by-five (get @globals :threshold-report))) "[]"))]
-              [:td {:style td-cell-style} (str (or (drop 1 (take 2 (partition-by-five (get @globals :threshold-report)))) "[]"))]
-              [:td {:style td-cell-style} (str (or (drop 2 (take 3 (partition-by-five (get @globals :threshold-report)))) "[]"))]
-              [:td {:style td-cell-style} (str (or (drop 3 (take 4 (partition-by-five (get @globals :threshold-report)))) "[]"))]
-              [:td {:style td-cell-style} (str (or (drop 4 (take 5 (partition-by-five (get @globals :threshold-report)))) "[]"))]
+              [:td {:style (assoc td-cell-style :font-weight "bold")} "Percent Surplus / Threshold Met?"]
+              [:td {:style (assoc td-cell-style :background (show-color (take 1 (partition-by-five (get @globals :threshold-report)))))} (str (or (take 1 (partition-by-five (get @globals :threshold-report))) "[]"))]
+              [:td {:style (assoc td-cell-style :background (show-color (drop 1 (take 2 (partition-by-five (get @globals :threshold-report))))))} (str (or (drop 1 (take 2 (partition-by-five (get @globals :threshold-report)))) "[]"))]
+              [:td {:style (assoc td-cell-style :background (show-color (drop 2 (take 3 (partition-by-five (get @globals :threshold-report))))))} (str (or (drop 2 (take 3 (partition-by-five (get @globals :threshold-report)))) "[]"))]
+              [:td {:style (assoc td-cell-style :background (show-color (drop 3 (take 4 (partition-by-five (get @globals :threshold-report))))))} (str (or (drop 3 (take 4 (partition-by-five (get @globals :threshold-report)))) "[]"))]
+              [:td {:style (assoc td-cell-style :background (show-color (drop 4 (take 5 (partition-by-five (get @globals :threshold-report))))))} (str (or (drop 4 (take 5 (partition-by-five (get @globals :threshold-report)))) "[]"))]
              ]
-             [:tr {:style {:border "1px solid #ddd"}}
-              [:td {:style (assoc td-cell-style :font-weight "bold")} "Threshold Met?"]
-              [:td {:style (assoc td-cell-style :background (if (first (take 1 (get @globals :threshold-granular))) "green" "red"))} 
-                   (str (or (take 1 (get @globals :threshold-granular)) "-"))]
-              [:td {:style (assoc td-cell-style :background (if (first (drop 1 (take 2 (get @globals :threshold-granular)))) "green" "red"))} 
-                   (str (or (drop 1 (take 2 (get @globals :threshold-granular))) "-"))]
-              [:td {:style (assoc td-cell-style :background (if (first (drop 2 (take 3 (get @globals :threshold-granular)))) "green" "red"))} 
-                   (str (or (drop 2 (take 3 (get @globals :threshold-granular))) "-"))]
-              [:td {:style (assoc td-cell-style :background (if (first (drop 3 (take 4 (get @globals :threshold-granular)))) "green" "red"))} 
-                   (str (or (drop 3 (take 4 (get @globals :threshold-granular))) "-"))]
-              [:td {:style (assoc td-cell-style :background (if (first (drop 4 (take 5 (get @globals :threshold-granular)))) "green" "red"))} 
-                   (str (or (drop 4 (take 5 (get @globals :threshold-granular))) "-"))]
-             ]
-           ]
-;      [:p (str (filter check-quantities (map (juxt :id :input-quantities :nature-quantities :labor-quantities) (get @globals :wcs))))]
-;      [:p (str (reverse (sort-by second (map sum-quantities (map (juxt :id :input-quantities :nature-quantities :labor-quantities :input-exponents :nature-exponents :labor-exponents) (get @globals :wcs))))))]
-;      [:p (str (map (juxt :id :input-quantities :nature-quantities :labor-quantities :input-exponents :nature-exponents :labor-exponents) (get @globals :wcs)))]
-;      [:p (str (get @globals :wcs))]
+]
+
      ]))
 
 
