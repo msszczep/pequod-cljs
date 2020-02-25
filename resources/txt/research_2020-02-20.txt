@@ -26,9 +26,9 @@ TierAT  006     007      010     012     014     016
 25      19*,31  101*,108 55,655  43*,63  38*,53  11,45
 15      38*,48  769*,>2K X       x        x      14,41
 
+https://github.com/testdouble/clojurescript.csv
 
 HW:
 * CSV: Output the result, # of iterations, for each experiment (summary form)
 * CSV Long form: Every iteration for every experiment
-* Make experiment from 0.5 to 0.7, 300 WCs, 300 CCs
 * Later: Generate new test set of 500 experiments

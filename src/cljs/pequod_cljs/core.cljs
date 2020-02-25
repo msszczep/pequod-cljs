@@ -16,6 +16,7 @@
               [pequod-cljs.ex017 :as ex017]
               [pequod-cljs.ex018 :as ex018]
               [pequod-cljs.ex019 :as ex019]
+              [pequod-cljs.ex020 :as ex020]
               [goog.string :as gstring]
               [goog.string.format]))
 
@@ -115,6 +116,7 @@
                       "ex017" ex017/ccs
                       "ex018" ex018/ccs
                       "ex019" ex019/ccs
+                      "ex020" ex020/ccs
                       ex006/ccs)
                :wcs (add-ids-to-wcs
                       (case @experiment
@@ -132,6 +134,7 @@
                          "ex017" ex017/wcs
                          "ex018" ex018/wcs
                          "ex019" ex019/wcs
+                         "ex020" ex020/wcs
                          ex006/wcs))))))
 
 
@@ -777,6 +780,7 @@
           [:option {:key :ex017} "ex017"]
           [:option {:key :ex018} "ex018"]
           [:option {:key :ex019} "ex019"]
+          [:option {:key :ex020} "ex020"]
           ]]
          [:td [:input {:type "button" :value "Setup"
               :on-click #(swap! globals setup globals experiment-to-use)}]]

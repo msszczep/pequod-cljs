@@ -9,10 +9,10 @@
   (println (format "(ns pequod-cljs.%s)" ns-to-use))
   (println "")
   (println "(def ccs ")
-  (clojure.pprint/pprint (ccs/create-ccs-bulk 999 10 5 5))
+  (clojure.pprint/pprint (ccs/create-ccs-bulk 300 10 5 5))
   (println ")")
   (println "(def wcs ")
-  (clojure.pprint/pprint (wcs/create-wcs-bulk 333 333 333))
+  (clojure.pprint/pprint (wcs/create-wcs-bulk 100 100 100))
   (println ")")
 )
 

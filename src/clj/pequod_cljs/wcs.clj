@@ -28,7 +28,7 @@
           (rand-range [start end]
             (+ start (clojure.core/rand (- end start))))
           (generate-exponents [n f inputs]
-            (->> #(rand-range (/ 0.5 n) (/ 0.80 n))
+            (->> #(rand-range (/ 0.5 n) (/ 0.70 n))
                  repeatedly
                  (take (count (f inputs)))
                  vec))]
