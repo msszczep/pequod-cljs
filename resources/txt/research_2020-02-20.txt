@@ -8,15 +8,9 @@ TierA%  006     007     010     012     014     016
 TierB%
 ---------------------------------------------------
 5       9,32    14,41   32,54   16*,33  14,40   16,48
-10 ?
-15 ?
+10      9,81    14,101  25,109  22,62   13,101  15,132
+15      8,83    17,110  18,116  46*,108 12,110  13,144
 
-HW:
-* TierB% calculation
-* CSV: Output the result, # of iterations, for each experiment (summary form)
-* CSV Long form: Every iteration for every experiment
-* Make experiment from 0.5 to 0.7, 300 WCs, 300 CCs
-* Later: Generate new test set of 500 experiments
 
 TierC%  006     007     010     012     014     016
 ---------------------------------------------------
@@ -33,3 +27,8 @@ TierAT  006     007      010     012     014     016
 15      38*,48  769*,>2K X       x        x      14,41
 
 
+HW:
+* CSV: Output the result, # of iterations, for each experiment (summary form)
+* CSV Long form: Every iteration for every experiment
+* Make experiment from 0.5 to 0.7, 300 WCs, 300 CCs
+* Later: Generate new test set of 500 experiments
