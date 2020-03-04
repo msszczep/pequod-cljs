@@ -6,6 +6,11 @@ TierA%  006     007     010     012     014     016
 15      9,36    12*,37  14,39   19,42   19,49   18,51 = 36 37 39 42 49 51 => 254
 
 
+TierA%  008     009     011     013     015     017
+---------------------------------------------------
+20      17,39   11,42   15,41   18,43   23,57   15,47
+15      16,43   13,45   10,40   13,40   23,56   13,46
+
 TierB% -> 5
 ---------------------------------------------------
 5       9,32    14,41   32,54   16*,33  14,40   16,48
@@ -16,7 +21,7 @@ TierB% -> 5
 
 TierC%  006     007     010     012     014     016
 ---------------------------------------------------
-1       x       x       x       x       x       x
+1       9,29    15*,42  33,56   18*,32  13,41   16,49 = 29 42 56 32 41 49 => 249
 2       9,32    14,41   32,54   16*,33  14,40   16,48 = 32 41 54 33 40 48 => 248
 3       9,28    14,42   32,59   12,35   14,42   16,48 = 28 42 59 35 42 48 => 254 
 
@@ -32,9 +37,15 @@ TierAT  006     007      010     012     014     016
 https://github.com/testdouble/clojurescript.csv
 
 HW:
-* Try TierA test comparing 20 v. 15 with more experiments
-* Check TierC test with 1%
-* Make 5 more experiments: 0.5 to 0.7
 * CSV: Output the result, # of iterations, for each experiment (summary form)
 * CSV Long form: Every iteration for every experiment
 * Later: Generate new test set of 500 experiments
+
+Done:
+* Check TierC test with 1%
+* Make 5 more experiments: 0.5 to 0.7
+* Try TierA test comparing 20 v. 15 with more experiments
+
+ex019: nearly 1000 WCs and 1000 CC's
+ex020: 0.5 to 0.7 production range
+ex021-ex025: 0.5 to 0.7 production range
