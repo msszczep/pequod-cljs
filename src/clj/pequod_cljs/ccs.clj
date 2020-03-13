@@ -2,12 +2,13 @@
 
 (defn create-ccs-bulk [consumer-councils workers-per-council finals public-goods]
   (let [effort 1
-        cz (/ 0.5 (+ public-goods finals))
-        utility-exponents (->> #(+ cz (rand cz))
+;        cz (/ 0.5 (+ public-goods finals))
+        cz 0.5
+        utility-exponents (->> #(+ cz (rand 0.3))
                                repeatedly
                                (take (* finals (+ public-goods consumer-councils)))
                                (partition finals))
-        public-good-exponents (->> #(+ cz (rand cz))
+        public-good-exponents (->> #(+ cz (rand 0.3))
                                    repeatedly
                                    (take (* public-goods consumer-councils))
                                    (partition public-goods))]
