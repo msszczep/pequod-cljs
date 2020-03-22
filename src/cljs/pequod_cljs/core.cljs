@@ -176,26 +176,9 @@
                                        (* (apply + (concat utility-exponents public-good-exponents))
                                           (/ (nth public-good-prices (dec public-good))
                                              num-of-ccs))))
-                                  public-goods)
-        elasticity-private-goods
-                          (mapv (fn [private-good]
-                              (/ (* income (nth utility-exponents (dec private-good)))
-                                 (* (apply + (concat utility-exponents public-good-exponents))
-                                    (nth private-good-prices (dec private-good))
-                                    (nth private-good-demands (dec private-good)))))
-                              private-goods)
-        elasticity-public-goods
-                            (mapv (fn [public-good]
-                              (/ (* income (nth public-good-exponents (dec public-good)))
-                                 (* (apply + (concat utility-exponents public-good-exponents))
-                                    (/ (nth public-good-prices (dec public-good))
-                                        num-of-ccs)
-                                    (nth public-good-demands (dec public-good)))))
-                              public-goods)]
+                                  public-goods)]
     (assoc cc :private-good-demands private-good-demands
-              :public-good-demands public-good-demands
-              :elasticity-private-goods elasticity-private-goods
-              :elasticity-public-goods elasticity-public-goods)))
+              :public-good-demands public-good-demands)))
 
 
 (defn assign-new-proposal [production-inputs xs]
@@ -640,8 +623,7 @@
         new-price-deltas (update-price-deltas supply-list demand-list surplus-list)
         new-pdlist (update-pdlist supply-list demand-list surplus-list)
         threshold-report (report-threshold surplus-list supply-list demand-list)
-        iteration (inc (:iteration t2))
-        _ (println "CCs:" (:ccs t2))]
+        iteration (inc (:iteration t2))]
     (assoc t2 :private-good-prices private-good-prices
               :private-good-surpluses private-good-surpluses
               :intermediate-good-prices intermediate-good-prices
