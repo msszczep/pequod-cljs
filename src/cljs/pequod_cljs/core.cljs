@@ -56,6 +56,8 @@
          :labor-surpluses          []
          :public-good-surpluses    []
 
+         :threshold-report         []
+         :threshold-report-prev    []
          :threshold-met?           false
          :pdlist                   []
          :delta-delay              0
@@ -160,6 +162,25 @@
                          "ex027" ex027/wcs
                          "ex028" ex028/wcs
                          ex006/wcs))))))
+
+
+(defn reset-and-preserve
+  "Reset all but wcs, ccs, and prices"
+  [t]
+  (assoc t :delta-delay 5
+           :iteration 0
+           :private-good-surpluses []
+           :intermediate-input-surpluses []
+           :labor-surpluses []
+           :nature-surpluses []
+           :public-good-surpluses []
+           :pdlist (vec (repeat 25 1)) 
+           :price-deltas [0.5 0.5 0.5 0.5 0.5]
+           :supply-list []
+           :surplus-list []
+           :threshold-report []
+           :threshold-report-prev []
+           :threshold-met false))
 
 
 (defn consume [private-goods private-good-prices public-goods public-good-prices num-of-ccs cc]
@@ -452,10 +473,11 @@
                        "labor" (+ offset-1 offset-2 offset-3)
                        "public-goods" (+ offset-1 offset-2 offset-3 offset-4))
             surplus (- supply demand)
-            price-delta-to-use (cond 
-                                 (> (/ (Math/abs (* 2 surplus)) (+ demand supply)) 0.5) 0.20
-                                 (> (/ (Math/abs (* 2 surplus)) (+ demand supply)) 0.05) 0.05
-                                 :else 0.02)
+            price-delta-to-use (cond
+                                 (> (/ (Math/abs (* 2 surplus)) (+ demand supply)) 0.5) 0.18
+                                 (> (/ (Math/abs (* 2 surplus)) (+ demand supply)) 0.1) 0.12
+                                 (> (/ (Math/abs (* 2 surplus)) (+ demand supply)) 0.05) 0.06
+                                 :else 0.03)
             delta (get-deltas (+ J j-offset) price-delta-to-use pdlist)
             new-delta delta
                       #_(cond (<= delta 1) delta
@@ -608,7 +630,8 @@
 
 
 (defn iterate-plan [t]
-  (let [t2 (assoc t :ccs (map (partial consume (t :private-goods) (t :private-good-prices) (t :public-good-types) (t :public-good-prices) (count (t :ccs)))
+  (let [threshold-report-prev (if (zero? (:iteration t)) [] (:threshold-report t))
+        t2 (assoc t :ccs (map (partial consume (t :private-goods) (t :private-good-prices) (t :public-good-types) (t :public-good-prices) (count (t :ccs)))
                               (t :ccs))
                     :wcs (map (partial proposal (t :private-good-prices) (t :intermediate-good-prices) (t :nature-prices) (t :labor-prices) (t :public-good-prices))
                               (t :wcs)))
@@ -623,7 +646,8 @@
         new-price-deltas (update-price-deltas supply-list demand-list surplus-list)
         new-pdlist (update-pdlist supply-list demand-list surplus-list)
         threshold-report (report-threshold surplus-list supply-list demand-list)
-        iteration (inc (:iteration t2))]
+        iteration (inc (:iteration t2))
+        _ (println "OUTPUT:" (sort (map :output (:wcs t2))))]
     (assoc t2 :private-good-prices private-good-prices
               :private-good-surpluses private-good-surpluses
               :intermediate-good-prices intermediate-good-prices
@@ -638,6 +662,7 @@
               :surplus-list surplus-list
               :supply-list supply-list
               :threshold-report threshold-report
+              :threshold-report-prev threshold-report-prev
               :price-deltas new-price-deltas
               :pdlist new-pdlist
               :iteration iteration)))
@@ -850,13 +875,13 @@
         red "#ff4d4d"]
     (cond (empty? tre) red
           (every? #(< % 5) tre) "lawngreen"
-          (every? #(< % 20) tre) "gold"
+          (every? #(< % 10) tre) "gold"
+          (every? #(< % 20) tre) "darkorange"
           :else red)))
 
 
 (defn show-globals []
-    (let [td-cell-style {:border "1px solid #ddd" :text-align "center" :vertical-align "middle" :padding "8px"}
-          _ (show-color (take 1 (partition-by-five (get @globals :threshold-report))))]
+    (let [td-cell-style {:border "1px solid #ddd" :text-align "center" :vertical-align "middle" :padding "8px"}]
      [:div [:h4 "Welcome to pequod-cljs"]
            " "
            (all-buttons)
@@ -874,9 +899,9 @@
               [:td {:style (assoc td-cell-style :font-weight "bold")} "Prices"]
               [:td {:style td-cell-style} (or (str (mapv truncate-number (get @globals :private-good-prices))) "")]
               [:td {:style td-cell-style} (or (str (mapv truncate-number (get @globals :intermediate-good-prices))) "")]
-               [:td {:style td-cell-style} (or (str (mapv truncate-number (get @globals :nature-prices))) "")]
-               [:td {:style td-cell-style} (or (str (mapv truncate-number (get @globals :labor-prices))) "")]
-               [:td {:style td-cell-style} (or (str (mapv truncate-number (get @globals :public-good-prices))) "")]
+              [:td {:style td-cell-style} (or (str (mapv truncate-number (get @globals :nature-prices))) "")]
+              [:td {:style td-cell-style} (or (str (mapv truncate-number (get @globals :labor-prices))) "")]
+              [:td {:style td-cell-style} (or (str (mapv truncate-number (get @globals :public-good-prices))) "")]
              ]
              [:tr {:style {:border "1px solid #ddd"}}
               [:td {:style (assoc td-cell-style :font-weight "bold")} "PD List"]
@@ -925,6 +950,14 @@
               [:td {:style (assoc td-cell-style :background (show-color (drop 2 (take 3 (partition-by-five (get @globals :threshold-report))))))} (str (or (drop 2 (take 3 (partition-by-five (get @globals :threshold-report)))) "[]"))]
               [:td {:style (assoc td-cell-style :background (show-color (drop 3 (take 4 (partition-by-five (get @globals :threshold-report))))))} (str (or (drop 3 (take 4 (partition-by-five (get @globals :threshold-report)))) "[]"))]
               [:td {:style (assoc td-cell-style :background (show-color (drop 4 (take 5 (partition-by-five (get @globals :threshold-report))))))} (str (or (drop 4 (take 5 (partition-by-five (get @globals :threshold-report)))) "[]"))]
+             ]
+             [:tr {:style {:border "1px solid #ddd"}}
+              [:td {:style (assoc td-cell-style :font-weight "bold")} "Percent Surplus Prev."]
+              [:td {:style td-cell-style} (str (or (take 1 (partition-by-five (get @globals :threshold-report-prev))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 1 (take 2 (partition-by-five (get @globals :threshold-report-prev)))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 2 (take 3 (partition-by-five (get @globals :threshold-report-prev)))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 3 (take 4 (partition-by-five (get @globals :threshold-report-prev)))) "[]"))]
+              [:td {:style td-cell-style} (str (or (drop 4 (take 5 (partition-by-five (get @globals :threshold-report-prev)))) "[]"))]
              ]
 ]
 

@@ -17,8 +17,9 @@ TierB% -> 5
 10      9,81    14,101  25,109  22,62   13,101  15,132
 15      8,83    17,110  18,116  46*,108 12,110  13,144
 
-Ex020 35,78
-Ex021 35,82
+Ex019 46,98 = 52
+Ex020 35,78 = 43
+Ex021 35,82 = 
 Ex022 35,81
 Ex023 34,78
 Ex024 33,79
@@ -77,4 +78,31 @@ x2 (p1, p1, m) = [a / (a + b)][m / p2]
 
 fn compute-elasticity [consumer-good cc]
     
-  
+ ==
+
+How to simulate the economy changing from year-to-year
+
+1. 
+2. 
+
+Things that can change:
+1. coefficients on production function 
+2. coefficients on utility function 
+3. supplies of labor and resources
+
+How do you model random changes?
+
+==
+
+Look at the previous round, see which good was most "laggard".
+Boost the price by an extra amount (50%?).
+
+==> Figure out a way to find "laggards": Which percent surplus is changing the least?
+==> Store last round's percent surplus, calculate which two have changed the least. 
+
+Idea: Randomly change exponents in CC's so that sum of the changes has to be zero.
+Idea: Change exponents to slightly increase out of range (e.g. .5 -> .7 => .5 -> .8 ) 
+so that sum of WCs is out of range.
+Idea: Random slight increase of all WC's. (drawn from a power-law distribution)
+
+==> : Look at all output of (e.g.) private-good #1.
