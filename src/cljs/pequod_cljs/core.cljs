@@ -25,6 +25,7 @@
               [pequod-cljs.ex026 :as ex026]
               [pequod-cljs.ex027 :as ex027]
               [pequod-cljs.ex028 :as ex028]
+              [cljs.pprint :as pprint]
               [goog.string :as gstring]
               [goog.string.format]))
 
@@ -647,7 +648,8 @@
         new-pdlist (update-pdlist supply-list demand-list surplus-list)
         threshold-report (report-threshold surplus-list supply-list demand-list)
         iteration (inc (:iteration t2))
-        _ (println "OUTPUT:" (sort (map :output (:wcs t2))))]
+        _ (println "OUTPUT JUXT:" (pprint/pprint (sort-by first (map #(vector (key %) (reverse (sort (map :output (val %))))) (group-by (juxt :industry :product) (:wcs t2))))))
+]
     (assoc t2 :private-good-prices private-good-prices
               :private-good-surpluses private-good-surpluses
               :intermediate-good-prices intermediate-good-prices
