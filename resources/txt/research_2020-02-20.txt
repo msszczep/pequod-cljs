@@ -63,6 +63,9 @@ ex019: nearly 1000 WCs and 1000 CC's
 ex020: 0.5 to 0.7 production range
 ex021-ex025: 0.5 to 0.7 production range
 ex026-ex028: 0.5 to 0.8 production range, 0.5 to 0.8 cc range
+ex029: 0.7 to 0.75 production range, 0.5 to 0.8 cc range
+ex030: 0.7 to 0.7 production range, 0.5 to 0.8 cc range
+ex031: New regime where we take 0.1 times the number of inputs, up to 8
 
 ===
 

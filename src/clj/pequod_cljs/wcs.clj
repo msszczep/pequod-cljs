@@ -31,7 +31,23 @@
             (->> #(rand-range (/ 0.5 n) (/ 0.80 n))
                  repeatedly
                  (take (count (f inputs)))
-                 vec))]
+                 vec))
+          (generate-exponents-2 [input-count inputs]
+            (let [n (* 0.1 input-count)]
+             (->> #(rand-range 0 n)
+                  repeatedly
+                  (take (count (f inputs)))
+                  (cons 0)
+                  (cons n)
+                  sort
+                  (partition 2 1)
+                  (map (fn [[x y]] (- y x))))))
+          (generate-exponents-3 [input-count inputs]
+            (let [n (* 0.1 input-count)
+                  r (generate-exponents-2 inputs)]
+              [(into [] (take (count (first inputs)) r))
+               (into [] (take (count (second inputs)) r))
+               (into [] (take (count (last inputs)) r))]))]
     (let [production-inputs (vector (get-random-subset intermediate-inputs :intermediate-inputs)
                                     (get-random-subset nature-types :nature-types)
                                     (get-random-subset labor-types :labor-types))
@@ -40,7 +56,8 @@
                                        count)
           input-exponents (generate-exponents production-inputs-count first production-inputs)
           nature-exponents (generate-exponents production-inputs-count second production-inputs)
-          labor-exponents (generate-exponents production-inputs-count last production-inputs)]
+          labor-exponents (generate-exponents production-inputs-count last production-inputs)
+]
       (merge wc {:production-inputs production-inputs
                  :xe 0.05
                  :c 0.05
