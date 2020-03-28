@@ -36,7 +36,7 @@
             (let [n (* 0.1 input-count)]
              (->> #(rand-range 0 n)
                   repeatedly
-                  (take input-count)
+                  (take (dec input-count))
                   (cons 0)
                   (cons n)
                   sort
@@ -46,8 +46,8 @@
             (let [n (* 0.1 input-count)
                   r (generate-exponents-2 input-count inputs)]
               [(into [] (take (count (first inputs)) r))
-               (into [] (take (count (second inputs)) r))
-               (into [] (take (count (last inputs)) r))]))]
+               (into [] (take (count (second inputs)) (drop (count (first inputs)) r)))
+               (into [] (take (count (last inputs)) (drop (count (+ (first inputs) (second inputs))) r)))]))]
     (let [production-inputs (vector (get-random-subset intermediate-inputs :intermediate-inputs)
                                     (get-random-subset nature-types :nature-types)
                                     (get-random-subset labor-types :labor-types))
