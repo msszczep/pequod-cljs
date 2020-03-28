@@ -36,7 +36,7 @@
             (let [n (* 0.1 input-count)]
              (->> #(rand-range 0 n)
                   repeatedly
-                  (take (count (f inputs)))
+                  (take input-count)
                   (cons 0)
                   (cons n)
                   sort
@@ -44,7 +44,7 @@
                   (map (fn [[x y]] (- y x))))))
           (generate-exponents-3 [input-count inputs]
             (let [n (* 0.1 input-count)
-                  r (generate-exponents-2 inputs)]
+                  r (generate-exponents-2 input-count inputs)]
               [(into [] (take (count (first inputs)) r))
                (into [] (take (count (second inputs)) r))
                (into [] (take (count (last inputs)) r))]))]
@@ -54,9 +54,7 @@
           production-inputs-count (->> production-inputs
                                        flatten
                                        count)
-          input-exponents (generate-exponents production-inputs-count first production-inputs)
-          nature-exponents (generate-exponents production-inputs-count second production-inputs)
-          labor-exponents (generate-exponents production-inputs-count last production-inputs)
+          [input-exponents nature-exponents labor-exponents] (generate-exponents-3 production-inputs-count production-inputs)          
 ]
       (merge wc {:production-inputs production-inputs
                  :xe 0.05
