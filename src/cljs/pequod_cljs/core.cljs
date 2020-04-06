@@ -71,7 +71,8 @@
          :ccs                      []
          :iteration                0
          :natural-resources-supply 0
-         :labor-supply             0}))
+         :labor-supply             0
+         :turtle-council           {}}))
 
 
 (defn initialize-prices [t]
@@ -89,13 +90,15 @@
       :price-deltas (vec (repeat 5 0.05))
       :pdlist (vec (repeat (+ private-goods im-inputs resources labor public-goods) 1)))))
 
-(defn add-ids-to-wcs [wcs]
+
+(defn add-ids [cs]
   (loop [i 1
-         wcs wcs
-         updated-wcs []]
-    (if (empty? wcs)
-      updated-wcs
-      (recur (inc i) (rest wcs) (conj updated-wcs (assoc (first wcs) :id i))))))
+         cs cs
+         updated-cs []]
+    (if (empty? cs)
+      updated-cs
+      (recur (inc i) (rest cs) (conj updated-cs (assoc (first cs) :id i))))))
+
 
 ; TODO: don't hard code labor supply or nature supply
 (defn setup [t _ experiment]
@@ -115,35 +118,36 @@
                :labor-types labor-types
                :public-good-types public-good-types
                :surplus-threshold 0.05
-               :ccs (case @experiment
-                      "ex006" ex006/ccs
-                      "ex007" ex007/ccs
-                      "ex008" ex008/ccs
-                      "ex009" ex009/ccs
-                      "ex010" ex010/ccs
-                      "ex011" ex011/ccs
-                      "ex012" ex012/ccs
-                      "ex013" ex013/ccs
-                      "ex014" ex014/ccs
-                      "ex015" ex015/ccs
-                      "ex016" ex016/ccs
-                      "ex017" ex017/ccs
-                      "ex018" ex018/ccs
-                      "ex019" ex019/ccs
-                      "ex020" ex020/ccs
-                      "ex021" ex021/ccs
-                      "ex022" ex022/ccs
-                      "ex023" ex023/ccs
-                      "ex024" ex024/ccs
-                      "ex025" ex025/ccs
-                      "ex026" ex026/ccs
-                      "ex027" ex027/ccs
-                      "ex028" ex028/ccs
-                      "ex029" ex029/ccs
-                      "ex030" ex030/ccs
-                      "ex031" ex031/ccs
-                      ex006/ccs)
-               :wcs (add-ids-to-wcs
+               :ccs (add-ids
+                      (case @experiment
+                        "ex006" ex006/ccs
+                        "ex007" ex007/ccs
+                        "ex008" ex008/ccs
+                        "ex009" ex009/ccs
+                        "ex010" ex010/ccs
+                        "ex011" ex011/ccs
+                        "ex012" ex012/ccs
+                        "ex013" ex013/ccs
+                        "ex014" ex014/ccs
+                        "ex015" ex015/ccs
+                        "ex016" ex016/ccs
+                        "ex017" ex017/ccs
+                        "ex018" ex018/ccs
+                        "ex019" ex019/ccs
+                        "ex020" ex020/ccs
+                        "ex021" ex021/ccs
+                        "ex022" ex022/ccs
+                        "ex023" ex023/ccs
+                        "ex024" ex024/ccs
+                        "ex025" ex025/ccs
+                        "ex026" ex026/ccs
+                        "ex027" ex027/ccs
+                        "ex028" ex028/ccs
+                        "ex029" ex029/ccs
+                        "ex030" ex030/ccs
+                        "ex031" ex031/ccs
+                        ex006/ccs))
+               :wcs (add-ids
                       (case @experiment
                          "ex006" ex006/wcs
                          "ex007" ex007/wcs
@@ -657,7 +661,7 @@
         new-pdlist (update-pdlist supply-list demand-list surplus-list)
         threshold-report (report-threshold surplus-list supply-list demand-list)
         iteration (inc (:iteration t2))
-        _ (println "OUTPUT JUXT:" (pprint/pprint (sort-by first (map #(vector (key %) (reverse (sort (map :output (val %))))) (group-by (juxt :industry :product) (:wcs t2))))))
+        ; _ (println "OUTPUT JUXT:" (pprint/pprint (sort-by first (map #(vector (key %) (reverse (sort (map :output (val %))))) (group-by (juxt :industry :product) (:wcs t2))))))
 ]
     (assoc t2 :private-good-prices private-good-prices
               :private-good-surpluses private-good-surpluses
@@ -797,6 +801,13 @@
                (dec i))))))
 
 
+(defn update-turtle-council [t1 t2 council-type id]
+  (println "update-turtle-council " @council-type @id)
+  (assoc-in t1
+            [:turtle-council]
+            (filter #(= (:id %) @id) 
+                    (get @t2 (keyword @council-type)))))
+
 ;; -------------------------
 ;; Views-
 
@@ -819,7 +830,9 @@
 
 
 (defn all-buttons []
-  (let [experiment-to-use (atom "ex006")]
+  (let [experiment-to-use (atom "ex006")
+        turtle-council-type (atom "wcs")
+        turtle-id (atom 0)]
     [:div
      [:table
        [:tr
@@ -869,11 +882,23 @@
          [:td (count (get @globals :ccs))]
          [:td "Threshold:"]
          [:td (get @globals :surplus-threshold)]
-]]]))
+         [:td "Council explorer:"]
+         [:td [:select {:field :list
+               :id :turtle-council-type
+               :on-change #(reset! turtle-council-type (-> % .-target .-value))}
+          [:option {:key :wcs} "wcs"]
+          [:option {:key :ccs} "ccs"]]]
+         [:id [:input {:type :text
+                       :id :turtle-id
+                       :size 3
+                       :on-change #(reset! turtle-id (-> % .-target .-value))}]]
+         [:td [:input {:type "button" :value "Show council"
+           :on-click #(swap! globals update-turtle-council globals turtle-council-type turtle-id)}]]]]]))
 
 
 (defn truncate-number [n]
   (gstring/format "%.3f" n))
+
 
 (defn partition-by-five [seq-to-use]
   (if (empty? seq-to-use)
@@ -883,6 +908,7 @@
          (mapv truncate-number)
          (partition-all 5)
          (mapv (partial into [])))))
+
 
 (defn show-color [threshold-report-excerpt]
   (let [tre (first threshold-report-excerpt)
@@ -895,11 +921,11 @@
 
 
 (defn show-globals []
-    (let [td-cell-style {:border "1px solid #ddd" :text-align "center" :vertical-align "middle" :padding "8px"}]
+    (let [td-cell-style {:border "1px solid #ddd" :text-align "center" :vertical-align "middle" :padding "8px"}] 
      [:div [:h4 "Welcome to pequod-cljs"]
-           " "
            (all-buttons)
            [:p]
+           [:h6 "Council explorer:" (get @globals :turtle-council)]
            [:table {:style {:width "100%" :padding "8px" :border "1px solid #ddd"}}
              [:tr 
                [:th {:style td-cell-style} "Iteration: " (get @globals :iteration)]
