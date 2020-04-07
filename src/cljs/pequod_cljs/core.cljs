@@ -802,11 +802,11 @@
 
 
 (defn update-turtle-council [t1 t2 council-type id]
-  (println "update-turtle-council " @council-type @id)
-  (assoc-in t1
-            [:turtle-council]
-            (filter #(= (:id %) @id) 
-                    (get @t2 (keyword @council-type)))))
+  (letfn [(find-by-id [i data]
+            (filter #(= (str (:id %)) i) data))]
+    (assoc-in t1
+              [:turtle-council]
+              (find-by-id @id (get @t2 (keyword @council-type))))))
 
 ;; -------------------------
 ;; Views-
