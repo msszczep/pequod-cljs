@@ -695,6 +695,6 @@
 (defn -main [& [experiment-to-use]]
   (do 
     (import experiment-to-use)
-    (print (clojure.repl/dir pequod-cljs.csvgen)))
+    (print (ns-map pequod-cljs.csvgen)))
 )
 
