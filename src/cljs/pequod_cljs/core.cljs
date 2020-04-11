@@ -72,7 +72,8 @@
          :iteration                0
          :natural-resources-supply 0
          :labor-supply             0
-         :turtle-council           {}}))
+         :turtle-council           {}
+         :top-output-councils      []}))
 
 
 (defn initialize-prices [t]
@@ -661,8 +662,8 @@
         new-pdlist (update-pdlist supply-list demand-list surplus-list)
         threshold-report (report-threshold surplus-list supply-list demand-list)
         iteration (inc (:iteration t2))
-        ; _ (println "OUTPUT JUXT:" (pprint/pprint (sort-by first (map #(vector (key %) (reverse (sort (map :output (val %))))) (group-by (juxt :industry :product) (:wcs t2))))))
-]
+        top-output-councils (group-by (juxt :industry :product) (:wcs t2))]
+
     (assoc t2 :private-good-prices private-good-prices
               :private-good-surpluses private-good-surpluses
               :intermediate-good-prices intermediate-good-prices
@@ -680,7 +681,8 @@
               :threshold-report-prev threshold-report-prev
               :price-deltas new-price-deltas
               :pdlist new-pdlist
-              :iteration iteration)))
+              :iteration iteration
+              :top-output-councils top-output-councils)))
 
 
 (defn check-surpluses [t]
@@ -919,13 +921,32 @@
           (every? #(< % 20) tre) "darkorange"
           :else red)))
 
+(defn show-top-output-councils [d]
+  (let [td-cell-style {:border "1px solid #ddd" :text-align "center" :vertical-align "middle" :padding "8px"}]
+    [:table {:style {:width "100%" :padding "8px" :border "1px solid #ddd"}}
+     [:tr 
+      [:th {:style td-cell-style} "Industry"]
+      [:th {:style td-cell-style} "Product"]
+      [:th {:style td-cell-style} "Top 5"]
+      ]
+     (map (fn [[k v]] 
+            (let [top-five
+                  (map #(select-keys % [:id :output]) (take 5 (reverse (sort-by :output v))))] 
+              [:tr {:style {:border "1px solid #ddd"}}
+               [:td {:style td-cell-style} (str (first k))]
+               [:td {:style td-cell-style} (str (last k))]
+               [:td {:style td-cell-style} (str top-five)]
+               ]))
+          (sort d))]))
 
 (defn show-globals []
     (let [td-cell-style {:border "1px solid #ddd" :text-align "center" :vertical-align "middle" :padding "8px"}] 
      [:div [:h4 "Welcome to pequod-cljs"]
            (all-buttons)
            [:p]
-           [:h6 "Council explorer:" (get @globals :turtle-council)]
+           [:h4 "Council explorer: " (get @globals :turtle-council)]
+           (show-top-output-councils (get @globals :top-output-councils))
+           [:p]
            [:table {:style {:width "100%" :padding "8px" :border "1px solid #ddd"}}
              [:tr 
                [:th {:style td-cell-style} "Iteration: " (get @globals :iteration)]
@@ -950,14 +971,6 @@
               [:td {:style td-cell-style} (str (or (drop 2 (take 3 (partition-by-five (get @globals :pdlist)))) "[]"))]
               [:td {:style td-cell-style} (str (or (drop 3 (take 4 (partition-by-five (get @globals :pdlist)))) "[]"))]
               [:td {:style td-cell-style} (str (or (drop 4 (take 5 (partition-by-five (get @globals :pdlist)))) "[]"))]
-             ]
-             #_[:tr {:style {:border "1px solid #ddd"}}
-              [:td {:style (assoc td-cell-style :font-weight "bold")} "Price Deltas"]
-              [:td {:style td-cell-style} (str (or (mapv truncate-number (take 1 (get @globals :price-deltas))) "-"))]
-              [:td {:style td-cell-style} (str (or (mapv truncate-number (drop 1 (take 2 (get @globals :price-deltas)))) "-"))]
-              [:td {:style td-cell-style} (str (or (mapv truncate-number (drop 2 (take 3 (get @globals :price-deltas)))) "-"))]
-              [:td {:style td-cell-style} (str (or (mapv truncate-number (drop 3 (take 4 (get @globals :price-deltas)))) "-"))]
-              [:td {:style td-cell-style} (str (or (mapv truncate-number (drop 4 (take 5 (get @globals :price-deltas)))) "-"))]
              ]
              [:tr {:style {:border "1px solid #ddd"}}
               [:td {:style (assoc td-cell-style :font-weight "bold")} "Supply"]
