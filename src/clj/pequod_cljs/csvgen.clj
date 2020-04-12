@@ -1,4 +1,5 @@
-(ns pequod-cljs.csvgen)
+(ns pequod-cljs.csvgen
+   (:require [pequod-cljs.ex006 :as ex006]))
 
 (def globals
   (atom {:init-private-good-price 1500
@@ -69,7 +70,8 @@
 
 
 ; TODO: don't hard code labor supply or nature supply
-(defn setup [t _ experiment]
+; TODO restore experiment argument
+(defn setup [t _]
   (let [intermediate-inputs (vec (range 1 (inc (t :intermediate-inputs))))
         nature-types (vec (range 1 (inc (t :resources))))
         labor-types (vec (range 1 (inc (t :labors))))
@@ -86,8 +88,8 @@
                :labor-types labor-types
                :public-good-types public-good-types
                :surplus-threshold 0.05
-               :ccs [] ; (add-ids )
-               :wcs [] ; (add-ids )
+               :ccs (add-ids ex006/ccs)
+               :wcs (add-ids ex006/wcs)
 ))))
 
 
@@ -654,7 +656,6 @@
     {:price-delta pd
      :delta-delay delta-delay}))
 
-
 (defn rest-of-to-do [t]
   (let [[threshold-met? threshold-granular] (check-surpluses t)
         delta-delay (:delta-delay t)
@@ -665,20 +666,12 @@
                            :delta-delay delta-delay)]
     t-updated))
 
-
-(defn proceed [t]
+(defn proceed [t _]
   (let [t-plus (iterate-plan t)]
     (rest-of-to-do t-plus)))
 
-
-;; -------------------------
-;; Views-
-
-
-
 (defn truncate-number [n]
   (format "%.3f" n))
-
 
 (defn partition-by-five [seq-to-use]
   (if (empty? seq-to-use)
@@ -689,12 +682,14 @@
          (partition-all 5)
          (mapv (partial into [])))))
 
+; time lein run -m pequod-cljs.csvgen
 
-; lein run -m pequod-cljs.csvgen experiment-to-use
-
-(defn -main [& [experiment-to-use]]
-  (do 
-    (import experiment-to-use)
-    (print (ns-map pequod-cljs.csvgen)))
+(defn -main []
+  (do
+    (swap! globals setup globals) 
+    (swap! globals proceed globals)
+    (println (sort (keys @globals)))
+    (println (get @globals :iteration))
+    )
 )
 

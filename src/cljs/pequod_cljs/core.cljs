@@ -945,7 +945,6 @@
            (all-buttons)
            [:p]
            [:h4 "Council explorer: " (get @globals :turtle-council)]
-           (show-top-output-councils (get @globals :top-output-councils))
            [:p]
            [:table {:style {:width "100%" :padding "8px" :border "1px solid #ddd"}}
              [:tr 
@@ -1013,7 +1012,7 @@
               [:td {:style td-cell-style} (str (or (drop 4 (take 5 (partition-by-five (get @globals :threshold-report-prev)))) "[]"))]
              ]
 ]
-
+(show-top-output-councils (get @globals :top-output-councils))
      ]))
 
 
