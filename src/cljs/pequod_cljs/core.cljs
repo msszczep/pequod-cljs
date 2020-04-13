@@ -923,21 +923,29 @@
 
 (defn show-top-output-councils [d]
   (let [td-cell-style {:border "1px solid #ddd" :text-align "center" :vertical-align "middle" :padding "8px"}]
-    [:table {:style {:width "100%" :padding "8px" :border "1px solid #ddd"}}
-     [:tr 
-      [:th {:style td-cell-style} "Industry"]
-      [:th {:style td-cell-style} "Product"]
-      [:th {:style td-cell-style} "Top 5"]
-      ]
-     (map (fn [[k v]] 
-            (let [top-five
-                  (map #(select-keys % [:id :output]) (take 5 (reverse (sort-by :output v))))] 
-              [:tr {:style {:border "1px solid #ddd"}}
-               [:td {:style td-cell-style} (str (first k))]
-               [:td {:style td-cell-style} (str (last k))]
-               [:td {:style td-cell-style} (str top-five)]
-               ]))
-          (sort d))]))
+    (letfn [(transform-top-five [m]
+              {:id (:id m)
+               :output (truncate-number (:output m))
+               :exponents-sum (truncate-number (apply + 
+                                       (concat (:labor-exponents m)
+                                               (:input-exponents m)
+                                               (:nature-exponents m))))})]
+     [:table {:style {:width "100%" :padding "8px" :border "1px solid #ddd"}}
+      [:tr 
+       [:th {:style td-cell-style} "Industry"]
+       [:th {:style td-cell-style} "Product"]
+       [:th {:style td-cell-style} "Top 5"]
+       ]
+      (map (fn [[k v]] 
+             (let [top-five
+                   (map #(select-keys % [:id :output :labor-exponents :input-exponents :nature-exponents]) 
+                        (take 5 (reverse (sort-by :output v))))] 
+               [:tr {:style {:border "1px solid #ddd"}}
+                [:td {:style td-cell-style} (str (first k))]
+                [:td {:style td-cell-style} (str (last k))]
+                [:td {:style td-cell-style} (str (map transform-top-five top-five))]
+                ]))
+           (sort d))])))
 
 (defn show-globals []
     (let [td-cell-style {:border "1px solid #ddd" :text-align "center" :vertical-align "middle" :padding "8px"}] 
