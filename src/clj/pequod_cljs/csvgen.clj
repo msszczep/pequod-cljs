@@ -684,12 +684,19 @@
 
 ; time lein run -m pequod-cljs.csvgen
 
+(defn print-csv [args-to-print data]
+  (clojure.string/join "," (mapv (partial get data) args-to-print)))
+
 (defn -main []
-  (do
-    (swap! globals setup globals) 
-    (swap! globals proceed globals)
-    (println (sort (keys @globals)))
-    (println (get @globals :iteration))
-    )
-)
+  (let [keys-to-print [:iteration :private-good-prices :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :pdlist :supply-list :demand-list :surplus-list :threshold-report]]
+    (do
+      (println (clojure.string/join "," keys-to-print))
+      (swap! globals setup globals)
+      (swap! globals proceed globals)
+      (println (print-csv keys-to-print @globals))
+      (while (some #(> % 5) (get @globals :threshold-report))
+        (do 
+          (swap! globals proceed globals))
+          (println (print-csv keys-to-print @globals)))
+     )))
 

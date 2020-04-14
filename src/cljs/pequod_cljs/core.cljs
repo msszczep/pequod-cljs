@@ -148,35 +148,35 @@
                         "ex030" ex030/ccs
                         "ex031" ex031/ccs
                         ex006/ccs))
-               :wcs (add-ids
-                      (case @experiment
-                         "ex006" ex006/wcs
-                         "ex007" ex007/wcs
-                         "ex008" ex008/wcs
-                         "ex009" ex009/wcs
-                         "ex010" ex010/wcs
-                         "ex011" ex011/wcs
-                         "ex012" ex012/wcs
-                         "ex013" ex013/wcs
-                         "ex014" ex014/wcs
-                         "ex015" ex015/wcs
-                         "ex016" ex016/wcs
-                         "ex017" ex017/wcs
-                         "ex018" ex018/wcs
-                         "ex019" ex019/wcs
-                         "ex020" ex020/wcs
-                         "ex021" ex021/wcs
-                         "ex022" ex022/wcs
-                         "ex023" ex023/wcs
-                         "ex024" ex024/wcs
-                         "ex025" ex025/wcs
-                         "ex026" ex026/wcs
-                         "ex027" ex027/wcs
-                         "ex028" ex028/wcs
-                         "ex029" ex029/wcs
-                         "ex030" ex030/wcs
-                         "ex031" ex031/wcs
-                         ex006/wcs))))))
+               :wcs (filterv #(contains? #{203 206 209 217 214 240 230 236 222 239 246 252 257 250 254 268 278 261 276 267 290 292 291 297 300 109 115 106 111 107 134 139 130 128 133 141 156 153 159 143 179 163 177 161 166 183 185 184 196 200 12 15 16 5 1 28 32 27 33 25 53 60 55 54 51 79 80 77 74 68 89 87 98 86 100} (:id %)) (add-ids
+                                (case @experiment
+                                  "ex006" ex006/wcs
+                                  "ex007" ex007/wcs
+                                  "ex008" ex008/wcs
+                                  "ex009" ex009/wcs
+                                  "ex010" ex010/wcs
+                                  "ex011" ex011/wcs
+                                  "ex012" ex012/wcs
+                                  "ex013" ex013/wcs
+                                  "ex014" ex014/wcs
+                                  "ex015" ex015/wcs
+                                  "ex016" ex016/wcs
+                                  "ex017" ex017/wcs
+                                  "ex018" ex018/wcs
+                                  "ex019" ex019/wcs
+                                  "ex020" ex020/wcs
+                                  "ex021" ex021/wcs
+                                  "ex022" ex022/wcs
+                                  "ex023" ex023/wcs
+                                  "ex024" ex024/wcs
+                                  "ex025" ex025/wcs
+                                  "ex026" ex026/wcs
+                                  "ex027" ex027/wcs
+                                  "ex028" ex028/wcs
+                                  "ex029" ex029/wcs
+                                  "ex030" ex030/wcs
+                                  "ex031" ex031/wcs
+                                  ex006/wcs)))))))
 
 
 (defn reset-and-preserve
@@ -1020,7 +1020,7 @@
               [:td {:style td-cell-style} (str (or (drop 4 (take 5 (partition-by-five (get @globals :threshold-report-prev)))) "[]"))]
              ]
 ]
-(show-top-output-councils (get @globals :top-output-councils))
+;(show-top-output-councils (get @globals :top-output-councils))
      ]))
 
 
