@@ -28,7 +28,7 @@
           (rand-range [start end]
             (+ start (clojure.core/rand (- end start))))
           (generate-exponents [n f inputs]
-            (->> #(rand-range (/ 0.5 n) (/ 0.80 n))
+            (->> #(rand-range (/ 0.75 n) (/ 0.85 n))
                  repeatedly
                  (take (count (f inputs)))
                  vec))
@@ -54,7 +54,9 @@
           production-inputs-count (->> production-inputs
                                        flatten
                                        count)
-          [input-exponents nature-exponents labor-exponents] (generate-exponents-3 production-inputs-count production-inputs)          
+          input-exponents (generate-exponents production-inputs-count first production-inputs)
+          nature-exponents (generate-exponents production-inputs-count second production-inputs)
+          labor-exponents (generate-exponents production-inputs-count last production-inputs)
 ]
       (merge wc {:production-inputs production-inputs
                  :xe 0.05
