@@ -103,6 +103,30 @@
       updated-cs
       (recur (inc i) (rest cs) (conj updated-cs (assoc (first cs) :id i))))))
 
+(defn augment-exponents [council-type exponents]
+  (let [augments-to-use (if (= :wc council-type)
+                            [0 .001 0.002 0.003 0.004]
+                            [(- .002) (- .001) 0 .001 .002])]
+   (->> #(rand-nth augments-to-use)
+        repeatedly
+        (take (count exponents))
+        (interleave exponents)
+        (partition 2)
+        (map (fn [[a b]] (+ a b))))))
+
+(defn augment-wc [wc]
+  (assoc wc :input-exponents (augment-exponents :wc (:input-exponents wc))
+            :nature-exponents (augment-exponents :wc (:nature-exponents wc))
+            :labor-exponents (augment-exponents :wc (:labor-exponents wc))))
+
+(defn augment-cc [cc]
+  (assoc cc :utility-exponents (augment-exponents :cc (:utility-exponents cc))
+            :public-good-exponents (augment-exponents :cc (:public-good-exponents cc))))
+
+(defn augmented-reset [t]
+  (assoc t :iteration 0
+         :ccs (mapv augment-cc (:ccs t))
+         :wcs (mapv augment-wc (:wcs t))))
 
 ; TODO: don't hard code labor supply or nature supply
 (defn setup [t _ experiment]
@@ -155,7 +179,7 @@
                         "ex034" ex034/ccs
                         ex006/ccs))
                :wcs  (add-ids
-                                                                                                                                                                                                                                                                                                                                         (case @experiment
+                       (case @experiment
                                                                                                                                                                                                                                                                                                                                            "ex006" ex006/wcs
                                                                                                                                                                                                                                                                                                                                            "ex007" ex007/wcs
                                                                                                                                                                                                                                                                                                                                            "ex008" ex008/wcs
@@ -906,7 +930,10 @@
                        :size 3
                        :on-change #(reset! turtle-id (-> % .-target .-value))}]]
          [:td [:input {:type "button" :value "Show council"
-           :on-click #(swap! globals update-turtle-council globals turtle-council-type turtle-id)}]]]]]))
+           :on-click #(swap! globals update-turtle-council globals turtle-council-type turtle-id)}]]
+         [:td [:input {:type "button" :value "Augmented reset"
+           :on-click #(swap! globals augmented-reset globals)}]]
+]]]))
 
 
 (defn truncate-number [n]
