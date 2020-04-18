@@ -105,8 +105,8 @@
 
 (defn augment-exponents [council-type exponents]
   (let [augments-to-use (if (= :wc council-type)
-                            [0 .001 0.002 0.003 0.004]
-                            [(- .002) (- .001) 0 .001 .002])]
+                            [0 .0001 0.0002 0.0003 0.0004]
+                            [(- .0002) (- .0001) 0 .0001 .0002])]
    (->> #(rand-nth augments-to-use)
         repeatedly
         (take (count exponents))
