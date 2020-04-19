@@ -69,6 +69,9 @@ ex026-ex028: 0.5 to 0.8 production range, 0.5 to 0.8 cc range
 ex029: 0.7 to 0.75 production range, 0.5 to 0.8 cc range
 ex030: 0.7 to 0.7 production range, 0.5 to 0.8 cc range
 ex031: New regime where we take 0.1 times the number of inputs, up to 8
+ex032: Repeated experiment, 0.5 to 0.8 wc range
+ex033: 0.5 to 0.6 wc range
+ex034: 0.75 to 0.85 wc range
 
 ===
 

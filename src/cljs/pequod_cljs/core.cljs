@@ -675,6 +675,14 @@
        (partition 3)
        (mapv #(* 100 (/ (Math/abs (* 2 (first %))) (+ (second %) (last %)))))))
 
+(defn compute-gdp [supply-list private-good-prices public-good-prices]
+  (let [[private-good-supply _ _ _ public-good-supply] supply-list]
+    (->> public-good-prices
+         (concat private-good-prices)
+         (interleave (concat private-good-supply public-good-supply))
+         (partition 2)
+         (map (fn [[a b]] (* a b)))
+         (apply +))))
 
 (defn iterate-plan [t]
   (let [threshold-report-prev (if (zero? (:iteration t)) [] (:threshold-report t))
@@ -694,8 +702,8 @@
         new-pdlist (update-pdlist supply-list demand-list surplus-list)
         threshold-report (report-threshold surplus-list supply-list demand-list)
         iteration (inc (:iteration t2))
-        top-output-councils (group-by (juxt :industry :product) (:wcs t2))]
-
+        top-output-councils (group-by (juxt :industry :product) (:wcs t2))
+        gdp (compute-gdp supply-list private-good-prices public-good-prices)]
     (assoc t2 :private-good-prices private-good-prices
               :private-good-surpluses private-good-surpluses
               :intermediate-good-prices intermediate-good-prices
@@ -714,7 +722,8 @@
               :price-deltas new-price-deltas
               :pdlist new-pdlist
               :iteration iteration
-              :top-output-councils top-output-councils)))
+              :top-output-councils top-output-councils
+              :gdp gdp)))
 
 
 (defn check-surpluses [t]
@@ -919,6 +928,8 @@
          [:td (count (get @globals :ccs))]
          [:td "Threshold:"]
          [:td (get @globals :surplus-threshold)]
+         [:td "GDP:"]
+         [:td (truncate-number (str (get @globals :gdp)))]
          [:td "Council explorer:"]
          [:td [:select {:field :list
                :id :turtle-council-type
