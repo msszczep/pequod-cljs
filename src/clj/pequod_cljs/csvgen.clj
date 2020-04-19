@@ -684,6 +684,12 @@
 
 ; time lein run -m pequod-cljs.csvgen
 
+(defn sum-wc-exponents [wc]
+  (reduce + 
+    (concat (:labor-exponents wc)
+            (:input-exponents wc)
+            (:nature-exponents wc))))
+
 (defn print-csv [args-to-print data]
   (let [wcs (map :output (get data :wcs))]
     (clojure.string/join "," (concat (mapv (partial get data) args-to-print) wcs))))
@@ -699,5 +705,6 @@
         (do 
           (swap! globals proceed globals))
           (println (print-csv keys-to-print @globals)))
+      (println (clojure.string/join "," (concat keys-to-print (map sum-wc-exponents (sort-by :id (get @globals :wcs))))))
      )))
 
