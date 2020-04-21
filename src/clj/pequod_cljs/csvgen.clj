@@ -691,7 +691,9 @@
             (:nature-exponents wc))))
 
 (defn print-csv [args-to-print data]
-  (let [wcs (map :output (get data :wcs))]
+  (let [outputs (map :output (get data :wcs))
+        efforts (map :effort (get data :wcs))
+        wcs     (interleave outputs efforts)]
     (clojure.string/join "," (concat (mapv (partial get data) args-to-print) wcs))))
 
 (defn -main []
@@ -699,12 +701,14 @@
     (do
       (swap! globals setup globals)
       (swap! globals proceed globals)
-      (println (clojure.string/join "," (concat keys-to-print (mapv #(str "wc_" %) (sort (map :id (get @globals :wcs)))))))
+      (println (clojure.string/join "," (concat keys-to-print (flatten (mapv #(vector (str "wc_" % "_output") (str "wc_" % "_effort")) (sort (map :id (get @globals :wcs))))))))
       (println (print-csv keys-to-print @globals))
       (while (some #(> % 5) (get @globals :threshold-report))
-        (do 
+        (do
           (swap! globals proceed globals))
           (println (print-csv keys-to-print @globals)))
-      (println (clojure.string/join "," (concat keys-to-print (map sum-wc-exponents (sort-by :id (get @globals :wcs))))))
-     )))
+      (println (clojure.string/join "," (concat ["exponent-sum"]
+                                                (repeat (dec (count keys-to-print)) "") 
+                                                (interleave (map sum-wc-exponents (sort-by :id (get @globals :wcs)))
+                                                            (repeat ""))))))))
 

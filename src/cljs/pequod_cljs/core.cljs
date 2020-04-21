@@ -105,7 +105,7 @@
 
 (defn augment-exponents [council-type exponents]
   (let [augments-to-use (if (= :wc council-type)
-                            [0 .0001 0.0002 0.0003 0.0004]
+                            [0 0.0001 0.0002 0.0003 0.0004]
                             [(- .0002) (- .0001) 0 .0001 .0002])]
    (->> #(rand-nth augments-to-use)
         repeatedly
@@ -669,7 +669,6 @@
          public-good-supply (mapv (partial get-producers t 2) (:public-good-types t))]
      (vector private-producers input-producers natural-resources-supply labor-supply public-good-supply)))) 
 
-
 (defn report-threshold [surplus-list supply-list demand-list]
   (->> (interleave (flatten surplus-list) (flatten demand-list) (flatten supply-list))
        (partition 3)
@@ -975,6 +974,7 @@
     (letfn [(transform-top-five [m]
               {:id (:id m)
                :output (truncate-number (:output m))
+               :effort (truncate-number (:effort m))
                :exponents-sum (truncate-number (apply + 
                                        (concat (:labor-exponents m)
                                                (:input-exponents m)
@@ -987,8 +987,8 @@
        ]
       (map (fn [[k v]] 
              (let [top-five
-                   (map #(select-keys % [:id :output :labor-exponents :input-exponents :nature-exponents]) 
-                         (reverse (sort-by :output v)))] 
+                   (map #(select-keys % [:id :output :effort :labor-exponents :input-exponents :nature-exponents]) 
+                         (reverse (sort-by :effort v)))] 
                [:tr {:style {:border "1px solid #ddd"}}
                 [:td {:style td-cell-style} (str (first k))]
                 [:td {:style td-cell-style} (str (last k))]
