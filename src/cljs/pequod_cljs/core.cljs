@@ -31,17 +31,29 @@
               [pequod-cljs.ex032 :as ex032]
               [pequod-cljs.ex033 :as ex033]
               [pequod-cljs.ex034 :as ex034]
+              [pequod-cljs.ex035 :as ex035]
+              [pequod-cljs.ex036 :as ex036]
+              [pequod-cljs.ex037 :as ex037]
+              [pequod-cljs.ex038 :as ex038]
+              [pequod-cljs.ex039 :as ex039]
+              [pequod-cljs.ex040 :as ex040]
+              [pequod-cljs.ex041 :as ex041]
+              [pequod-cljs.ex042 :as ex042]
+              [pequod-cljs.ex043 :as ex043]
+              [pequod-cljs.ex044 :as ex044]
+              [pequod-cljs.ex045 :as ex045]
+              [pequod-cljs.ex046 :as ex046]
               [cljs.pprint :as pprint]
               [goog.string :as gstring]
               [goog.string.format]))
 
 
 (def globals
-  (atom {:init-private-good-price 1500
-         :init-intermediate-price 1500
-         :init-labor-price        10
-         :init-nature-price       10
-         :init-public-good-price  1500
+  (atom {:init-private-good-price 200
+         :init-intermediate-price 200
+         :init-labor-price        20
+         :init-nature-price       20
+         :init-public-good-price  200
 
          :private-goods             5
          :intermediate-inputs       5
@@ -177,6 +189,18 @@
                         "ex032" ex032/ccs
                         "ex033" ex033/ccs
                         "ex034" ex034/ccs
+                        "ex035" ex035/ccs
+                        "ex036" ex036/ccs
+                        "ex037" ex037/ccs
+                        "ex038" ex038/ccs
+                        "ex039" ex039/ccs
+                        "ex040" ex040/ccs
+                        "ex041" ex041/ccs
+                        "ex042" ex042/ccs
+                        "ex043" ex043/ccs
+                        "ex044" ex044/ccs
+                        "ex045" ex045/ccs
+                        "ex046" ex046/ccs
                         ex006/ccs))
                :wcs  (add-ids
                        (case @experiment
@@ -208,7 +232,20 @@
                                                                                                                                                                                                                                                                                                                                            "ex031" ex031/wcs
      "ex032" ex032/wcs
      "ex033" ex033/wcs
-     "ex034" ex034/wcs                                                                                                                                                                                                                                                                                                                                           ex006/wcs))))))
+     "ex034" ex034/wcs
+     "ex035" ex035/wcs
+     "ex036" ex036/wcs
+     "ex037" ex037/wcs
+     "ex038" ex038/wcs
+     "ex039" ex039/wcs
+     "ex040" ex040/wcs
+     "ex041" ex041/wcs
+     "ex042" ex042/wcs
+     "ex043" ex043/wcs
+     "ex044" ex044/wcs
+     "ex045" ex045/wcs
+     "ex046" ex046/wcs
+                                                                                                                                                                                                                                                                                                                                           ex006/wcs))))))
 
 
 (defn reset-and-preserve
@@ -520,11 +557,7 @@
                        "labor" (+ offset-1 offset-2 offset-3)
                        "public-goods" (+ offset-1 offset-2 offset-3 offset-4))
             surplus (- supply demand)
-            price-delta-to-use (cond
-                                 (> (/ (Math/abs (* 2 surplus)) (+ demand supply)) 0.5) 0.18
-                                 (> (/ (Math/abs (* 2 surplus)) (+ demand supply)) 0.1) 0.12
-                                 (> (/ (Math/abs (* 2 surplus)) (+ demand supply)) 0.05) 0.06
-                                 :else 0.03)
+            price-delta-to-use (- 1.05 (Math/pow 0.75 (/ (Math/abs (* 2 surplus)) (+ demand supply))))
             delta (get-deltas (+ J j-offset) price-delta-to-use pdlist)
             new-delta delta
                       #_(cond (<= delta 1) delta
@@ -597,13 +630,17 @@
 
 
 (defn update-pdlist [supply-list demand-list surplus-list]
-  (let [averaged-s-and-d (->> (interleave (flatten supply-list)
-                                          (flatten demand-list))
-                              (partition 2)
-                              (mapv mean))]
-    (->> (interleave (flatten surplus-list) averaged-s-and-d)
-         (partition 2)
-         (mapv #(/ (first %) (last %))))))
+  (letfn [(force-to-one [n]
+            (let [cap 0.25]
+              (if (or (> n cap) (< n (- cap))) cap (Math/abs n))))]
+    (let [averaged-s-and-d (->> (interleave (flatten supply-list)
+                                           (flatten demand-list))
+                                (partition 2)
+                                (mapv mean))]
+      (->> (interleave (flatten surplus-list) averaged-s-and-d)
+           (partition 2)
+           (mapv #(/ (first %) (last %)))
+           (mapv force-to-one)))))
 
 
 (defn get-demand-list [t]
@@ -910,6 +947,18 @@
           [:option {:key :ex032} "ex032"]
           [:option {:key :ex033} "ex033"]
           [:option {:key :ex034} "ex034"]
+          [:option {:key :ex035} "ex035"]
+          [:option {:key :ex036} "ex036"]
+          [:option {:key :ex037} "ex037"]
+          [:option {:key :ex038} "ex038"]
+          [:option {:key :ex039} "ex039"]
+          [:option {:key :ex040} "ex040"]
+          [:option {:key :ex041} "ex041"]
+          [:option {:key :ex042} "ex042"]
+          [:option {:key :ex043} "ex043"]
+          [:option {:key :ex044} "ex044"]
+          [:option {:key :ex045} "ex045"]
+          [:option {:key :ex046} "ex046"]
           ]]
          [:td [:input {:type "button" :value "Setup"
               :on-click #(swap! globals setup globals experiment-to-use)}]]

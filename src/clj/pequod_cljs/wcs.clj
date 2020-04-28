@@ -66,9 +66,9 @@
                  :labor-exponents labor-exponents
                  :cq 0.25
                  :ce 1
-                 :du 7
-                 :s 1
-                 :a 0.25
+                 :du 2
+                 :s 5
+                 :a 1.5
                  :effort 0.5
                  :output 0
                  :labor-quantities [0]}))))
