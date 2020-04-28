@@ -43,6 +43,16 @@
               [pequod-cljs.ex044 :as ex044]
               [pequod-cljs.ex045 :as ex045]
               [pequod-cljs.ex046 :as ex046]
+              [pequod-cljs.ex047 :as ex047]
+              [pequod-cljs.ex048 :as ex048]
+              [pequod-cljs.ex049 :as ex049]
+              [pequod-cljs.ex050 :as ex050]
+              [pequod-cljs.ex051 :as ex051]
+              [pequod-cljs.ex052 :as ex052]
+              [pequod-cljs.ex053 :as ex053]
+              [pequod-cljs.ex054 :as ex054]
+              [pequod-cljs.ex055 :as ex055]
+              [pequod-cljs.ex056 :as ex056]
               [cljs.pprint :as pprint]
               [goog.string :as gstring]
               [goog.string.format]))
@@ -201,6 +211,16 @@
                         "ex044" ex044/ccs
                         "ex045" ex045/ccs
                         "ex046" ex046/ccs
+                        "ex047" ex047/ccs
+                        "ex048" ex048/ccs
+                        "ex049" ex049/ccs
+                        "ex050" ex050/ccs
+                        "ex051" ex051/ccs
+                        "ex052" ex052/ccs
+                        "ex053" ex053/ccs
+                        "ex054" ex054/ccs
+                        "ex055" ex055/ccs
+                        "ex056" ex056/ccs
                         ex006/ccs))
                :wcs  (add-ids
                        (case @experiment
@@ -245,6 +265,16 @@
      "ex044" ex044/wcs
      "ex045" ex045/wcs
      "ex046" ex046/wcs
+     "ex047" ex047/wcs
+     "ex048" ex048/wcs
+     "ex049" ex049/wcs
+     "ex050" ex050/wcs
+     "ex051" ex051/wcs
+     "ex052" ex052/wcs
+     "ex053" ex053/wcs
+     "ex054" ex054/wcs
+     "ex055" ex055/wcs
+     "ex056" ex056/wcs
                                                                                                                                                                                                                                                                                                                                            ex006/wcs))))))
 
 
@@ -959,6 +989,16 @@
           [:option {:key :ex044} "ex044"]
           [:option {:key :ex045} "ex045"]
           [:option {:key :ex046} "ex046"]
+          [:option {:key :ex047} "ex047"]
+          [:option {:key :ex048} "ex048"]
+          [:option {:key :ex049} "ex049"]
+          [:option {:key :ex050} "ex050"]
+          [:option {:key :ex051} "ex051"]
+          [:option {:key :ex052} "ex052"]
+          [:option {:key :ex053} "ex053"]
+          [:option {:key :ex054} "ex054"]
+          [:option {:key :ex055} "ex055"]
+          [:option {:key :ex056} "ex056"]
           ]]
          [:td [:input {:type "button" :value "Setup"
               :on-click #(swap! globals setup globals experiment-to-use)}]]
