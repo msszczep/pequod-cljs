@@ -72,6 +72,9 @@ ex031: New regime where we take 0.1 times the number of inputs, up to 8
 ex032: Repeated experiment, 0.5 to 0.8 wc range
 ex033: 0.5 to 0.6 wc range
 ex034: 0.75 to 0.85 wc range
+ex035-ex036: experiment to investigate s, du / k, a
+ex037-ex046: experiment with changed s=5, du/k=2, a=1.5
+ex047-ex056: experiment with changed s=5, du/k=1.5-2.5, a=1.5
 
 ===
 
@@ -115,3 +118,8 @@ so that sum of WCs is out of range.
 Idea: Random slight increase of all WC's. (drawn from a power-law distribution)
 
 ==> : Look at all output of (e.g.) private-good #1.
+
+===
+
+(filterv #(contains? #{203 206 209 217 214 240 230 236 222 239 246 252 257 250 254 268 278 261 276 267 290 292 291 297 300 109 115 106 111 107 134 139 130 128 133 141 156 153 159 143 179 163 177 161 166 183 185 184 196 200 12 15 16 5 1 28 32 27 33 25 53 60 55 54 51 79 80 77 74 68 89 87 98 86 100} (:id %))).
+
