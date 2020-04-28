@@ -66,7 +66,7 @@
                  :labor-exponents labor-exponents
                  :cq 0.25
                  :ce 1
-                 :du 2
+                 :du (rand-range 1.5 2.5)
                  :s 5
                  :a 1.5
                  :effort 0.5
