@@ -98,7 +98,10 @@
          :natural-resources-supply 0
          :labor-supply             0
          :turtle-council           {}
-         :top-output-councils      []}))
+         :top-output-councils      []
+         :last-years-supply        []
+         :last-years-private-good-prices []
+         :last-years-public-good-prices []}))
 
 
 (defn initialize-prices [t]
@@ -147,8 +150,11 @@
 
 (defn augmented-reset [t]
   (assoc t :iteration 0
-         :ccs (mapv augment-cc (:ccs t))
-         :wcs (mapv augment-wc (:wcs t))))
+           :ccs (mapv augment-cc (:ccs t))
+           :wcs (mapv augment-wc (:wcs t))
+           :last-years-supply (:supply-list t)
+           :last-years-private-good-prices (:private-good-prices t)
+           :last-years-public-good-prices (:public-good-prices t)))
 
 ; TODO: don't hard code labor supply or nature supply
 (defn setup [t _ experiment]
@@ -769,7 +775,9 @@
         threshold-report (report-threshold surplus-list supply-list demand-list)
         iteration (inc (:iteration t2))
         top-output-councils (group-by (juxt :industry :product) (:wcs t2))
-        gdp (compute-gdp supply-list private-good-prices public-good-prices)]
+        gdp2 (compute-gdp supply-list private-good-prices public-good-prices)
+        gdp1 (compute-gdp (:last-years-supply t2) (:last-years-private-good-prices t2) (:last-years-public-good-prices t2))
+        gdp-pi (* 100 (/ (- gdp2 gdp1) gdp1))]
     (assoc t2 :private-good-prices private-good-prices
               :private-good-surpluses private-good-surpluses
               :intermediate-good-prices intermediate-good-prices
@@ -789,7 +797,9 @@
               :pdlist new-pdlist
               :iteration iteration
               :top-output-councils top-output-councils
-              :gdp gdp)))
+              :gdp2 gdp2
+              :gdp1 gdp1
+              :gdp-pi gdp-pi)))
 
 
 (defn check-surpluses [t]
@@ -1009,15 +1019,7 @@
          [:td [:input {:type "button" :value "Iterate 10X"
            :on-click #(swap! globals proceed-iterate-ten globals)}]]
          [:td [:input {:type "button" :value "Iterate 50X"
-           :on-click #(swap! globals proceed-iterate-fifty globals)}]] 
-         [:td "WCs:"]
-         [:td (count (get @globals :wcs))]
-         [:td "CCs:"]
-         [:td (count (get @globals :ccs))]
-         [:td "Threshold:"]
-         [:td (get @globals :surplus-threshold)]
-         [:td "GDP:"]
-         [:td (truncate-number (str (get @globals :gdp)))]
+           :on-click #(swap! globals proceed-iterate-fifty globals)}]]
          [:td "Council explorer:"]
          [:td [:select {:field :list
                :id :turtle-council-type
@@ -1032,7 +1034,15 @@
            :on-click #(swap! globals update-turtle-council globals turtle-council-type turtle-id)}]]
          [:td [:input {:type "button" :value "Augmented reset"
            :on-click #(swap! globals augmented-reset globals)}]]
-]]]))
+         ]
+        [:tr 
+         [:td (str "WCs: " (count (get @globals :wcs)))]
+         [:td (str "CCs: " (count (get @globals :ccs)))]
+         [:td (str "TH: " (get @globals :surplus-threshold))]
+         [:td (str "GDP2: " (truncate-number (str (get @globals :gdp2))))]
+         [:td (str "GDP1: " (truncate-number (str (get @globals :gdp1))))]
+         [:td (str "PI: " (truncate-number (str (get @globals :gdp-pi))))]
+         ]]]))
 
 
 (defn truncate-number [n]
