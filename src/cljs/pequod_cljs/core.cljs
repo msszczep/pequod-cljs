@@ -775,9 +775,13 @@
         threshold-report (report-threshold surplus-list supply-list demand-list)
         iteration (inc (:iteration t2))
         top-output-councils (group-by (juxt :industry :product) (:wcs t2))
-        gdp2 (compute-gdp supply-list private-good-prices public-good-prices)
-        gdp1 (compute-gdp (:last-years-supply t2) (:last-years-private-good-prices t2) (:last-years-public-good-prices t2))
-        gdp-pi (* 100 (/ (- gdp2 gdp1) gdp1))]
+        gdp-typ-2 (compute-gdp supply-list private-good-prices public-good-prices)
+        gdp-typ-1 (compute-gdp (:last-years-supply t2) private-good-prices public-good-prices)
+        gdp-lyp-2 (compute-gdp supply-list (:last-years-private-good-prices t2) (:last-years-public-good-prices t2))
+        gdp-lyp-1 (compute-gdp (:last-years-supply t2) (:last-years-private-good-prices t2) (:last-years-public-good-prices t2))
+        gdp-typ-pi (* 100 (/ (- gdp-typ-2 gdp-typ-1) gdp-typ-1))
+        gdp-lyp-pi (* 100 (/ (- gdp-lyp-2 gdp-lyp-1) gdp-lyp-1))
+        gdp-avg-pi (mean [gdp-typ-pi gdp-lyp-pi])]
     (assoc t2 :private-good-prices private-good-prices
               :private-good-surpluses private-good-surpluses
               :intermediate-good-prices intermediate-good-prices
@@ -797,9 +801,9 @@
               :pdlist new-pdlist
               :iteration iteration
               :top-output-councils top-output-councils
-              :gdp2 gdp2
-              :gdp1 gdp1
-              :gdp-pi gdp-pi)))
+              :gdp2 gdp-typ-pi
+              :gdp1 gdp-lyp-pi
+              :gdp-pi gdp-avg-pi)))
 
 
 (defn check-surpluses [t]
@@ -1039,9 +1043,9 @@
          [:td (str "WCs: " (count (get @globals :wcs)))]
          [:td (str "CCs: " (count (get @globals :ccs)))]
          [:td (str "TH: " (get @globals :surplus-threshold))]
-         [:td (str "GDP2: " (truncate-number (str (get @globals :gdp2))))]
-         [:td (str "GDP1: " (truncate-number (str (get @globals :gdp1))))]
-         [:td (str "PI: " (truncate-number (str (get @globals :gdp-pi))))]
+         [:td (str "A-GDP TY: " (truncate-number (str (get @globals :gdp2))))]
+         [:td (str "A-GDP LY: " (truncate-number (str (get @globals :gdp1))))]
+         [:td (str "A-GDP AVG: " (truncate-number (str (get @globals :gdp-pi))))]
          ]]]))
 
 
