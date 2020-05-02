@@ -59,20 +59,16 @@
           labor-exponents (generate-exponents production-inputs-count last production-inputs)
 ]
       (merge wc {:production-inputs production-inputs
-                 :xe 0.05
                  :c 0.05
                  :input-exponents input-exponents
                  :nature-exponents nature-exponents
                  :labor-exponents labor-exponents
-                 :cq 0.25
-                 :ce 1
                  :du (rand-range 1.5 2.5)
                  :s 5
                  :a 1.5
                  :effort 0.5
                  :output 0
                  :labor-quantities [0]}))))
-
 
 (defn create-wcs-bulk [num-ind-0 num-ind-1 num-ind-2]
   (->> (merge (create-wcs num-ind-0 [1 2 3 4 5] 0)
@@ -83,4 +79,4 @@
                       [1 2 3 4 5] ; intermediate-inputs
                       [1 2 3 4 5] ; nature-types
                       [1 2 3 4 5] ; labor-types
-  ))))
+       ))))

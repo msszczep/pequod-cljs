@@ -53,6 +53,11 @@
               [pequod-cljs.ex054 :as ex054]
               [pequod-cljs.ex055 :as ex055]
               [pequod-cljs.ex056 :as ex056]
+              [pequod-cljs.ex057 :as ex057]
+              [pequod-cljs.ex058 :as ex058]
+              [pequod-cljs.ex059 :as ex059]
+              [pequod-cljs.ex060 :as ex060]
+              [pequod-cljs.ex061 :as ex061]
               [cljs.pprint :as pprint]
               [goog.string :as gstring]
               [goog.string.format]))
@@ -227,35 +232,40 @@
                         "ex054" ex054/ccs
                         "ex055" ex055/ccs
                         "ex056" ex056/ccs
+                        "ex057" ex057/ccs
+                        "ex058" ex058/ccs
+                        "ex059" ex059/ccs
+                        "ex060" ex060/ccs
+                        "ex061" ex061/ccs
                         ex006/ccs))
                :wcs  (add-ids
                        (case @experiment
-                                                                                                                                                                                                                                                                                                                                           "ex006" ex006/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex007" ex007/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex008" ex008/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex009" ex009/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex010" ex010/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex011" ex011/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex012" ex012/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex013" ex013/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex014" ex014/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex015" ex015/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex016" ex016/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex017" ex017/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex018" ex018/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex019" ex019/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex020" ex020/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex021" ex021/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex022" ex022/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex023" ex023/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex024" ex024/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex025" ex025/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex026" ex026/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex027" ex027/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex028" ex028/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex029" ex029/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex030" ex030/wcs
-                                                                                                                                                                                                                                                                                                                                           "ex031" ex031/wcs
+                          "ex006" ex006/wcs
+                          "ex007" ex007/wcs
+                          "ex008" ex008/wcs
+                          "ex009" ex009/wcs
+                          "ex010" ex010/wcs
+                          "ex011" ex011/wcs
+                          "ex012" ex012/wcs
+                          "ex013" ex013/wcs
+                          "ex014" ex014/wcs
+                          "ex015" ex015/wcs
+                          "ex016" ex016/wcs
+                          "ex017" ex017/wcs
+                          "ex018" ex018/wcs
+                          "ex019" ex019/wcs
+                          "ex020" ex020/wcs
+                          "ex021" ex021/wcs
+                          "ex022" ex022/wcs
+                          "ex023" ex023/wcs
+                          "ex024" ex024/wcs
+                          "ex025" ex025/wcs
+                          "ex026" ex026/wcs
+                          "ex027" ex027/wcs
+                          "ex028" ex028/wcs
+                          "ex029" ex029/wcs
+                          "ex030" ex030/wcs
+                          "ex031" ex031/wcs
      "ex032" ex032/wcs
      "ex033" ex033/wcs
      "ex034" ex034/wcs
@@ -281,8 +291,12 @@
      "ex054" ex054/wcs
      "ex055" ex055/wcs
      "ex056" ex056/wcs
-                                                                                                                                                                                                                                                                                                                                           ex006/wcs))))))
-
+     "ex057" ex057/wcs
+     "ex058" ex058/wcs
+     "ex059" ex059/wcs
+     "ex060" ex060/wcs
+     "ex061" ex061/wcs
+      ex006/wcs))))))
 
 (defn reset-and-preserve
   "Reset all but wcs, ccs, and prices"
@@ -302,7 +316,6 @@
            :threshold-report-prev []
            :threshold-met false))
 
-
 (defn consume [private-goods private-good-prices public-goods public-good-prices num-of-ccs cc]
   (let [utility-exponents (cc :utility-exponents)
         public-good-exponents (cc :public-good-exponents)
@@ -321,7 +334,6 @@
     (assoc cc :private-good-demands private-good-demands
               :public-good-demands public-good-demands)))
 
-
 (defn assign-new-proposal [production-inputs xs]
   (let [num-input-quantities (count (first production-inputs))
         num-nature-quantities (count (second production-inputs))
@@ -336,7 +348,6 @@
                               (drop (+ num-input-quantities num-nature-quantities))
                               (into []))]
     [input-quantities nature-quantities labor-quantities]))
-
 
 (defn solution-1 [a s c k ps b λ p-i]
   (let [b1 (first b)
@@ -1013,6 +1024,11 @@
           [:option {:key :ex054} "ex054"]
           [:option {:key :ex055} "ex055"]
           [:option {:key :ex056} "ex056"]
+          [:option {:key :ex057} "ex057"]
+          [:option {:key :ex058} "ex058"]
+          [:option {:key :ex059} "ex059"]
+          [:option {:key :ex060} "ex060"]
+          [:option {:key :ex061} "ex061"]
           ]]
          [:td [:input {:type "button" :value "Setup"
               :on-click #(swap! globals setup globals experiment-to-use)}]]
