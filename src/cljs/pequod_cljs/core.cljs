@@ -64,11 +64,11 @@
 
 
 (def globals
-  (atom {:init-private-good-price 200
-         :init-intermediate-price 200
-         :init-labor-price        20
-         :init-nature-price       20
-         :init-public-good-price  200
+  (atom {:init-private-good-price 1000
+         :init-intermediate-price 1000
+         :init-labor-price        1000
+         :init-nature-price       1000
+         :init-public-good-price  1000
 
          :private-goods             5
          :intermediate-inputs       5
@@ -135,8 +135,8 @@
 
 (defn augment-exponents [council-type exponents]
   (let [augments-to-use (if (= :wc council-type)
-                            [0 0.0001 0.0002 0.0003 0.0004]
-                            [(- .0002) (- .0001) 0 .0001 .0002])]
+                            [0 0.001 0.002 0.003 0.004]
+                            [(- .002) (- .001) 0 .001 .002])]
    (->> #(rand-nth augments-to-use)
         repeatedly
         (take (count exponents))
@@ -171,8 +171,8 @@
     (-> t
         initialize-prices
         (assoc :delta-delay 5
-               :natural-resources-supply (repeat (t :resources) 10000)
-               :labor-supply (repeat (t :labors) 10000)
+               :natural-resources-supply (repeat (t :resources) 1000)
+               :labor-supply (repeat (t :labors) 1000)
                :private-goods private-goods
                :intermediate-inputs intermediate-inputs
                :nature-types nature-types
@@ -1083,6 +1083,7 @@
   (let [tre (first threshold-report-excerpt)
         red "#ff4d4d"]
     (cond (empty? tre) red
+          (every? #(< % 3) tre) "#0099ff"
           (every? #(< % 5) tre) "lawngreen"
           (every? #(< % 10) tre) "gold"
           (every? #(< % 20) tre) "darkorange"

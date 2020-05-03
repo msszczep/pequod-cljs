@@ -65,7 +65,7 @@
                  :labor-exponents labor-exponents
                  :du (rand-range 1.5 2.5)
                  :s 5
-                 :a 1.5
+                 :a 6
                  :effort 0.5
                  :output 0
                  :labor-quantities [0]}))))
