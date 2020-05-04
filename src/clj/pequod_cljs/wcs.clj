@@ -3,8 +3,13 @@
 
 (defn create-wcs [worker-councils goods industry]
   (->> goods
-       (map #(vec (repeat (/ worker-councils (count goods))
-                          {:industry industry :product %})))
+       (mapv #(vec (concat (repeat (dec (/ worker-councils (count goods)))
+                                   {:toothache false 
+                                    :industry industry 
+                                    :product %}) 
+                           [{:toothache true
+                              :industry industry
+                              :product %}])))
        flatten))
 
 ; for however many inputs we have
@@ -56,8 +61,7 @@
                                        count)
           input-exponents (generate-exponents production-inputs-count first production-inputs)
           nature-exponents (generate-exponents production-inputs-count second production-inputs)
-          labor-exponents (generate-exponents production-inputs-count last production-inputs)
-]
+          labor-exponents (generate-exponents production-inputs-count last production-inputs)]
       (merge wc {:production-inputs production-inputs
                  :c 0.05
                  :input-exponents input-exponents
@@ -70,6 +74,13 @@
                  :output 0
                  :labor-quantities [0]}))))
 
+(defn create-toothache [wc]
+  (if (:toothache wc)
+    (assoc wc :input-exponents (mapv (partial + 0.3) (:input-exponents wc))
+              :nature-exponents (mapv (partial + 0.3) (:nature-exponents wc))
+              :labor-exponents (mapv (partial + 0.3) (:labor-exponents wc)))
+    wc))
+
 (defn create-wcs-bulk [num-ind-0 num-ind-1 num-ind-2]
   (->> (merge (create-wcs num-ind-0 [1 2 3 4 5 6 7 8 9 10] 0)
               (create-wcs num-ind-1 [1 2 3 4 5 6 7 8 9 10] 1)
@@ -79,4 +90,5 @@
                       [1 2 3 4 5 6 7 8 9 10] ; intermediate-inputs
                       [1 2 3 4 5 6 7 8 9 10] ; nature-types
                       [1 2 3 4 5 6 7 8 9 10] ; labor-types
-       ))))
+       ))
+       (mapv create-toothache)))
