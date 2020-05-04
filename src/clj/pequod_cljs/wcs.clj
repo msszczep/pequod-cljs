@@ -71,12 +71,12 @@
                  :labor-quantities [0]}))))
 
 (defn create-wcs-bulk [num-ind-0 num-ind-1 num-ind-2]
-  (->> (merge (create-wcs num-ind-0 [1 2 3 4 5] 0)
-              (create-wcs num-ind-1 [1 2 3 4 5] 1)
-              (create-wcs num-ind-2 [1 2 3 4 5] 2))
+  (->> (merge (create-wcs num-ind-0 [1 2 3 4 5 6 7 8 9 10] 0)
+              (create-wcs num-ind-1 [1 2 3 4 5 6 7 8 9 10] 1)
+              (create-wcs num-ind-2 [1 2 3 4 5 6 7 8 9 10] 2))
        flatten
        (mapv (partial continue-setup-wcs
-                      [1 2 3 4 5] ; intermediate-inputs
-                      [1 2 3 4 5] ; nature-types
-                      [1 2 3 4 5] ; labor-types
+                      [1 2 3 4 5 6 7 8 9 10] ; intermediate-inputs
+                      [1 2 3 4 5 6 7 8 9 10] ; nature-types
+                      [1 2 3 4 5 6 7 8 9 10] ; labor-types
        ))))

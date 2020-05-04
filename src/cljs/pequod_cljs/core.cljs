@@ -58,6 +58,12 @@
               [pequod-cljs.ex059 :as ex059]
               [pequod-cljs.ex060 :as ex060]
               [pequod-cljs.ex061 :as ex061]
+              [pequod-cljs.ex062 :as ex062]
+              [pequod-cljs.ex063 :as ex063]
+              [pequod-cljs.ex064 :as ex064]
+              [pequod-cljs.ex065 :as ex065]
+              [pequod-cljs.ex066 :as ex066]
+              [pequod-cljs.ex067 :as ex067]
               [cljs.pprint :as pprint]
               [goog.string :as gstring]
               [goog.string.format]))
@@ -70,11 +76,11 @@
          :init-nature-price       1000
          :init-public-good-price  1000
 
-         :private-goods             5
-         :intermediate-inputs       5
-         :resources                 5
-         :labors                    5
-         :public-goods              5
+         :private-goods             10
+         :intermediate-inputs       10
+         :resources                 10
+         :labors                    10
+         :public-goods              10
          ; to scale up the number of categories, simply adjust
          ; this ^^ set of numbers
 
@@ -121,7 +127,7 @@
       :nature-prices (vec (repeat resources (t :init-nature-price)))
       :labor-prices (vec (repeat labor (t :init-labor-price)))
       :public-good-prices (vec (repeat public-goods (t :init-public-good-price)))
-      :price-deltas (vec (repeat 5 0.05))
+      :price-deltas (vec (repeat 10 0.05))
       :pdlist (vec (repeat (+ private-goods im-inputs resources labor public-goods) 1)))))
 
 
@@ -237,6 +243,12 @@
                         "ex059" ex059/ccs
                         "ex060" ex060/ccs
                         "ex061" ex061/ccs
+                        "ex062" ex062/ccs
+                        "ex063" ex063/ccs
+                        "ex064" ex064/ccs
+                        "ex065" ex065/ccs
+                        "ex066" ex066/ccs
+                        "ex067" ex067/ccs
                         ex006/ccs))
                :wcs  (add-ids
                        (case @experiment
@@ -296,6 +308,12 @@
      "ex059" ex059/wcs
      "ex060" ex060/wcs
      "ex061" ex061/wcs
+     "ex062" ex062/wcs
+     "ex063" ex063/wcs
+     "ex064" ex064/wcs
+     "ex065" ex065/wcs
+     "ex066" ex066/wcs
+     "ex067" ex067/wcs
       ex006/wcs))))))
 
 (defn reset-and-preserve
@@ -945,13 +963,11 @@
 ;; -------------------------
 ;; Views-
 
-
 (defn check-quantities [[id input-quantities nature-quantities labor-quantities]]
   (let [i (apply + input-quantities)
         n (apply + nature-quantities)
         l (apply + labor-quantities)]
    (< 5 i)))
-
 
 (defn sum-quantities [[id input-quantities nature-quantities labor-quantities input-exponents nature-exponents labor-exponents]]
   (let [i (apply + input-quantities)
@@ -962,6 +978,8 @@
         le (apply + labor-exponents)]
     [id (+ ie ne le) (+ i n l)]))
 
+(defn truncate-number [n]
+  (gstring/format "%.3f" n))
 
 (defn all-buttons []
   (let [experiment-to-use (atom "ex006")
@@ -1029,6 +1047,12 @@
           [:option {:key :ex059} "ex059"]
           [:option {:key :ex060} "ex060"]
           [:option {:key :ex061} "ex061"]
+          [:option {:key :ex062} "ex062"]
+          [:option {:key :ex063} "ex063"]
+          [:option {:key :ex064} "ex064"]
+          [:option {:key :ex065} "ex065"]
+          [:option {:key :ex066} "ex066"]
+          [:option {:key :ex067} "ex067"]
           ]]
          [:td [:input {:type "button" :value "Setup"
               :on-click #(swap! globals setup globals experiment-to-use)}]]
@@ -1064,18 +1088,15 @@
          [:td (str "A-GDP AVG: " (truncate-number (str (get @globals :gdp-pi))))]
          ]]]))
 
-
-(defn truncate-number [n]
-  (gstring/format "%.3f" n))
-
-
-(defn partition-by-five [seq-to-use]
+(defn partition-by-five 
+  "Now a misnomer: Partition by 10"
+  [seq-to-use]
   (if (empty? seq-to-use)
     seq-to-use
     (->> seq-to-use
          flatten
          (mapv truncate-number)
-         (partition-all 5)
+         (partition-all 10)
          (mapv (partial into [])))))
 
 
@@ -1083,7 +1104,7 @@
   (let [tre (first threshold-report-excerpt)
         red "#ff4d4d"]
     (cond (empty? tre) red
-          (every? #(< % 3) tre) "#0099ff"
+          (every? #(< % 3) tre) "#4dd2ff"
           (every? #(< % 5) tre) "lawngreen"
           (every? #(< % 10) tre) "gold"
           (every? #(< % 20) tre) "darkorange"
