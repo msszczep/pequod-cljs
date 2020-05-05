@@ -76,9 +76,9 @@
 
 (defn create-toothache [wc]
   (if (:toothache wc)
-    (assoc wc :input-exponents (mapv (partial + 0.3) (:input-exponents wc))
-              :nature-exponents (mapv (partial + 0.3) (:nature-exponents wc))
-              :labor-exponents (mapv (partial + 0.3) (:labor-exponents wc)))
+    (assoc wc :input-exponents (mapv (partial + 0.1) (:input-exponents wc))
+              :nature-exponents (mapv (partial + 0.1) (:nature-exponents wc))
+              :labor-exponents (mapv (partial + 0.1) (:labor-exponents wc)))
     wc))
 
 (defn create-wcs-bulk [num-ind-0 num-ind-1 num-ind-2]

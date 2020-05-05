@@ -75,6 +75,10 @@ ex034: 0.75 to 0.85 wc range
 ex035-ex036: experiment to investigate s, du / k, a
 ex037-ex046: experiment with changed s=5, du/k=2, a=1.5
 ex047-ex056: experiment with changed s=5, du/k=1.5-2.5, a=1.5
+ex057-ex061: experiment with 3000 wc's, 3000 cc's
+ex062-ex067: experiment with 3000 wc's, 3000 cc's, a=6
+ex068: experiment with 1% toothaches = 0.3
+ex069: experiment with 1% toothaches = 0.1
 
 ===
 

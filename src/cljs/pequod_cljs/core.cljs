@@ -64,17 +64,19 @@
               [pequod-cljs.ex065 :as ex065]
               [pequod-cljs.ex066 :as ex066]
               [pequod-cljs.ex067 :as ex067]
+              [pequod-cljs.ex068 :as ex068]
+              [pequod-cljs.ex069 :as ex069]
               [cljs.pprint :as pprint]
               [goog.string :as gstring]
               [goog.string.format]))
 
 
 (def globals
-  (atom {:init-private-good-price 1000
-         :init-intermediate-price 1000
-         :init-labor-price        1000
-         :init-nature-price       1000
-         :init-public-good-price  1000
+  (atom {:init-private-good-price 700
+         :init-intermediate-price 700
+         :init-labor-price        700
+         :init-nature-price       700
+         :init-public-good-price  700
 
          :private-goods             10
          :intermediate-inputs       10
@@ -249,6 +251,8 @@
                         "ex065" ex065/ccs
                         "ex066" ex066/ccs
                         "ex067" ex067/ccs
+                        "ex068" ex068/ccs
+                       "ex069" ex069/ccs
                         ex006/ccs))
                :wcs  (add-ids
                        (case @experiment
@@ -314,6 +318,8 @@
      "ex065" ex065/wcs
      "ex066" ex066/wcs
      "ex067" ex067/wcs
+     "ex068" ex068/wcs
+     "ex069" ex069/wcs
       ex006/wcs))))))
 
 (defn reset-and-preserve
@@ -1053,6 +1059,8 @@
           [:option {:key :ex065} "ex065"]
           [:option {:key :ex066} "ex066"]
           [:option {:key :ex067} "ex067"]
+          [:option {:key :ex068} "ex068"]
+          [:option {:key :ex069} "ex069"]
           ]]
          [:td [:input {:type "button" :value "Setup"
               :on-click #(swap! globals setup globals experiment-to-use)}]]
@@ -1129,7 +1137,7 @@
       (map (fn [[k v]] 
              (let [top-five
                    (map #(select-keys % [:id :output :effort :labor-exponents :input-exponents :nature-exponents]) 
-                         (reverse (sort-by :effort v)))] 
+                         (reverse (sort-by :output v)))] 
                [:tr {:style {:border "1px solid #ddd"}}
                 [:td {:style td-cell-style} (str (first k))]
                 [:td {:style td-cell-style} (str (last k))]
