@@ -1,7 +1,7 @@
 (ns pequod-cljs.wcs)
 
 
-(defn create-wcs [worker-councils goods industry]
+#_(defn create-wcs [worker-councils goods industry]
   (->> goods
        (mapv #(vec (concat (repeat (dec (/ worker-councils (count goods)))
                                    {:toothache false 
@@ -10,6 +10,15 @@
                            [{:toothache true
                               :industry industry
                               :product %}])))
+       flatten))
+
+(defn create-wcs [worker-councils goods industry]
+  (->> goods
+       (mapv #(vec (concat (repeat (/ worker-councils (count goods))
+                                   {:toothache false 
+                                    :industry industry 
+                                    :product %}) 
+                           )))
        flatten))
 
 ; for however many inputs we have
@@ -63,7 +72,7 @@
           nature-exponents (generate-exponents production-inputs-count second production-inputs)
           labor-exponents (generate-exponents production-inputs-count last production-inputs)]
       (merge wc {:production-inputs production-inputs
-                 :c 0.05
+                 :c (rand-range 0.05 0.1)
                  :input-exponents input-exponents
                  :nature-exponents nature-exponents
                  :labor-exponents labor-exponents

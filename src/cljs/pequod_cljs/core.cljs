@@ -66,6 +66,7 @@
               [pequod-cljs.ex067 :as ex067]
               [pequod-cljs.ex068 :as ex068]
               [pequod-cljs.ex069 :as ex069]
+              [pequod-cljs.ex070 :as ex070]
               [cljs.pprint :as pprint]
               [goog.string :as gstring]
               [goog.string.format]))
@@ -253,6 +254,7 @@
                         "ex067" ex067/ccs
                         "ex068" ex068/ccs
                        "ex069" ex069/ccs
+                       "ex070" ex070/ccs
                         ex006/ccs))
                :wcs  (add-ids
                        (case @experiment
@@ -320,6 +322,7 @@
      "ex067" ex067/wcs
      "ex068" ex068/wcs
      "ex069" ex069/wcs
+     "ex070" ex070/wcs
       ex006/wcs))))))
 
 (defn reset-and-preserve
@@ -1061,6 +1064,7 @@
           [:option {:key :ex067} "ex067"]
           [:option {:key :ex068} "ex068"]
           [:option {:key :ex069} "ex069"]
+          [:option {:key :ex070} "ex070"]
           ]]
          [:td [:input {:type "button" :value "Setup"
               :on-click #(swap! globals setup globals experiment-to-use)}]]

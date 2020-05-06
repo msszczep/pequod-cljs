@@ -79,6 +79,7 @@ ex057-ex061: experiment with 3000 wc's, 3000 cc's
 ex062-ex067: experiment with 3000 wc's, 3000 cc's, a=6
 ex068: experiment with 1% toothaches = 0.3
 ex069: experiment with 1% toothaches = 0.1
+ex070: experiment with c in WCs as range, 0.05 to 0.1
 
 ===
 
