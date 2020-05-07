@@ -67,6 +67,9 @@
               [pequod-cljs.ex068 :as ex068]
               [pequod-cljs.ex069 :as ex069]
               [pequod-cljs.ex070 :as ex070]
+              [pequod-cljs.ex071 :as ex071]
+              [pequod-cljs.ex072 :as ex072]
+              [pequod-cljs.ex073 :as ex073]
               [cljs.pprint :as pprint]
               [goog.string :as gstring]
               [goog.string.format]))
@@ -255,6 +258,9 @@
                         "ex068" ex068/ccs
                        "ex069" ex069/ccs
                        "ex070" ex070/ccs
+                       "ex071" ex071/ccs
+                       "ex072" ex072/ccs
+                       "ex073" ex073/ccs
                         ex006/ccs))
                :wcs  (add-ids
                        (case @experiment
@@ -323,6 +329,9 @@
      "ex068" ex068/wcs
      "ex069" ex069/wcs
      "ex070" ex070/wcs
+     "ex071" ex071/wcs
+     "ex072" ex072/wcs
+     "ex073" ex073/wcs
       ex006/wcs))))))
 
 (defn reset-and-preserve
@@ -1065,6 +1074,9 @@
           [:option {:key :ex068} "ex068"]
           [:option {:key :ex069} "ex069"]
           [:option {:key :ex070} "ex070"]
+          [:option {:key :ex071} "ex071"]
+          [:option {:key :ex072} "ex072"]
+          [:option {:key :ex073} "ex073"]
           ]]
          [:td [:input {:type "button" :value "Setup"
               :on-click #(swap! globals setup globals experiment-to-use)}]]
@@ -1129,7 +1141,8 @@
                :output (truncate-number (:output m))
                :effort (truncate-number (:effort m))
                :exponents-sum (truncate-number (apply + 
-                                       (concat (:labor-exponents m)
+                                       (concat (:c m)
+                                               (:labor-exponents m)
                                                (:input-exponents m)
                                                (:nature-exponents m))))})]
      [:table {:style {:width "100%" :padding "8px" :border "1px solid #ddd"}}

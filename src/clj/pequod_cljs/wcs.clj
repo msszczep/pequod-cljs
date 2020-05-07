@@ -77,8 +77,8 @@
                  :nature-exponents nature-exponents
                  :labor-exponents labor-exponents
                  :du (rand-range 1.5 2.5)
-                 :s 5
-                 :a 6
+                 :s 2
+                 :a (rand-range 4 6)
                  :effort 0.5
                  :output 0
                  :labor-quantities [0]}))))
