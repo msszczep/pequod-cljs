@@ -1,18 +1,18 @@
 (ns pequod-cljs.csvgen
-   (:require [pequod-cljs.ex006 :as ex006]))
+   (:require [pequod-cljs.ex073 :as ex073]))
 
 (def globals
-  (atom {:init-private-good-price 1500
-         :init-intermediate-price 1500
-         :init-labor-price        10
-         :init-nature-price       10
-         :init-public-good-price  1500
+  (atom {:init-private-good-price 1000
+         :init-intermediate-price 1000
+         :init-labor-price        1000
+         :init-nature-price       1000
+         :init-public-good-price  1000
 
-         :private-goods             5
-         :intermediate-inputs       5
-         :resources                 5
-         :labors                    5
-         :public-goods              5
+         :private-goods             10
+         :intermediate-inputs       10
+         :resources                 10
+         :labors                    10
+         :public-goods              10
          ; to scale up the number of categories, simply adjust
          ; this ^^ set of numbers
 
@@ -40,7 +40,11 @@
          :iteration                0
          :natural-resources-supply 0
          :labor-supply             0
-         :turtle-council           {}}))
+         :turtle-council           {}
+         :top-output-councils      []
+         :last-years-supply        []
+         :last-years-private-good-prices []
+         :last-years-public-good-prices []}))
 
 (defn abs [n] (max n (- n)))
 
@@ -56,9 +60,8 @@
       :nature-prices (vec (repeat resources (t :init-nature-price)))
       :labor-prices (vec (repeat labor (t :init-labor-price)))
       :public-good-prices (vec (repeat public-goods (t :init-public-good-price)))
-      :price-deltas (vec (repeat 5 0.05))
+      :price-deltas (vec (repeat 10 0.05))
       :pdlist (vec (repeat (+ private-goods im-inputs resources labor public-goods) 1)))))
-
 
 (defn add-ids [cs]
   (loop [i 1
@@ -68,6 +71,33 @@
       updated-cs
       (recur (inc i) (rest cs) (conj updated-cs (assoc (first cs) :id i))))))
 
+(defn augment-exponents [council-type exponents]
+  (let [augments-to-use (if (= :wc council-type)
+                            [0 0.001 0.002 0.003 0.004]
+                            [(- 0.002) (- 0.001) 0 0.001 0.002])]
+   (->> #(rand-nth augments-to-use)
+        repeatedly
+        (take (count exponents))
+        (interleave exponents)
+        (partition 2)
+        (map (fn [[a b]] (+ a b))))))
+
+(defn augment-wc [wc]
+  (assoc wc :input-exponents (augment-exponents :wc (:input-exponents wc))
+            :nature-exponents (augment-exponents :wc (:nature-exponents wc))
+            :labor-exponents (augment-exponents :wc (:labor-exponents wc))))
+
+(defn augment-cc [cc]
+  (assoc cc :utility-exponents (augment-exponents :cc (:utility-exponents cc))
+            :public-good-exponents (augment-exponents :cc (:public-good-exponents cc))))
+
+(defn augmented-reset [t]
+  (assoc t :iteration 0
+           :ccs (mapv augment-cc (:ccs t))
+           :wcs (mapv augment-wc (:wcs t))
+           :last-years-supply (:supply-list t)
+           :last-years-private-good-prices (:private-good-prices t)
+           :last-years-public-good-prices (:public-good-prices t)))
 
 ; TODO: don't hard code labor supply or nature supply
 ; TODO restore experiment argument
@@ -88,29 +118,9 @@
                :labor-types labor-types
                :public-good-types public-good-types
                :surplus-threshold 0.05
-               :ccs (add-ids ex006/ccs)
-               :wcs (add-ids ex006/wcs)
+               :ccs (add-ids ex073/ccs)
+               :wcs (add-ids ex073/wcs)
 ))))
-
-
-(defn reset-and-preserve
-  "Reset all but wcs, ccs, and prices"
-  [t]
-  (assoc t :delta-delay 5
-           :iteration 0
-           :private-good-surpluses []
-           :intermediate-input-surpluses []
-           :labor-surpluses []
-           :nature-surpluses []
-           :public-good-surpluses []
-           :pdlist (vec (repeat 25 1)) 
-           :price-deltas [0.5 0.5 0.5 0.5 0.5]
-           :supply-list []
-           :surplus-list []
-           :threshold-report []
-           :threshold-report-prev []
-           :threshold-met false))
-
 
 (defn consume [private-goods private-good-prices public-goods public-good-prices num-of-ccs cc]
   (let [utility-exponents (cc :utility-exponents)
@@ -197,7 +207,6 @@
      :nature-quantities nature-qs
      :labor-quantities labor-qs}))
 
-
 (defn solution-4 [a s c k ps b λ p-i]
   (let [[b1 b2 b3 b4] b
         [p1 p2 p3 p4] (flatten ps)
@@ -217,7 +226,6 @@
      :input-quantities input-qs
      :nature-quantities nature-qs
      :labor-quantities labor-qs}))
-
 
 (defn solution-5 [a s c k ps b λ p-i]
   (let [[b1 b2 b3 b4 b5] b
@@ -336,7 +344,6 @@
 #_(defn get-deltas [J price-delta pdlist]
   (max 0.001 (min price-delta (abs (nth pdlist J)))))
 
-
 (defn update-surpluses-prices
   [type inputs prices wcs ccs natural-resources-supply labor-supply pdlist offset-1 offset-2 offset-3 offset-4]
   (loop [inputs inputs
@@ -402,11 +409,7 @@
                        "labor" (+ offset-1 offset-2 offset-3)
                        "public-goods" (+ offset-1 offset-2 offset-3 offset-4))
             surplus (- supply demand)
-            price-delta-to-use (cond
-                                 (> (/ (abs (* 2 surplus)) (+ demand supply)) 0.5) 0.18
-                                 (> (/ (abs (* 2 surplus)) (+ demand supply)) 0.1) 0.12
-                                 (> (/ (abs (* 2 surplus)) (+ demand supply)) 0.05) 0.06
-                                 :else 0.03)
+            price-delta-to-use (- 1.05 (Math/pow 0.75 (/ (Math/abs (* 2 surplus)) (+ demand supply))))
             delta (get-deltas (+ J j-offset) price-delta-to-use pdlist)
             new-delta delta
                       #_(cond (<= delta 1) delta
@@ -419,7 +422,6 @@
                (assoc prices J new-price)
                (conj surpluses surplus)
                (inc J))))))
-
 
 ; Q: does lambda change?
 (defn proposal [private-good-prices input-prices nature-prices labor-prices public-good-prices wc]
@@ -460,10 +462,8 @@
         8 (merge wc (solution-8 a s c k ps b λ p-i))
         (str "unexpected input-count value: " input-count-r)))))
 
-
 (defn mean [L]
   (/ (reduce + L) (count L)))
-
 
 (defn update-price-deltas [supply-list demand-list surplus-list]
   (let [supply-list-means (map mean supply-list)
@@ -477,16 +477,18 @@
          (partition 2)
          (mapv #(abs (/ (first %) (last %)))))))
 
-
 (defn update-pdlist [supply-list demand-list surplus-list]
-  (let [averaged-s-and-d (->> (interleave (flatten supply-list)
-                                          (flatten demand-list))
-                              (partition 2)
-                              (mapv mean))]
-    (->> (interleave (flatten surplus-list) averaged-s-and-d)
-         (partition 2)
-         (mapv #(/ (first %) (last %))))))
-
+  (letfn [(force-to-one [n]
+            (let [cap 0.25]
+              (if (or (> n cap) (< n (- cap))) cap (Math/abs n))))]
+    (let [averaged-s-and-d (->> (interleave (flatten supply-list)
+                                           (flatten demand-list))
+                                (partition 2)
+                                (mapv mean))]
+      (->> (interleave (flatten surplus-list) averaged-s-and-d)
+           (partition 2)
+           (mapv #(/ (first %) (last %)))
+           (mapv force-to-one)))))
 
 (defn get-demand-list [t]
   (letfn [(merge-inputs-and-quantities [type ks vs]
@@ -551,12 +553,19 @@
          public-good-supply (mapv (partial get-producers t 2) (:public-good-types t))]
      (vector private-producers input-producers natural-resources-supply labor-supply public-good-supply)))) 
 
-
 (defn report-threshold [surplus-list supply-list demand-list]
   (->> (interleave (flatten surplus-list) (flatten demand-list) (flatten supply-list))
        (partition 3)
        (mapv #(* 100 (/ (abs (* 2 (first %))) (+ (second %) (last %)))))))
 
+(defn compute-gdp [supply-list private-good-prices public-good-prices]
+  (let [[private-good-supply _ _ _ public-good-supply] supply-list]
+    (->> public-good-prices
+         (concat private-good-prices)
+         (interleave (concat private-good-supply public-good-supply))
+         (partition 2)
+         (map (fn [[a b]] (* a b)))
+         (apply +))))
 
 (defn iterate-plan [t]
   (let [threshold-report-prev (if (zero? (:iteration t)) [] (:threshold-report t))
@@ -576,7 +585,14 @@
         new-pdlist (update-pdlist supply-list demand-list surplus-list)
         threshold-report (report-threshold surplus-list supply-list demand-list)
         iteration (inc (:iteration t2))
-        ; _ (println "OUTPUT JUXT:" (pprint/pprint (sort-by first (map #(vector (key %) (reverse (sort (map :output (val %))))) (group-by (juxt :industry :product) (:wcs t2))))))
+        top-output-councils (group-by (juxt :industry :product) (:wcs t2))
+        ;gdp-typ-2 (compute-gdp supply-list private-good-prices public-good-prices)
+        ;gdp-typ-1 (compute-gdp (:last-years-supply t2) private-good-prices public-good-prices)
+        ;gdp-lyp-2 (compute-gdp supply-list (:last-years-private-good-prices t2) (:last-years-public-good-prices t2))
+        ;gdp-lyp-1 (compute-gdp (:last-years-supply t2) (:last-years-private-good-prices t2) (:last-years-public-good-prices t2))
+        ;gdp-typ-pi (* 100 (/ (- gdp-typ-2 gdp-typ-1) gdp-typ-1))
+        ;gdp-lyp-pi (* 100 (/ (- gdp-lyp-2 gdp-lyp-1) gdp-lyp-1))
+        ;gdp-avg-pi (mean [gdp-typ-pi gdp-lyp-pi])
 ]
     (assoc t2 :private-good-prices private-good-prices
               :private-good-surpluses private-good-surpluses
@@ -595,8 +611,12 @@
               :threshold-report-prev threshold-report-prev
               :price-deltas new-price-deltas
               :pdlist new-pdlist
-              :iteration iteration)))
-
+              :iteration iteration
+              :top-output-councils top-output-councils
+;              :gdp2 gdp-typ-pi
+;              :gdp1 gdp-lyp-pi
+;              :gdp-pi gdp-avg-pi
+              )))
 
 (defn check-surpluses [t]
   (letfn [(check-producers [surpluses supplies inputs]
@@ -620,28 +640,11 @@
        (mapv nil? [private-goods-check im-goods-check nature-check labor-check public-good-check])]
       )))
 
-
 (defn total-surplus [surplus-list]
   (->> surplus-list
        flatten
        (map abs)
        (reduce +)))
-
-
-(defn check-wc-exponents [wc]
-  (let [sum-all-exponents (reduce + 
-                            (concat (:labor-exponents wc)
-                                    (:input-exponents wc)
-                                    (:nature-exponents wc)))]
-    (< sum-all-exponents 1)))
-
-
-(defn check-cc-exponents [cc]
-  (let [sum-all-exponents (reduce + 
-                            (concat (:utility-exponents cc)
-                                    (:public-good-exponents cc)))]
-    (< sum-all-exponents 1)))
-
 
 (defn adjust-delta [price-delta raise-or-lower]
   (let [price-delta-adjustment-fn
@@ -673,42 +676,46 @@
 (defn truncate-number [n]
   (format "%.3f" n))
 
-(defn partition-by-five [seq-to-use]
-  (if (empty? seq-to-use)
-    seq-to-use
-    (->> seq-to-use
-         flatten
-         (mapv truncate-number)
-         (partition-all 5)
-         (mapv (partial into [])))))
-
 ; time lein run -m pequod-cljs.csvgen
 
 (defn sum-wc-exponents [wc]
-  (reduce + 
-    (concat (:labor-exponents wc)
+  (reduce +
+    (concat (:cc wc)
+            (:labor-exponents wc)
             (:input-exponents wc)
             (:nature-exponents wc))))
+
+(defn show-color [tre]
+  (cond (empty? tre) :red
+        (every? #(< % 3) tre) :blue
+        (every? #(< % 5) tre) :green
+        (every? #(< % 10) tre) :yellow
+        (every? #(< % 20) tre) :orange
+        :else :red))
 
 (defn print-csv [args-to-print data]
   (let [outputs (map :output (get data :wcs))
         efforts (map :effort (get data :wcs))
         wcs     (interleave outputs efforts)]
-    (clojure.string/join "," (concat (mapv (partial get data) args-to-print) wcs))))
+    (clojure.string/join "," (concat (mapv (partial get data) args-to-print) 
+                                     [(show-color (get @globals :threshold-report))] 
+                                     wcs))))
 
 (defn -main []
   (let [keys-to-print [:iteration :private-good-prices :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :pdlist :supply-list :demand-list :surplus-list :threshold-report]]
     (do
       (swap! globals setup globals)
       (swap! globals proceed globals)
-      (println (clojure.string/join "," (concat keys-to-print (flatten (mapv #(vector (str "wc_" % "_output") (str "wc_" % "_effort")) (sort (map :id (get @globals :wcs))))))))
+      (println (clojure.string/join "," (concat keys-to-print
+                                                [:color]
+                                                (flatten (mapv #(vector (str "wc_" % "_output") (str "wc_" % "_effort")) (sort (map :id (get @globals :wcs))))))))
       (println (print-csv keys-to-print @globals))
-      (while (some #(> % 5) (get @globals :threshold-report))
+      (while (some #(> % 3) (get @globals :threshold-report))
         (do
           (swap! globals proceed globals))
           (println (print-csv keys-to-print @globals)))
       (println (clojure.string/join "," (concat ["exponent-sum"]
-                                                (repeat (dec (count keys-to-print)) "") 
+                                                (repeat (count keys-to-print) "") 
                                                 (interleave (map sum-wc-exponents (sort-by :id (get @globals :wcs)))
                                                             (repeat ""))))))))
 

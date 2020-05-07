@@ -334,24 +334,6 @@
      "ex073" ex073/wcs
       ex006/wcs))))))
 
-(defn reset-and-preserve
-  "Reset all but wcs, ccs, and prices"
-  [t]
-  (assoc t :delta-delay 5
-           :iteration 0
-           :private-good-surpluses []
-           :intermediate-input-surpluses []
-           :labor-surpluses []
-           :nature-surpluses []
-           :public-good-surpluses []
-           :pdlist (vec (repeat 25 1)) 
-           :price-deltas [0.5 0.5 0.5 0.5 0.5]
-           :supply-list []
-           :surplus-list []
-           :threshold-report []
-           :threshold-report-prev []
-           :threshold-met false))
-
 (defn consume [private-goods private-good-prices public-goods public-good-prices num-of-ccs cc]
   (let [utility-exponents (cc :utility-exponents)
         public-good-exponents (cc :public-good-exponents)
@@ -574,7 +556,6 @@
 #_(defn get-deltas [J price-delta pdlist]
   (max 0.001 (min price-delta (Math/abs (nth pdlist J)))))
 
-
 (defn update-surpluses-prices
   [type inputs prices wcs ccs natural-resources-supply labor-supply pdlist offset-1 offset-2 offset-3 offset-4]
   (loop [inputs inputs
@@ -694,10 +675,8 @@
         8 (merge wc (solution-8 a s c k ps b λ p-i))
         (str "unexpected input-count value: " input-count-r)))))
 
-
 (defn mean [L]
   (/ (reduce + L) (count L)))
-
 
 (defn update-price-deltas [supply-list demand-list surplus-list]
   (let [supply-list-means (map mean supply-list)
@@ -711,7 +690,6 @@
          (partition 2)
          (mapv #(Math/abs (/ (first %) (last %)))))))
 
-
 (defn update-pdlist [supply-list demand-list surplus-list]
   (letfn [(force-to-one [n]
             (let [cap 0.25]
@@ -724,7 +702,6 @@
            (partition 2)
            (mapv #(/ (first %) (last %)))
            (mapv force-to-one)))))
-
 
 (defn get-demand-list [t]
   (letfn [(merge-inputs-and-quantities [type ks vs]
@@ -851,7 +828,6 @@
               :gdp2 gdp-typ-pi
               :gdp1 gdp-lyp-pi
               :gdp-pi gdp-avg-pi)))
-
 
 (defn check-surpluses [t]
   (letfn [(check-producers [surpluses supplies inputs]
