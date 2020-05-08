@@ -2,11 +2,11 @@
    (:require [pequod-cljs.ex073 :as ex073]))
 
 (def globals
-  (atom {:init-private-good-price 1000
-         :init-intermediate-price 1000
-         :init-labor-price        1000
-         :init-nature-price       1000
-         :init-public-good-price  1000
+  (atom {:init-private-good-price 700
+         :init-intermediate-price 700
+         :init-labor-price        700
+         :init-nature-price       700
+         :init-public-good-price  700
 
          :private-goods             10
          :intermediate-inputs       10
