@@ -110,8 +110,8 @@
     (-> t
         initialize-prices
         (assoc :delta-delay 5
-               :natural-resources-supply (repeat (t :resources) 10000)
-               :labor-supply (repeat (t :labors) 10000)
+               :natural-resources-supply (repeat (t :resources) 1000)
+               :labor-supply (repeat (t :labors) 1000)
                :private-goods private-goods
                :intermediate-inputs intermediate-inputs
                :nature-types nature-types
@@ -409,7 +409,7 @@
                        "labor" (+ offset-1 offset-2 offset-3)
                        "public-goods" (+ offset-1 offset-2 offset-3 offset-4))
             surplus (- supply demand)
-            price-delta-to-use (- 1.05 (Math/pow 0.75 (/ (Math/abs (* 2 surplus)) (+ demand supply))))
+            price-delta-to-use (- 1.05 (Math/pow 0.75 (/ (abs (* 2 surplus)) (+ demand supply))))
             delta (get-deltas (+ J j-offset) price-delta-to-use pdlist)
             new-delta delta
                       #_(cond (<= delta 1) delta
@@ -533,7 +533,6 @@
        nature-quantity
        labor-quantity
        public-good-demands])))
-
 
 (defn get-supply-list [t]
   (letfn [(get-producers [t industry product]
@@ -672,9 +671,6 @@
 (defn proceed [t _]
   (let [t-plus (iterate-plan t)]
     (rest-of-to-do t-plus)))
-
-(defn truncate-number [n]
-  (format "%.3f" n))
 
 ; time lein run -m pequod-cljs.csvgen
 
