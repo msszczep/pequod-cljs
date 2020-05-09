@@ -30,7 +30,6 @@
 
          :threshold-report         []
          :threshold-report-prev    []
-         :threshold-met?           false
          :pdlist                   []
          :delta-delay              0
          :price-deltas             []
@@ -627,33 +626,29 @@
 ;              :gdp-pi gdp-avg-pi
               )))
 
-(defn check-surpluses [t]
-  (letfn [(check-producers [surpluses supplies inputs]
-            (some #(> (abs (nth surpluses (dec %)))
-                      (* (:surplus-threshold t) (nth supplies (dec %))))
-                    inputs))
-          (check-supplies [surpluses supply inputs surplus-threshold]
-            (some #(> (abs (nth surpluses (dec %)))
-                      (* surplus-threshold (nth supply (dec %))))
-                    inputs))
-          (get-producers [wcs industry]
-            (filter #(= industry (% :industry))) wcs)]
-    (let [surplus-threshold (:surplus-threshold t)
-          [private-good-supply im-supply _ _ public-good-supply] (get-supply-list t)
-          private-goods-check (check-producers (:private-good-surpluses t) private-good-supply (:private-goods t))
-          im-goods-check (check-producers (:intermediate-good-surpluses t) im-supply (:intermediate-inputs t))
-          nature-check (check-supplies (:nature-surpluses t) (:natural-resources-supply t) (:nature-types t) surplus-threshold)
-          labor-check (check-supplies (:labor-surpluses t) (:labor-supply t) (:labor-types t) surplus-threshold)
-          public-good-check (check-producers (:public-good-surpluses t) public-good-supply (:public-good-types t))]
-      [(every? nil? [private-goods-check im-goods-check nature-check labor-check public-good-check])
-       (mapv nil? [private-goods-check im-goods-check nature-check labor-check public-good-check])]
-      )))
+(defn create-toothache [wc]
+  (if (:toothache wc)
+    (assoc wc :input-exponents (mapv (partial + 0.1) (:input-exponents wc))
+              :nature-exponents (mapv (partial + 0.1) (:nature-exponents wc))
+              :labor-exponents (mapv (partial + 0.1) (:labor-exponents wc)))
+    wc))
 
-(defn total-surplus [surplus-list]
-  (->> surplus-list
-       flatten
-       (map abs)
-       (reduce +)))
+(defn change-toothache-polarity [ids wc]
+  (if (contains? ids (:id wc))
+    (assoc wc :toothache true)
+    wc))
+
+(defn create-toothaches [t _]
+  (let [toothache-percentage 0.2
+        ids-to-use (->> t
+                        :wcs
+                        (map :id)
+                        shuffle
+                        (take (* toothache-percentage (count (:wcs t))))
+                        set)
+        wcs-to-use (mapv (partial change-toothache-polarity ids-to-use) 
+                         (:wcs t))]
+    (assoc t :wcs (mapv create-toothache wcs-to-use))))
 
 (defn adjust-delta [price-delta raise-or-lower]
   (let [price-delta-adjustment-fn
@@ -669,13 +664,10 @@
      :delta-delay delta-delay}))
 
 (defn rest-of-to-do [t]
-  (let [[threshold-met? threshold-granular] (check-surpluses t)
-        delta-delay (:delta-delay t)
+  (let [delta-delay (:delta-delay t)
         delta-delay (if (pos? delta-delay)
                       (dec delta-delay) delta-delay)
-        t-updated (assoc t :threshold-met? threshold-met?
-                           :threshold-granular threshold-granular
-                           :delta-delay delta-delay)]
+        t-updated (assoc t :delta-delay delta-delay)]
     t-updated))
 
 (defn proceed [t _]
@@ -743,9 +735,11 @@
 (defn -main []
   (let [keys-to-print [:iteration :color :private-good-prices :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :pdlist :supply-list :demand-list :surplus-list :threshold-report]
         spacing-count 301 ; (50 * 5) + (10 * 5) + 2 - 1
-        toothaches? false]
+        toothaches? true]
     (do
       (swap! globals setup globals)
+      (if toothaches?
+        (swap! globals create-toothaches globals))
       (swap! globals proceed globals)
       (println (clojure.string/join "," (get-csv-header @globals)))
       (println (print-csv keys-to-print @globals))
