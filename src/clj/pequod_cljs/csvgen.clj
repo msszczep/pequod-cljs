@@ -91,7 +91,7 @@
   (assoc cc :utility-exponents (augment-exponents :cc (:utility-exponents cc))
             :public-good-exponents (augment-exponents :cc (:public-good-exponents cc))))
 
-(defn augmented-reset [t]
+(defn augmented-reset [t _]
   (assoc t :iteration 0
            :ccs (mapv augment-cc (:ccs t))
            :wcs (mapv augment-wc (:wcs t))
@@ -566,6 +566,14 @@
          (map (fn [[a b]] (* a b)))
          (apply +))))
 
+(defn show-color [tre]
+  (cond (empty? tre) :red
+        (every? #(< % 3) tre) :blue
+        (every? #(< % 5) tre) :green
+        (every? #(< % 10) tre) :yellow
+        (every? #(< % 20) tre) :orange
+        :else :red))
+
 (defn iterate-plan [t]
   (let [threshold-report-prev (if (zero? (:iteration t)) [] (:threshold-report t))
         t2 (assoc t :ccs (map (partial consume (t :private-goods) (t :private-good-prices) (t :public-good-types) (t :public-good-prices) (count (t :ccs)))
@@ -585,6 +593,7 @@
         threshold-report (report-threshold surplus-list supply-list demand-list)
         iteration (inc (:iteration t2))
         top-output-councils (group-by (juxt :industry :product) (:wcs t2))
+        color (show-color threshold-report)
         ;gdp-typ-2 (compute-gdp supply-list private-good-prices public-good-prices)
         ;gdp-typ-1 (compute-gdp (:last-years-supply t2) private-good-prices public-good-prices)
         ;gdp-lyp-2 (compute-gdp supply-list (:last-years-private-good-prices t2) (:last-years-public-good-prices t2))
@@ -612,6 +621,7 @@
               :pdlist new-pdlist
               :iteration iteration
               :top-output-councils top-output-councils
+              :color color
 ;              :gdp2 gdp-typ-pi
 ;              :gdp1 gdp-lyp-pi
 ;              :gdp-pi gdp-avg-pi
@@ -676,42 +686,87 @@
 
 (defn sum-wc-exponents [wc]
   (reduce +
-    (concat (:cc wc)
+    (concat (:c wc)
             (:labor-exponents wc)
             (:input-exponents wc)
             (:nature-exponents wc))))
 
-(defn show-color [tre]
-  (cond (empty? tre) :red
-        (every? #(< % 3) tre) :blue
-        (every? #(< % 5) tre) :green
-        (every? #(< % 10) tre) :yellow
-        (every? #(< % 20) tre) :orange
-        :else :red))
-
 (defn print-csv [args-to-print data]
-  (let [outputs (map :output (get data :wcs))
+  (let [all-args (flatten (mapv (partial get data) args-to-print))
+        outputs (map :output (get data :wcs))
         efforts (map :effort (get data :wcs))
         wcs     (interleave outputs efforts)]
-    (clojure.string/join "," (concat (mapv (partial get data) args-to-print) 
-                                     [(show-color (get @globals :threshold-report))] 
-                                     wcs))))
+    (clojure.string/join "," (concat all-args wcs))))
+
+(defn get-csv-header [data]
+  (let [spaces-map [:private-good-prices
+                    :intermediate-good-prices
+                    :nature-prices
+                    :labor-prices
+                    :public-good-prices
+                    :pdlist-private-goods
+                    :pdlist-intermediate-goods
+                    :pdlist-nature
+                    :pdlist-labor
+                    :pdlist-public-goods
+                    :supply-private-goods
+                    :supply-intermediate-goods
+                    :supply-nature
+                    :supply-labor
+                    :supply-public-goods
+                    :demand-private-goods
+                    :demand-intermediate-goods
+                    :demand-nature
+                    :demand-labor
+                    :demand-public-goods
+                    :surplus-private-goods
+                    :surplus-intermediate-goods
+                    :surplus-nature
+                    :surplus-labor
+                    :surplus-public-goods
+                    :threshold-report-private-goods
+                    :threshold-report-intermediate-goods
+                    :threshold-report-nature
+                    :threshold-report-labor
+                    :threshold-report-public-goods]
+        headers1 (for [k spaces-map
+                       n (range 1 11)] 
+                   (str k "-" n))
+        headers2 (->> :wcs
+                      (get data)
+                      (mapv :id)
+                      sort
+                      (mapv #(vector (str "wc_" % "_output") (str "wc_" % "_effort")))
+                      flatten)]
+    (concat [:iteration :color] headers1 headers2)))
 
 (defn -main []
-  (let [keys-to-print [:iteration :private-good-prices :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :pdlist :supply-list :demand-list :surplus-list :threshold-report]]
+  (let [keys-to-print [:iteration :color :private-good-prices :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :pdlist :supply-list :demand-list :surplus-list :threshold-report]
+        spacing-count 301 ; (50 * 5) + (10 * 5) + 2 - 1
+        ]
     (do
       (swap! globals setup globals)
       (swap! globals proceed globals)
-      (println (clojure.string/join "," (concat keys-to-print
-                                                [:color]
-                                                (flatten (mapv #(vector (str "wc_" % "_output") (str "wc_" % "_effort")) (sort (map :id (get @globals :wcs))))))))
+      (println (clojure.string/join "," (get-csv-header @globals)))
       (println (print-csv keys-to-print @globals))
       (while (some #(> % 3) (get @globals :threshold-report))
         (do
-          (swap! globals proceed globals))
-          (println (print-csv keys-to-print @globals)))
+          (swap! globals proceed globals) 
+          (println (print-csv keys-to-print @globals))))
       (println (clojure.string/join "," (concat ["exponent-sum"]
-                                                (repeat (count keys-to-print) "") 
+                                                (repeat spacing-count "") 
+                                                (interleave (map sum-wc-exponents (sort-by :id (get @globals :wcs)))
+                                                            (repeat "")))))
+      (swap! globals augmented-reset globals)
+      (do
+        (swap! globals proceed globals) 
+        (println (print-csv keys-to-print @globals)))
+      (while (some #(> % 3) (get @globals :threshold-report))
+        (do
+          (swap! globals proceed globals) 
+          (println (print-csv keys-to-print @globals))))
+      (println (clojure.string/join "," (concat ["exponent-sum"]
+                                                (repeat spacing-count "") 
                                                 (interleave (map sum-wc-exponents (sort-by :id (get @globals :wcs)))
                                                             (repeat ""))))))))
 
