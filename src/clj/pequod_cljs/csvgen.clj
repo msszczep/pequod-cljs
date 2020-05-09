@@ -480,7 +480,7 @@
 (defn update-pdlist [supply-list demand-list surplus-list]
   (letfn [(force-to-one [n]
             (let [cap 0.25]
-              (if (or (> n cap) (< n (- cap))) cap (Math/abs n))))]
+              (if (or (> n cap) (< n (- cap))) cap (abs n))))]
     (let [averaged-s-and-d (->> (interleave (flatten supply-list)
                                            (flatten demand-list))
                                 (partition 2)
@@ -686,7 +686,7 @@
 
 (defn sum-wc-exponents [wc]
   (reduce +
-    (concat (:c wc)
+          (concat (vector (:c wc))
             (:labor-exponents wc)
             (:input-exponents wc)
             (:nature-exponents wc))))
@@ -743,13 +743,14 @@
 (defn -main []
   (let [keys-to-print [:iteration :color :private-good-prices :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :pdlist :supply-list :demand-list :surplus-list :threshold-report]
         spacing-count 301 ; (50 * 5) + (10 * 5) + 2 - 1
-        ]
+        toothaches? false]
     (do
       (swap! globals setup globals)
       (swap! globals proceed globals)
       (println (clojure.string/join "," (get-csv-header @globals)))
       (println (print-csv keys-to-print @globals))
-      (while (some #(> % 3) (get @globals :threshold-report))
+      (while (and (some #(> % 3) (get @globals :threshold-report))
+                  (> 200 (get @globals :iteration)))
         (do
           (swap! globals proceed globals) 
           (println (print-csv keys-to-print @globals))))
@@ -761,7 +762,8 @@
       (do
         (swap! globals proceed globals) 
         (println (print-csv keys-to-print @globals)))
-      (while (some #(> % 3) (get @globals :threshold-report))
+      (while (and (some #(> % 3) (get @globals :threshold-report))
+                  (> 200 (get @globals :iteration)))
         (do
           (swap! globals proceed globals) 
           (println (print-csv keys-to-print @globals))))
