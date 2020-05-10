@@ -60,7 +60,7 @@
       :labor-prices (vec (repeat labor (t :init-labor-price)))
       :public-good-prices (vec (repeat public-goods (t :init-public-good-price)))
       :price-deltas (vec (repeat 10 0.05))
-      :pdlist (vec (repeat (+ private-goods im-inputs resources labor public-goods) 1)))))
+      :pdlist (vec (repeat (+ private-goods im-inputs resources labor public-goods) 0.25)))))
 
 (defn add-ids [cs]
   (loop [i 1
@@ -348,9 +348,10 @@
   (loop [inputs inputs
          prices prices
          surpluses []
+         new-deltas []
          J 0]
     (if (empty? inputs)
-      {:prices prices :surpluses surpluses}
+      {:prices prices :surpluses surpluses :new-deltas new-deltas}
       (let [supply (condp = type
                      "private-goods" (->> wcs
                                   (filter #(and (= 0 (% :industry))
@@ -420,6 +421,7 @@
         (recur (rest inputs)
                (assoc prices J new-price)
                (conj surpluses surplus)
+               (conj new-deltas new-delta)
                (inc J))))))
 
 ; Q: does lambda change?
@@ -579,11 +581,11 @@
                               (t :ccs))
                     :wcs (map (partial proposal (t :private-good-prices) (t :intermediate-good-prices) (t :nature-prices) (t :labor-prices) (t :public-good-prices))
                               (t :wcs)))
-        {private-good-prices :prices, private-good-surpluses :surpluses} (update-surpluses-prices "private-goods" (t2 :private-goods) (t2 :private-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
-        {intermediate-good-prices :prices, intermediate-good-surpluses :surpluses} (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :intermediate-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
-        {nature-prices :prices, nature-surpluses :surpluses} (update-surpluses-prices "nature" (t2 :nature-types) (t2 :nature-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
-        {labor-prices :prices, labor-surpluses :surpluses} (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
-        {public-good-prices :prices, public-good-surpluses :surpluses} (update-surpluses-prices "public-goods" (t2 :public-good-types) (t2 :public-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
+        {private-good-prices :prices, private-good-surpluses :surpluses, private-good-new-deltas :new-deltas} (update-surpluses-prices "private-goods" (t2 :private-goods) (t2 :private-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
+        {intermediate-good-prices :prices, intermediate-good-surpluses :surpluses, intermediate-good-new-deltas :new-deltas} (update-surpluses-prices "intermediate" (t2 :intermediate-inputs) (t2 :intermediate-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
+        {nature-prices :prices, nature-surpluses :surpluses, nature-new-deltas :new-deltas} (update-surpluses-prices "nature" (t2 :nature-types) (t2 :nature-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
+        {labor-prices :prices, labor-surpluses :surpluses, labor-new-deltas :new-deltas} (update-surpluses-prices "labor" (t2 :labor-types) (t2 :labor-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
+        {public-good-prices :prices, public-good-surpluses :surpluses, public-good-new-deltas :new-deltas} (update-surpluses-prices "public-goods" (t2 :public-good-types) (t2 :public-good-prices) (t2 :wcs) (t2 :ccs) (t2 :natural-resources-supply) (t2 :labor-supply) (t2 :pdlist) (last (t2 :private-goods)) (last (t2 :intermediate-inputs)) (t2 :resources) (t2 :labors))
         surplus-list (vector private-good-surpluses intermediate-good-surpluses nature-surpluses labor-surpluses public-good-surpluses)
         supply-list (get-supply-list t2)
         demand-list (get-demand-list t2)
@@ -592,25 +594,22 @@
         threshold-report (report-threshold surplus-list supply-list demand-list)
         iteration (inc (:iteration t2))
         top-output-councils (group-by (juxt :industry :product) (:wcs t2))
-        color (show-color threshold-report)
-        ;gdp-typ-2 (compute-gdp supply-list private-good-prices public-good-prices)
-        ;gdp-typ-1 (compute-gdp (:last-years-supply t2) private-good-prices public-good-prices)
-        ;gdp-lyp-2 (compute-gdp supply-list (:last-years-private-good-prices t2) (:last-years-public-good-prices t2))
-        ;gdp-lyp-1 (compute-gdp (:last-years-supply t2) (:last-years-private-good-prices t2) (:last-years-public-good-prices t2))
-        ;gdp-typ-pi (* 100 (/ (- gdp-typ-2 gdp-typ-1) gdp-typ-1))
-        ;gdp-lyp-pi (* 100 (/ (- gdp-lyp-2 gdp-lyp-1) gdp-lyp-1))
-        ;gdp-avg-pi (mean [gdp-typ-pi gdp-lyp-pi])
-]
-    (assoc t2 :private-good-prices private-good-prices
+        color (show-color threshold-report)]
+(assoc t2 :private-good-prices private-good-prices
               :private-good-surpluses private-good-surpluses
+              :private-good-new-deltas private-good-new-deltas
               :intermediate-good-prices intermediate-good-prices
               :intermediate-good-surpluses intermediate-good-surpluses
+              :intermediate-good-new-deltas intermediate-good-new-deltas
               :nature-prices nature-prices
               :nature-surpluses nature-surpluses
+              :nature-new-deltas nature-new-deltas
               :labor-prices labor-prices
               :labor-surpluses labor-surpluses
+              :labor-new-deltas labor-new-deltas
               :public-good-prices public-good-prices
-              :public-good-surpluses public-good-surpluses 
+              :public-good-surpluses public-good-surpluses
+              :public-good-new-deltas public-good-new-deltas
               :demand-list demand-list
               :surplus-list surplus-list
               :supply-list supply-list
@@ -620,11 +619,7 @@
               :pdlist new-pdlist
               :iteration iteration
               :top-output-councils top-output-councils
-              :color color
-;              :gdp2 gdp-typ-pi
-;              :gdp1 gdp-lyp-pi
-;              :gdp-pi gdp-avg-pi
-              )))
+              :color color)))
 
 (defn create-toothache [wc]
   (if (:toothache wc)
@@ -639,7 +634,7 @@
     wc))
 
 (defn create-toothaches [t _]
-  (let [toothache-percentage 0.2
+  (let [toothache-percentage 0.3
         ids-to-use (->> t
                         :wcs
                         (map :id)
@@ -696,6 +691,11 @@
                     :nature-prices
                     :labor-prices
                     :public-good-prices
+                    :new-deltas-private-goods
+                    :new-deltas-intermediate-goods
+                    :new-deltas-nature
+                    :new-deltas-labor
+                    :new-deltas-public-goods
                     :pdlist-private-goods
                     :pdlist-intermediate-goods
                     :pdlist-nature
@@ -733,9 +733,9 @@
     (concat [:iteration :color] headers1 headers2)))
 
 (defn -main []
-  (let [keys-to-print [:iteration :color :private-good-prices :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :pdlist :supply-list :demand-list :surplus-list :threshold-report]
-        spacing-count 301 ; (50 * 5) + (10 * 5) + 2 - 1
-        toothaches? true]
+  (let [keys-to-print [:iteration :color :private-good-prices :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :private-good-new-deltas :intermediate-good-new-deltas :nature-new-deltas :labor-new-deltas :public-good-new-deltas :pdlist :supply-list :demand-list :surplus-list :threshold-report]
+        spacing-count 351 ; (50 * 5) + (10 * 6) + 2 - 1
+        toothaches? false]
     (do
       (swap! globals setup globals)
       (if toothaches?
