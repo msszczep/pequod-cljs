@@ -621,7 +621,7 @@
                        "labor" (+ offset-1 offset-2 offset-3)
                        "public-goods" (+ offset-1 offset-2 offset-3 offset-4))
             surplus (- supply demand)
-            price-delta-to-use (- 1.05 (Math/pow 0.75 (/ (Math/abs (* 2 surplus)) (+ demand supply))))
+            price-delta-to-use (- 1.05 (Math/pow 0.5 (/ (Math/abs (* 2 surplus)) (+ demand supply))))
             delta (get-deltas (+ J j-offset) price-delta-to-use pdlist)
             new-delta delta
                       #_(cond (<= delta 1) delta
@@ -694,7 +694,7 @@
 ; TODO: this is actually update-percent-surplus
 (defn update-pdlist [supply-list demand-list surplus-list]
   (letfn [(force-to-one [n]
-            (let [cap 0.25]
+            (let [cap 0.3]
               (if (or (> n cap) (< n (- cap))) cap (Math/abs n))))]
     (let [averaged-s-and-d (->> (interleave (flatten supply-list)
                                            (flatten demand-list))
