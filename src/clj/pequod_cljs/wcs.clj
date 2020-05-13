@@ -76,8 +76,8 @@
                  :input-exponents input-exponents
                  :nature-exponents nature-exponents
                  :labor-exponents labor-exponents
-                 :du (rand-range 1.5 2.5)
-                 :s 2
+                 :du (rand-range 3 4)
+                 :s 1
                  :a (rand-range 4 6)
                  :effort 0.5
                  :output 0

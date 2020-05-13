@@ -1,5 +1,5 @@
 (ns pequod-cljs.csvgen
-   (:require [pequod-cljs.ex073 :as ex073]))
+   (:require [pequod-cljs.ex079 :as ex079]))
 
 (def globals
   (atom {:init-private-good-price 700
@@ -117,8 +117,8 @@
                :labor-types labor-types
                :public-good-types public-good-types
                :surplus-threshold 0.05
-               :ccs (add-ids ex073/ccs)
-               :wcs (add-ids ex073/wcs)
+               :ccs (add-ids ex079/ccs)
+               :wcs (add-ids ex079/wcs)
 ))))
 
 (defn consume [private-goods private-good-prices public-goods public-good-prices num-of-ccs cc]
@@ -409,7 +409,7 @@
                        "labor" (+ offset-1 offset-2 offset-3)
                        "public-goods" (+ offset-1 offset-2 offset-3 offset-4))
             surplus (- supply demand)
-            price-delta-to-use (- 1.05 (Math/pow 0.75 (/ (abs (* 2 surplus)) (+ demand supply))))
+            price-delta-to-use (- 1.05 (Math/pow 0.5 (/ (abs (* 2 surplus)) (+ demand supply))))
             delta (get-deltas (+ J j-offset) price-delta-to-use pdlist)
             new-delta delta
                       #_(cond (<= delta 1) delta

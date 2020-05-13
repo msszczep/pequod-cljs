@@ -70,6 +70,8 @@
               [pequod-cljs.ex071 :as ex071]
               [pequod-cljs.ex072 :as ex072]
               [pequod-cljs.ex073 :as ex073]
+              [pequod-cljs.ex074 :as ex074]
+              [pequod-cljs.ex075 :as ex075]
               [cljs.pprint :as pprint]
               [goog.string :as gstring]
               [goog.string.format]))
@@ -191,7 +193,7 @@
                :labor-types labor-types
                :public-good-types public-good-types
                :surplus-threshold 0.05
-               :ccs (add-ids
+,               :ccs (add-ids
                       (case @experiment
                         "ex006" ex006/ccs
                         "ex007" ex007/ccs
@@ -261,6 +263,8 @@
                        "ex071" ex071/ccs
                        "ex072" ex072/ccs
                        "ex073" ex073/ccs
+                       "ex074" ex074/ccs
+                       "ex075" ex075/ccs
                         ex006/ccs))
                :wcs  (add-ids
                        (case @experiment
@@ -332,6 +336,8 @@
      "ex071" ex071/wcs
      "ex072" ex072/wcs
      "ex073" ex073/wcs
+     "ex074" ex074/wcs
+     "ex075" ex075/wcs
       ex006/wcs))))))
 
 (defn consume [private-goods private-good-prices public-goods public-good-prices num-of-ccs cc]
@@ -694,7 +700,7 @@
 ; TODO: this is actually update-percent-surplus
 (defn update-pdlist [supply-list demand-list surplus-list]
   (letfn [(force-to-one [n]
-            (let [cap 0.3]
+            (let [cap 0.25]
               (if (or (> n cap) (< n (- cap))) cap (Math/abs n))))]
     (let [averaged-s-and-d (->> (interleave (flatten supply-list)
                                            (flatten demand-list))
@@ -1060,6 +1066,8 @@
           [:option {:key :ex071} "ex071"]
           [:option {:key :ex072} "ex072"]
           [:option {:key :ex073} "ex073"]
+          [:option {:key :ex074} "ex074"]
+          [:option {:key :ex075} "ex075"]
           ]]
          [:td [:input {:type "button" :value "Setup"
               :on-click #(swap! globals setup globals experiment-to-use)}]]

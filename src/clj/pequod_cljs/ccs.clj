@@ -15,7 +15,7 @@
     (mapv #(hash-map :num-workers workers-per-council
                      :effort effort
                      :income (* 500 effort workers-per-council)
-                     :cy (+ 6 (rand 9))
+                     :cy 1
                      :utility-exponents (vec (first %))
                      :final-demands (vec (repeat 5 0))
                      :public-good-demands (vec (repeat 1 0))
