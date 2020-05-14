@@ -193,7 +193,7 @@
                :labor-types labor-types
                :public-good-types public-good-types
                :surplus-threshold 0.05
-,               :ccs (add-ids
+               :ccs (add-ids
                       (case @experiment
                         "ex006" ex006/ccs
                         "ex007" ex007/ccs

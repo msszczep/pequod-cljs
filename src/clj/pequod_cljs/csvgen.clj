@@ -1,5 +1,55 @@
 (ns pequod-cljs.csvgen
-   (:require [pequod-cljs.ex079 :as ex079]))
+   (:require [pequod-cljs.dep1ex01 :as ex01]
+             [pequod-cljs.dep1ex02 :as ex02]
+             [pequod-cljs.dep1ex03 :as ex03]
+             [pequod-cljs.dep1ex04 :as ex04]
+             [pequod-cljs.dep1ex05 :as ex05]
+             [pequod-cljs.dep1ex06 :as ex06]
+             [pequod-cljs.dep1ex07 :as ex07]
+             [pequod-cljs.dep1ex08 :as ex08]
+             [pequod-cljs.dep1ex09 :as ex09]
+             [pequod-cljs.dep1ex10 :as ex10]
+             [pequod-cljs.dep1ex11 :as ex11]
+             [pequod-cljs.dep1ex12 :as ex12]
+             [pequod-cljs.dep1ex13 :as ex13]
+             [pequod-cljs.dep1ex14 :as ex14]
+             [pequod-cljs.dep1ex15 :as ex15]
+             [pequod-cljs.dep1ex16 :as ex16]
+             [pequod-cljs.dep1ex17 :as ex17]
+             [pequod-cljs.dep1ex18 :as ex18]
+             [pequod-cljs.dep1ex19 :as ex19]
+             [pequod-cljs.dep1ex20 :as ex20]
+             [pequod-cljs.dep1ex21 :as ex21]
+             [pequod-cljs.dep1ex22 :as ex22]
+             [pequod-cljs.dep1ex23 :as ex23]
+             [pequod-cljs.dep1ex24 :as ex24]
+             [pequod-cljs.dep1ex25 :as ex25]
+             [pequod-cljs.dep1ex26 :as ex26]
+             [pequod-cljs.dep1ex27 :as ex27]
+             [pequod-cljs.dep1ex28 :as ex28]
+             [pequod-cljs.dep1ex29 :as ex29]
+             [pequod-cljs.dep1ex30 :as ex30]
+             [pequod-cljs.dep1ex31 :as ex31]
+             [pequod-cljs.dep1ex32 :as ex32]
+             [pequod-cljs.dep1ex33 :as ex33]
+             [pequod-cljs.dep1ex34 :as ex34]
+             [pequod-cljs.dep1ex35 :as ex35]
+             [pequod-cljs.dep1ex36 :as ex36]
+             [pequod-cljs.dep1ex37 :as ex37]
+             [pequod-cljs.dep1ex38 :as ex38]
+             [pequod-cljs.dep1ex39 :as ex39]
+             [pequod-cljs.dep1ex40 :as ex40]
+             [pequod-cljs.dep1ex41 :as ex41]
+             [pequod-cljs.dep1ex42 :as ex42]
+             [pequod-cljs.dep1ex43 :as ex43]
+             [pequod-cljs.dep1ex44 :as ex44]
+             [pequod-cljs.dep1ex45 :as ex45]
+             [pequod-cljs.dep1ex46 :as ex46]
+             [pequod-cljs.dep1ex47 :as ex47]
+             [pequod-cljs.dep1ex48 :as ex48]
+             [pequod-cljs.dep1ex49 :as ex49]
+             [pequod-cljs.dep1ex50 :as ex50]
+))
 
 (def globals
   (atom {:init-private-good-price 700
@@ -99,8 +149,7 @@
            :last-years-public-good-prices (:public-good-prices t)))
 
 ; TODO: don't hard code labor supply or nature supply
-; TODO restore experiment argument
-(defn setup [t _]
+(defn setup [t _ experiment]
   (let [intermediate-inputs (vec (range 1 (inc (t :intermediate-inputs))))
         nature-types (vec (range 1 (inc (t :resources))))
         labor-types (vec (range 1 (inc (t :labors))))
@@ -117,8 +166,112 @@
                :labor-types labor-types
                :public-good-types public-good-types
                :surplus-threshold 0.05
-               :ccs (add-ids ex079/ccs)
-               :wcs (add-ids ex079/wcs)
+               :ccs (add-ids
+                      (case experiment
+                        "ex01" ex01/ccs
+                        "ex02" ex02/ccs
+                        "ex03" ex03/ccs
+                        "ex04" ex04/ccs
+                        "ex05" ex05/ccs
+                        "ex06" ex06/ccs
+                        "ex07" ex07/ccs
+                        "ex08" ex08/ccs
+                        "ex09" ex09/ccs
+                        "ex10" ex10/ccs
+                        "ex11" ex11/ccs
+                        "ex12" ex12/ccs
+                        "ex13" ex13/ccs
+                        "ex14" ex14/ccs
+                        "ex15" ex15/ccs
+                        "ex16" ex16/ccs
+                        "ex17" ex17/ccs
+                        "ex18" ex18/ccs
+                        "ex19" ex19/ccs
+                        "ex20" ex20/ccs
+                        "ex21" ex21/ccs
+                        "ex22" ex22/ccs
+                        "ex23" ex23/ccs
+                        "ex24" ex24/ccs
+                        "ex25" ex25/ccs
+                        "ex26" ex26/ccs
+                        "ex27" ex27/ccs
+                        "ex28" ex28/ccs
+                        "ex29" ex29/ccs
+                        "ex30" ex30/ccs
+                        "ex31" ex31/ccs
+                        "ex32" ex32/ccs
+                        "ex33" ex33/ccs
+                        "ex34" ex34/ccs
+                        "ex35" ex35/ccs
+                        "ex36" ex36/ccs
+                        "ex37" ex37/ccs
+                        "ex38" ex38/ccs
+                        "ex39" ex39/ccs
+                        "ex40" ex40/ccs
+                        "ex41" ex41/ccs
+                        "ex42" ex42/ccs
+                        "ex43" ex43/ccs
+                        "ex44" ex44/ccs
+                        "ex45" ex45/ccs
+                        "ex46" ex46/ccs
+                        "ex47" ex47/ccs
+                        "ex48" ex48/ccs
+                        "ex49" ex49/ccs
+                        "ex50" ex50/ccs
+                        ex06/ccs))
+               :wcs (add-ids
+                      (case experiment
+                        "ex01" ex01/wcs
+                        "ex02" ex02/wcs
+                        "ex03" ex03/wcs
+                        "ex04" ex04/wcs
+                        "ex05" ex05/wcs
+                        "ex06" ex06/wcs
+                        "ex07" ex07/wcs
+                        "ex08" ex08/wcs
+                        "ex09" ex09/wcs
+                        "ex10" ex10/wcs
+                        "ex11" ex11/wcs
+                        "ex12" ex12/wcs
+                        "ex13" ex13/wcs
+                        "ex14" ex14/wcs
+                        "ex15" ex15/wcs
+                        "ex16" ex16/wcs
+                        "ex17" ex17/wcs
+                        "ex18" ex18/wcs
+                        "ex19" ex19/wcs
+                        "ex20" ex20/wcs
+                        "ex21" ex21/wcs
+                        "ex22" ex22/wcs
+                        "ex23" ex23/wcs
+                        "ex24" ex24/wcs
+                        "ex25" ex25/wcs
+                        "ex26" ex26/wcs
+                        "ex27" ex27/wcs
+                        "ex28" ex28/wcs
+                        "ex29" ex29/wcs
+                        "ex30" ex30/wcs
+                        "ex31" ex31/wcs
+                        "ex32" ex32/wcs
+                        "ex33" ex33/wcs
+                        "ex34" ex34/wcs
+                        "ex35" ex35/wcs
+                        "ex36" ex36/wcs
+                        "ex37" ex37/wcs
+                        "ex38" ex38/wcs
+                        "ex39" ex39/wcs
+                        "ex40" ex40/wcs
+                        "ex41" ex41/wcs
+                        "ex42" ex42/wcs
+                        "ex43" ex43/wcs
+                        "ex44" ex44/wcs
+                        "ex45" ex45/wcs
+                        "ex46" ex46/wcs
+                        "ex47" ex47/wcs
+                        "ex48" ex48/wcs
+                        "ex49" ex49/wcs
+                        "ex50" ex50/wcs
+                        ex06/wcs))
 ))))
 
 (defn consume [private-goods private-good-prices public-goods public-good-prices num-of-ccs cc]
@@ -732,12 +885,12 @@
                       flatten)]
     (concat [:iteration :color] headers1 headers2)))
 
-(defn -main []
+(defn -main [& [ns-to-use]]
   (let [keys-to-print [:iteration :color :private-good-prices :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :private-good-new-deltas :intermediate-good-new-deltas :nature-new-deltas :labor-new-deltas :public-good-new-deltas :pdlist :supply-list :demand-list :surplus-list :threshold-report]
         spacing-count 351 ; (50 * 5) + (10 * 6) + 2 - 1
         toothaches? false]
     (do
-      (swap! globals setup globals)
+      (swap! globals setup globals ns-to-use)
       (if toothaches?
         (swap! globals create-toothaches globals))
       (swap! globals proceed globals)
