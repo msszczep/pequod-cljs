@@ -787,7 +787,7 @@
     wc))
 
 (defn create-toothaches [t _]
-  (let [toothache-percentage 0.3
+  (let [toothache-percentage 0.2
         ids-to-use (->> t
                         :wcs
                         (map :id)
@@ -888,7 +888,7 @@
 (defn -main [& [ns-to-use]]
   (let [keys-to-print [:iteration :color :private-good-prices :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :private-good-new-deltas :intermediate-good-new-deltas :nature-new-deltas :labor-new-deltas :public-good-new-deltas :pdlist :supply-list :demand-list :surplus-list :threshold-report]
         spacing-count 351 ; (50 * 5) + (10 * 6) + 2 - 1
-        toothaches? false]
+        toothaches? true]
     (do
       (swap! globals setup globals ns-to-use)
       (if toothaches?
