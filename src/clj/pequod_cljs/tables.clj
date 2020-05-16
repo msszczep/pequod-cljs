@@ -37,6 +37,13 @@
        first
        :iteration))
 
+(defn get-first-yellow-iteration [d n]
+  (->> d
+       (filter (comp (partial = n) :experiment))
+       (filter (comp (partial = :yellow) :color))
+       first
+       :iteration))
+
 (def table-one
    (mapv #(vector % (get-first-green-iteration d %))
          (range 1 51)))
@@ -66,12 +73,38 @@
   (let [iterations (mapv last table-two)]
     (/ (apply + iterations) 50.0))) ; => 19.26
 
+; cheap, but it works
 (defn get-second-green-iteration [d n]
   (->> d
        (filter (comp (partial = n) :experiment))
-       (filter (comp (partial = :green) :color))))
+       (filter (comp (partial = :green) :color))
+       (mapv :iteration)
+       sort
+       first))
 
-#_(defn find-ascending-split [s]
-  ())
+(def table-four
+   (mapv #(vector % (get-second-green-iteration d %))
+         (range 1 51)))
 
-; table 4
+(def max-four-two 
+  (apply max (mapv last table-four))) ; => 7
+
+(def table-four-avg
+  (let [iterations (mapv last table-four)]
+    (/ (apply + iterations) 50.0))) ; => 5.2
+
+(defn get-yellow-to-green [d n]
+  (let [yellow (get-first-yellow-iteration d n)
+        green  (get-first-green-iteration d n)]
+    (- green yellow)))
+
+(def table-five
+   (mapv #(vector % (get-yellow-to-green d %))
+         (range 1 51)))
+
+(def max-five-two 
+  (apply max (mapv last table-five))) ; => 6
+
+(def table-five-avg
+  (let [iterations (mapv last table-five)]
+    (/ (apply + iterations) 50.0))) ; => 5.2
