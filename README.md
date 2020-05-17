@@ -1,12 +1,22 @@
 # pequod-cljs
 
-This is the pequod-cljs project -- a Clojurescript rewrite of the Pequod library, which simulates the participatory planning procedure of a non-market, non-command-planning, democratically planned participatory eco nomy (parecon, or PEX).
+This is the pequod-cljs project -- a computerized simulation of some of the main components of a non-market, non-command-planning, democratically-planned economy known by the name "participatory economics" (abbreviated "PEX").  
+
+To learn more about participatory economics, please visit [https://www.participatoryeconomics.info](https://www.participatoryeconomics.info).
+
+This project is written in the Clojurescript programming language, and is based on, and named for, a similar project called Pequod (an abbreviation for "Participatory Planning Procedure Prototype"), both as [a project in the Netlogo programming language](https://github.com/msszczep/pequod2), and [as a project in the Clojure programming language](https://github.com/msszczep/pequod-clj).  
 
 Documentation for the rationale of the library and some of its details, as originally articulated, appear in the `docs` directory of this repository.
 
-Some functionality in pequod-cljs was modeled on the [pequod-clj library](https://github.com/msszczep/pequod-clj) and the [pequod2 library in Netlogo](https://github.com/msszczep/pequod2). 
+## Instructions
 
-## Development mode
+To run the pequod-cljs code, you will need:
+
+1. A command-line prompt.
+2. An up-to-date version of Java (you can check by running `java -version` at your command line).
+3. Leiningen.  Instructions for Leiningen are available on the [Leiningen website](https://leiningen.org).
+
+==
 
 To start the Figwheel compiler, navigate to the project folder and run the following command in the terminal:
 
