@@ -40,9 +40,17 @@ This repository simulates the participatory planning procedure in a simulated pa
 lein figwheel
 ```
 
-## Figwheel
-
 Once Figwheel starts, you can view the pequod-cljs web app locally at [http://localhost:3449](http://localhost:3449).
+
+## Using the Webapp
+
+TODO
+
+## Using the Command Line
+
+TODO
+
+## Figwheel
 
 Figwheel will automatically push cljs changes to the browser.
 
