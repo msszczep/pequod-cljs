@@ -44,7 +44,28 @@ Once Figwheel starts, you can view the pequod-cljs web app locally at [http://lo
 
 ## Using the Webapp
 
-TODO
+There are a number of buttons along the top row of the webapp.  There is a dropdown at the left of the
+row to select any of a number of experiments.  To run the app, first select an experiment from this
+dropdown.
+
+Next, press the button marked "Setup".  This loads the data -- the worker councils, consumer councils,
+and other settings -- into the app.  You can iterate through the participatory planning procedure
+with the buttons "Iterate 1X", "Iterate 5X", "Iterate 10X", and "Iterate 50X".  
+
+If you are interested in seeing the values for a given council at any point in the iterative process, 
+you can use the Council Explorer.  Select "wcs" (workers councils) or "ccs" (consumer councils) then
+type a number in the adjacent text field (all councils are identified by number, starting with one and
+counting up) and click the "Show Council" button.  The council should appear in the Council Explorer
+portion of the page as a Clojure map.
+
+After the economy reaches its convergence threshold (more about that below), you may "reset" the economy
+with the "Augmented reset" button.  This button has the following effects:
+
+1.
+2.
+3.
+
+MORE TO COME
 
 ## Using the Command Line
 
