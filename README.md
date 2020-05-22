@@ -66,9 +66,20 @@ an economy over the course of a year and has the following effects:
 2. Adding a small random augment to the coefficients of each consumers' council.
 3. Reset the iteration counter back to zero.
 
-Once it's reset, you can iterate through the participatory planning procedure again and compare the results.
+Once it's reset, you can iterate through the participatory planning procedure again and compare the results
+with those of the previous series of iterations.
 
-MORE TO COME
+Below the row of buttons, there are a number of additional values abbreviated and explained as follows:
+
+* `WCs`: A count of the number of worker councils loaded into the program
+* `CCs`: A count of the number of consumer councils loaded into the program
+* `TH`: The convergence threshold loaded into the program
+* `A-GDP TY:` The gross domestic product for this year (the current sequence of iterations)
+* `A-GDP LY:` The gross domestic product for last year (this activates once the "Augumented reset" button is clicked)
+* `A-GDP AVG:" The average of the two gross domestic product calculations, when applicable
+
+To reset the app, simply refresh the page.  Note that iterations only proceed in one trajectory; if you 
+want to "rewind" you must refresh the page and repeat the process.
 
 ## Using the Command Line
 
