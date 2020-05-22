@@ -59,11 +59,14 @@ counting up) and click the "Show Council" button.  The council should appear in 
 portion of the page as a Clojure map.
 
 After the economy reaches its convergence threshold (more about that below), you may "reset" the economy
-with the "Augmented reset" button.  This button has the following effects:
+with the "Augmented reset" button.  This button is intended to simulate technology enhancement within
+an economy over the course of a year and has the following effects:
 
-1.
-2.
-3.
+1. Adding a small random augment to the coefficients of each workers' council.
+2. Adding a small random augment to the coefficients of each consumers' council.
+3. Reset the iteration counter back to zero.
+
+Once it's reset, you can iterate through the participatory planning procedure again and compare the results.
 
 MORE TO COME
 
