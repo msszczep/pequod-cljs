@@ -76,7 +76,7 @@ Below the row of buttons, there are a number of additional values abbreviated an
 * `TH`: The convergence threshold loaded into the program
 * `A-GDP TY:` The gross domestic product for this year (the current sequence of iterations)
 * `A-GDP LY:` The gross domestic product for last year (this activates once the "Augumented reset" button is clicked)
-* `A-GDP AVG:" The average of the two gross domestic product calculations, when applicable
+* `A-GDP AVG:` The average of the two gross domestic product calculations, when applicable
 
 To reset the app, simply refresh the page.  Note that iterations only proceed in one trajectory; if you 
 want to "rewind" you must refresh the page and repeat the process.
