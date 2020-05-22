@@ -78,6 +78,23 @@ Below the row of buttons, there are a number of additional values abbreviated an
 * `A-GDP LY:` The gross domestic product for last year (this activates once the "Augumented reset" button is clicked)
 * `A-GDP AVG:` The average of the two gross domestic product calculations, when applicable
 
+Most of the page is a chart showing five categories of goods along the top and statistics for each good.
+
+The prices refer to indicative prices within a participatory economy.  PDList refers to "price deltas" 
+-- the rate of change for a given price, currently capped at 25%.  "New deltas" refers to the new price
+change after an iteration.  
+
+The row entitled "Percent Threshold / Threshold met?" is your barometer as to when the iterations
+are "done" (there's no block for continuing iterations; conceivably it could run forever).  The row 
+changes color to the following:
+
+* blue if all the surpluses (the difference between supply and demand, as a percentage) 
+for that category are below 3%
+* green if all the surpluses are below 5%
+* yellow if all the surpluses are below 10%
+* organe if all the surpluses are below 20%
+* red otherwise
+
 To reset the app, simply refresh the page.  Note that iterations only proceed in one trajectory; if you 
 want to "rewind" you must refresh the page and repeat the process.
 
