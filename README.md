@@ -100,7 +100,22 @@ want to "rewind" you must refresh the page and repeat the process.
 
 ## Using the Command Line
 
-TODO
+There is a Clojure clone of the pequod-cljs code, called `csvgen`, which can generate CSV output of a 
+participatory planning process.
+
+To use `csvgen` from the command line, run:
+
+`lein run -m pequod-cljs.csvgen <namespace>`
+
+...where `<namespace>` is the namespace of the data file whose contents you're using for the iteration.  
+Note: `csvgen` uses `.clj` source files in the `src/clj/pequod_cljs/` directory, and `csvgen` delivers 
+its output to STDOUT, so it is advisable to redirect the output into a file, as in:
+
+`lein run -m pequod-cljs.csvgen experiment01 > experiment01.csv`
+
+The output, from left to right, is the iteration, threshold color, all the collective metrics presented
+in the pequod-cljs webapp, one column at a time, along with the effort score and output score of all
+councils, both for a given "year" and an augmented "year".
 
 ## Figwheel
 
