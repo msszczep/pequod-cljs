@@ -50,6 +50,7 @@
              [pequod-cljs.dep1ex49 :as ex49]
              [pequod-cljs.dep1ex50 :as ex50]
              [pequod-cljs.ex080 :as ex080]
+             [pequod-cljs.ex081 :as ex081]
 ))
 
 (def globals
@@ -220,6 +221,7 @@
                         "ex49" ex49/ccs
                         "ex50" ex50/ccs
                         "ex080" ex080/ccs
+                        "ex081" ex081/ccs
                         ex06/ccs))
                :wcs (add-ids
                       (case experiment
@@ -274,6 +276,7 @@
                         "ex49" ex49/wcs
                         "ex50" ex50/wcs
                         "ex080" ex080/wcs
+                        "ex081" ex081/wcs
                         ex06/wcs))
 ))))
 
@@ -801,19 +804,6 @@
                          (:wcs t))]
     (assoc t :wcs (mapv create-toothache wcs-to-use))))
 
-(defn adjust-delta [price-delta raise-or-lower]
-  (let [price-delta-adjustment-fn
-         (if (= raise-or-lower "raise") + -)
-        min-or-max-fn
-         (if (= raise-or-lower "raise") min max)
-        delta-delay
-         (if (= raise-or-lower "raise") 10 5)
-        pd (->> [0.1 (price-delta-adjustment-fn price-delta 0.01)]
-                (apply min-or-max-fn)
-                (format "%.2f"))]
-    {:price-delta pd
-     :delta-delay delta-delay}))
-
 (defn rest-of-to-do [t]
   (let [delta-delay (:delta-delay t)
         delta-delay (if (pos? delta-delay)
@@ -887,54 +877,6 @@
                       (mapv #(vector (str "wc_" % "_output") (str "wc_" % "_effort")))
                       flatten)]
     (concat [:iteration :color] headers1 headers2)))
-
-#_(defn get-csv-header-2 []
-  (let [spaces-map [:private-good-prices
-                    :intermediate-good-prices
-                    :nature-prices
-                    :labor-prices
-                    :public-good-prices
-                    :new-deltas-private-goods
-                    :new-deltas-intermediate-goods
-                    :new-deltas-nature
-                    :new-deltas-labor
-                    :new-deltas-public-goods
-                    :pdlist-private-goods
-                    :pdlist-intermediate-goods
-                    :pdlist-nature
-                    :pdlist-labor
-                    :pdlist-public-goods
-                    :supply-private-goods
-                    :supply-intermediate-goods
-                    :supply-nature
-                    :supply-labor
-                    :supply-public-goods
-                    :demand-private-goods
-                    :demand-intermediate-goods
-                    :demand-nature
-                    :demand-labor
-                    :demand-public-goods
-                    :surplus-private-goods
-                    :surplus-intermediate-goods
-                    :surplus-nature
-                    :surplus-labor
-                    :surplus-public-goods
-                    :threshold-report-private-goods
-                    :threshold-report-intermediate-goods
-                    :threshold-report-nature
-                    :threshold-report-labor
-                    :threshold-report-public-goods]
-        headers1 (for [k spaces-map
-                       n (range 1 101)] 
-                   (str k "-" n))
-        headers2 (->> (range 1 30001)
-                      sort
-                      (mapv #(vector (str "wc_" % "_output") (str "wc_" % "_effort")))
-                      flatten)]
-    (concat [:iteration :color] headers1 headers2)))
-
-#_(defn -main [& []]
-   (println (clojure.string/join "," (get-csv-header-2))))
 
 (defn -main [& [ns-to-use]]
   (let [keys-to-print [:iteration :color :private-good-prices :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :private-good-new-deltas :intermediate-good-new-deltas :nature-new-deltas :labor-new-deltas :public-good-new-deltas :pdlist :supply-list :demand-list :surplus-list :threshold-report]
