@@ -49,7 +49,56 @@
              [pequod-cljs.dep1ex48 :as ex48]
              [pequod-cljs.dep1ex49 :as ex49]
              [pequod-cljs.dep1ex50 :as ex50]
-             [pequod-cljs.ex080 :as ex080]
+             [pequod-cljs.dep1ex51 :as ex51]
+             [pequod-cljs.dep1ex52 :as ex52]
+             [pequod-cljs.dep1ex53 :as ex53]
+             [pequod-cljs.dep1ex54 :as ex54]
+             [pequod-cljs.dep1ex55 :as ex55]
+             [pequod-cljs.dep1ex56 :as ex56]
+             [pequod-cljs.dep1ex57 :as ex57]
+             [pequod-cljs.dep1ex58 :as ex58]
+             [pequod-cljs.dep1ex59 :as ex59]
+             [pequod-cljs.dep1ex60 :as ex60]
+             [pequod-cljs.dep1ex61 :as ex61]
+             [pequod-cljs.dep1ex62 :as ex62]
+             [pequod-cljs.dep1ex63 :as ex63]
+             [pequod-cljs.dep1ex64 :as ex64]
+             [pequod-cljs.dep1ex65 :as ex65]
+             [pequod-cljs.dep1ex66 :as ex66]
+             [pequod-cljs.dep1ex67 :as ex67]
+             [pequod-cljs.dep1ex68 :as ex68]
+             [pequod-cljs.dep1ex69 :as ex69]
+             [pequod-cljs.dep1ex70 :as ex70]
+             [pequod-cljs.dep1ex71 :as ex71]
+             [pequod-cljs.dep1ex72 :as ex72]
+             [pequod-cljs.dep1ex73 :as ex73]
+             [pequod-cljs.dep1ex74 :as ex74]
+             [pequod-cljs.dep1ex75 :as ex75]
+             [pequod-cljs.dep1ex76 :as ex76]
+             [pequod-cljs.dep1ex77 :as ex77]
+             [pequod-cljs.dep1ex78 :as ex78]
+             [pequod-cljs.dep1ex79 :as ex79]
+             [pequod-cljs.dep1ex80 :as ex80]
+             [pequod-cljs.dep1ex81 :as ex81]
+             [pequod-cljs.dep1ex82 :as ex82]
+             [pequod-cljs.dep1ex83 :as ex83]
+             [pequod-cljs.dep1ex84 :as ex84]
+             [pequod-cljs.dep1ex85 :as ex85]
+             [pequod-cljs.dep1ex86 :as ex86]
+             [pequod-cljs.dep1ex87 :as ex87]
+             [pequod-cljs.dep1ex88 :as ex88]
+             [pequod-cljs.dep1ex89 :as ex89]
+             [pequod-cljs.dep1ex90 :as ex90]
+             [pequod-cljs.dep1ex91 :as ex91]
+             [pequod-cljs.dep1ex92 :as ex92]
+             [pequod-cljs.dep1ex93 :as ex93]
+             [pequod-cljs.dep1ex94 :as ex94]
+             [pequod-cljs.dep1ex95 :as ex95]
+             [pequod-cljs.dep1ex96 :as ex96]
+             [pequod-cljs.dep1ex97 :as ex97]
+             [pequod-cljs.dep1ex98 :as ex98]
+             [pequod-cljs.dep1ex99 :as ex99]
+             [pequod-cljs.dep1ex100 :as ex100]
              [pequod-cljs.ex081 :as ex081]
 ))
 
@@ -220,7 +269,56 @@
                         "ex48" ex48/ccs
                         "ex49" ex49/ccs
                         "ex50" ex50/ccs
-                        "ex080" ex080/ccs
+                        "ex51" ex51/ccs
+                        "ex52" ex52/ccs
+                        "ex53" ex53/ccs
+                        "ex54" ex54/ccs
+                        "ex55" ex55/ccs
+                        "ex56" ex56/ccs
+                        "ex57" ex57/ccs
+                        "ex58" ex58/ccs
+                        "ex59" ex59/ccs
+                        "ex60" ex60/ccs
+                        "ex61" ex61/ccs
+                        "ex62" ex62/ccs
+                        "ex63" ex63/ccs
+                        "ex64" ex64/ccs
+                        "ex65" ex65/ccs
+                        "ex66" ex66/ccs
+                        "ex67" ex67/ccs
+                        "ex68" ex68/ccs
+                        "ex69" ex69/ccs
+                        "ex70" ex70/ccs
+                        "ex71" ex71/ccs
+                        "ex72" ex72/ccs
+                        "ex73" ex73/ccs
+                        "ex74" ex74/ccs
+                        "ex75" ex75/ccs
+                        "ex76" ex76/ccs
+                        "ex77" ex77/ccs
+                        "ex78" ex78/ccs
+                        "ex79" ex79/ccs
+                        "ex80" ex80/ccs
+                        "ex81" ex81/ccs
+                        "ex82" ex82/ccs
+                        "ex83" ex83/ccs
+                        "ex84" ex84/ccs
+                        "ex85" ex85/ccs
+                        "ex86" ex86/ccs
+                        "ex87" ex87/ccs
+                        "ex88" ex88/ccs
+                        "ex89" ex89/ccs
+                        "ex90" ex90/ccs
+                        "ex91" ex91/ccs
+                        "ex92" ex92/ccs
+                        "ex93" ex93/ccs
+                        "ex94" ex94/ccs
+                        "ex95" ex95/ccs
+                        "ex96" ex96/ccs
+                        "ex97" ex97/ccs
+                        "ex98" ex98/ccs
+                        "ex99" ex99/ccs
+                        "ex100" ex100/ccs
                         "ex081" ex081/ccs
                         ex06/ccs))
                :wcs (add-ids
@@ -275,7 +373,56 @@
                         "ex48" ex48/wcs
                         "ex49" ex49/wcs
                         "ex50" ex50/wcs
-                        "ex080" ex080/wcs
+                        "ex51" ex51/wcs
+                        "ex52" ex52/wcs
+                        "ex53" ex53/wcs
+                        "ex54" ex54/wcs
+                        "ex55" ex55/wcs
+                        "ex56" ex56/wcs
+                        "ex57" ex57/wcs
+                        "ex58" ex58/wcs
+                        "ex59" ex59/wcs
+                        "ex60" ex60/wcs
+                        "ex61" ex61/wcs
+                        "ex62" ex62/wcs
+                        "ex63" ex63/wcs
+                        "ex64" ex64/wcs
+                        "ex65" ex65/wcs
+                        "ex66" ex66/wcs
+                        "ex67" ex67/wcs
+                        "ex68" ex68/wcs
+                        "ex69" ex69/wcs
+                        "ex70" ex70/wcs
+                        "ex71" ex71/wcs
+                        "ex72" ex72/wcs
+                        "ex73" ex73/wcs
+                        "ex74" ex74/wcs
+                        "ex75" ex75/wcs
+                        "ex76" ex76/wcs
+                        "ex77" ex77/wcs
+                        "ex78" ex78/wcs
+                        "ex79" ex79/wcs
+                        "ex80" ex80/wcs
+                        "ex81" ex81/wcs
+                        "ex82" ex82/wcs
+                        "ex83" ex83/wcs
+                        "ex84" ex84/wcs
+                        "ex85" ex85/wcs
+                        "ex86" ex86/wcs
+                        "ex87" ex87/wcs
+                        "ex88" ex88/wcs
+                        "ex89" ex89/wcs
+                        "ex90" ex90/wcs
+                        "ex91" ex91/wcs
+                        "ex92" ex92/wcs
+                        "ex93" ex93/wcs
+                        "ex94" ex94/wcs
+                        "ex95" ex95/wcs
+                        "ex96" ex96/wcs
+                        "ex97" ex97/wcs
+                        "ex98" ex98/wcs
+                        "ex99" ex99/wcs
+                        "ex100" ex100/wcs
                         "ex081" ex081/wcs
                         ex06/wcs))
 ))))
@@ -881,7 +1028,7 @@
 (defn -main [& [ns-to-use]]
   (let [keys-to-print [:iteration :color :private-good-prices :intermediate-good-prices :nature-prices :labor-prices :public-good-prices :private-good-new-deltas :intermediate-good-new-deltas :nature-new-deltas :labor-new-deltas :public-good-new-deltas :pdlist :supply-list :demand-list :surplus-list :threshold-report]
         spacing-count 3501 ; (50 * 5) + (100 * 6) + 2 - 1
-        toothaches? true]
+        toothaches? false]
     (do
       (swap! globals setup globals ns-to-use)
       (if toothaches?
