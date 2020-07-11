@@ -74,8 +74,8 @@
               [pequod-cljs.ex075 :as ex075]
               [cljs.pprint :as pprint]
               [goog.string :as gstring]
-              [goog.string.format]))
-
+              [goog.string.format]
+              [pequod-cljs.util :as util]))
 
 (def globals
   (atom {:init-private-good-price 700
@@ -122,23 +122,6 @@
          :last-years-private-good-prices []
          :last-years-public-good-prices []}))
 
-
-(defn initialize-prices [t]
-  (let [private-goods (t :private-goods)
-        im-inputs (t :intermediate-inputs)
-        resources (t :resources)
-        labor (t :labors)
-        public-goods (t :public-goods)]
-    (assoc t
-      :private-good-prices (vec (repeat private-goods (t :init-private-good-price)))
-      :intermediate-good-prices (vec (repeat im-inputs (t :init-intermediate-price)))
-      :nature-prices (vec (repeat resources (t :init-nature-price)))
-      :labor-prices (vec (repeat labor (t :init-labor-price)))
-      :public-good-prices (vec (repeat public-goods (t :init-public-good-price)))
-      :price-deltas (vec (repeat 10 0.05))
-      :pdlist (vec (repeat (+ private-goods im-inputs resources labor public-goods) 0.25)))))
-
-
 (defn add-ids [cs]
   (loop [i 1
          cs cs
@@ -183,7 +166,7 @@
         private-goods (vec (range 1 (inc (t :private-goods))))
         public-good-types (vec (range 1 (inc (t :public-goods))))]
     (-> t
-        initialize-prices
+        util/initialize-prices
         (assoc :delta-delay 5
                :natural-resources-supply (repeat (t :resources) 1000)
                :labor-supply (repeat (t :labors) 1000)
