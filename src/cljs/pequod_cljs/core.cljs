@@ -75,8 +75,7 @@
               [cljs.pprint :as pprint]
               [pequod-cljs.util :as util]
               [goog.string :as gstring]
-              [goog.string.format]
-              [pequod-cljs.util :as util]))
+              [goog.string.format]))
 
 (def globals
   (atom {:init-private-good-price 700
