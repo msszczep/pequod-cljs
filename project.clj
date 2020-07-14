@@ -38,6 +38,7 @@
 
   :source-paths ["src/clj" "src/cljc"]
   :resource-paths ["resources" "target/cljsbuild"]
+  :test-paths     ["test" "test/clj"]
 
   :minify-assets
   {:assets
