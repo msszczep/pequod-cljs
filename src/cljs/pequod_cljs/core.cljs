@@ -122,14 +122,6 @@
          :last-years-private-good-prices []
          :last-years-public-good-prices []}))
 
-(defn add-ids [cs]
-  (loop [i 1
-         cs cs
-         updated-cs []]
-    (if (empty? cs)
-      updated-cs
-      (recur (inc i) (rest cs) (conj updated-cs (assoc (first cs) :id i))))))
-
 (defn augment-exponents [council-type exponents]
   (let [augments-to-use (if (= :wc council-type)
                             [0 0.001 0.002 0.003 0.004]
@@ -176,7 +168,7 @@
                :labor-types labor-types
                :public-good-types public-good-types
                :surplus-threshold 0.05
-               :ccs (add-ids
+               :ccs (util/add-ids
                       (case @experiment
                         "ex006" ex006/ccs
                         "ex007" ex007/ccs
@@ -249,7 +241,7 @@
                        "ex074" ex074/ccs
                        "ex075" ex075/ccs
                         ex006/ccs))
-               :wcs  (add-ids
+               :wcs  (util/add-ids
                        (case @experiment
                           "ex006" ex006/wcs
                           "ex007" ex007/wcs
@@ -738,7 +730,6 @@
        labor-quantity
        public-good-demands])))
 
-
 (defn get-supply-list [t]
   (letfn [(get-producers [t industry product]
             (->> t
@@ -847,28 +838,11 @@
        (mapv nil? [private-goods-check im-goods-check nature-check labor-check public-good-check])]
       )))
 
-
 (defn total-surplus [surplus-list]
   (->> surplus-list
        flatten
        (map Math/abs)
        (reduce +)))
-
-
-(defn check-wc-exponents [wc]
-  (let [sum-all-exponents (reduce + 
-                            (concat (:labor-exponents wc)
-                                    (:input-exponents wc)
-                                    (:nature-exponents wc)))]
-    (< sum-all-exponents 1)))
-
-
-(defn check-cc-exponents [cc]
-  (let [sum-all-exponents (reduce + 
-                            (concat (:utility-exponents cc)
-                                    (:public-good-exponents cc)))]
-    (< sum-all-exponents 1)))
-
 
 (defn adjust-delta [price-delta raise-or-lower]
   (let [price-delta-adjustment-fn
@@ -908,11 +882,9 @@
                            :delta-delay delta-delay)]
     t-updated))
 
-
 (defn proceed [t]
   (let [t-plus (iterate-plan t)]
     (rest-of-to-do t-plus)))
-
 
 (defn proceed-iterate-five [t]
   (loop [t-temp t 
@@ -922,7 +894,6 @@
       (let [t-plus (iterate-plan t-temp)]
         (recur (rest-of-to-do t-plus)
                (dec i))))))
-
 
 (defn proceed-iterate-ten [t]
   (loop [t-temp t 
@@ -941,7 +912,6 @@
       (let [t-plus (iterate-plan t-temp)]
         (recur (rest-of-to-do t-plus)
                (dec i))))))
-
 
 (defn update-turtle-council [t1 t2 council-type id]
   (letfn [(find-by-id [i data]

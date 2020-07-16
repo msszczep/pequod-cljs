@@ -14,3 +14,11 @@
       :public-good-prices (vec (repeat public-goods (t :init-public-good-price)))
       :price-deltas (vec (repeat private-goods 0.05))
       :pdlist (vec (repeat (+ private-goods im-inputs resources labor public-goods) 0.25)))))
+
+(defn add-ids [cs]
+  (loop [i 1
+         cs cs
+         updated-cs []]
+    (if (empty? cs)
+      updated-cs
+      (recur (inc i) (rest cs) (conj updated-cs (assoc (first cs) :id i))))))

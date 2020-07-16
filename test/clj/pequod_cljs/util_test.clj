@@ -86,3 +86,9 @@
            :resources 10,
            :intermediate-inputs 10,
            :init-labor-price 700}))))
+
+(deftest add-ids
+  (is (= [] (u/add-ids [])))
+  (is (= [{:id 1}] (u/add-ids [{}])))
+  (is (= [{:id 1} {:id 2}]
+         (u/add-ids [{} {}]))))
