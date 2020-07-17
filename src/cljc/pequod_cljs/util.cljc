@@ -22,3 +22,14 @@
     (if (empty? cs)
       updated-cs
       (recur (inc i) (rest cs) (conj updated-cs (assoc (first cs) :id i))))))
+
+(defn augment-exponents [council-type exponents]
+  (let [augments-to-use (if (= :wc council-type)
+                            [0 0.001 0.002 0.003 0.004]
+                            [(- 0.002) (- 0.001) 0 0.001 0.002])]
+   (->> #(rand-nth augments-to-use)
+        repeatedly
+        (take (count exponents))
+        (interleave exponents)
+        (partition 2)
+        (map (fn [[a b]] (+ a b))))))

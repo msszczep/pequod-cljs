@@ -2,7 +2,6 @@
   (:require [clojure.test :refer [deftest is]]
             [pequod-cljs.util :as u]))
 
-
 (deftest initialize-prices
   (let [t {:private-goods 10
            :intermediate-inputs 10
@@ -92,3 +91,13 @@
   (is (= [{:id 1}] (u/add-ids [{}])))
   (is (= [{:id 1} {:id 2}]
          (u/add-ids [{} {}]))))
+
+(deftest augment-exponents
+  (let [wc [0.1 0.2 0.3]
+        wc-augmented (u/augment-exponents :wc wc)]
+    (is (and (<= 0.1 (first wc-augmented))
+             (>= 0.10400000000000001 (first wc-augmented))))
+    (is (and (<= 0.2 (second wc-augmented))
+             (>= 0.20400000000000001 (second wc-augmented))))
+    (is (and (<= 0.3 (last wc-augmented))
+             (>= 0.30400000000000001 (last wc-augmented))))))

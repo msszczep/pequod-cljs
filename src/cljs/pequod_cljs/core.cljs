@@ -122,25 +122,14 @@
          :last-years-private-good-prices []
          :last-years-public-good-prices []}))
 
-(defn augment-exponents [council-type exponents]
-  (let [augments-to-use (if (= :wc council-type)
-                            [0 0.001 0.002 0.003 0.004]
-                            [(- .002) (- .001) 0 .001 .002])]
-   (->> #(rand-nth augments-to-use)
-        repeatedly
-        (take (count exponents))
-        (interleave exponents)
-        (partition 2)
-        (map (fn [[a b]] (+ a b))))))
-
 (defn augment-wc [wc]
-  (assoc wc :input-exponents (augment-exponents :wc (:input-exponents wc))
-            :nature-exponents (augment-exponents :wc (:nature-exponents wc))
-            :labor-exponents (augment-exponents :wc (:labor-exponents wc))))
+  (assoc wc :input-exponents (util/augment-exponents :wc (:input-exponents wc))
+            :nature-exponents (util/augment-exponents :wc (:nature-exponents wc))
+            :labor-exponents (util/augment-exponents :wc (:labor-exponents wc))))
 
 (defn augment-cc [cc]
-  (assoc cc :utility-exponents (augment-exponents :cc (:utility-exponents cc))
-            :public-good-exponents (augment-exponents :cc (:public-good-exponents cc))))
+  (assoc cc :utility-exponents (util/augment-exponents :cc (:utility-exponents cc))
+            :public-good-exponents (util/augment-exponents :cc (:public-good-exponents cc))))
 
 (defn augmented-reset [t]
   (assoc t :iteration 0
@@ -362,7 +351,6 @@
      :nature-quantities nature-qs
      :labor-quantities labor-qs}))
 
-
 (defn solution-2 [a s c k ps b λ p-i]
   (let [[b1 b2] b
         [p1 p2] (flatten ps)
@@ -378,7 +366,6 @@
      :input-quantities input-qs
      :nature-quantities nature-qs
      :labor-quantities labor-qs}))
-
 
 (defn solution-3 [a s c k ps b λ p-i]
   (let [[b1 b2 b3] b
