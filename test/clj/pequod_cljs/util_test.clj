@@ -94,10 +94,36 @@
 
 (deftest augment-exponents
   (let [wc [0.1 0.2 0.3]
-        wc-augmented (u/augment-exponents :wc wc)]
+        wc-augmented (u/augment-exponents :wc wc)
+        cc [0.1 0.2 0.3]
+        cc-augmented (u/augment-exponents :cc cc)]
     (is (and (<= 0.1 (first wc-augmented))
              (>= 0.10400000000000001 (first wc-augmented))))
     (is (and (<= 0.2 (second wc-augmented))
              (>= 0.20400000000000001 (second wc-augmented))))
     (is (and (<= 0.3 (last wc-augmented))
-             (>= 0.30400000000000001 (last wc-augmented))))))
+             (>= 0.30400000000000001 (last wc-augmented))))
+    (is (and (<= 0.098 (first cc-augmented))
+             (>= 0.10200000000000001 (first cc-augmented))))
+    (is (and (<= 0.198 (second cc-augmented))
+             (>= 0.20200000000000001 (second cc-augmented))))
+    (is (and (<= 0.298 (last cc-augmented))
+             (>= 0.30200000000000001 (last cc-augmented))))))
+
+(deftest augment-wc
+  (let [wc {:input-exponents [0.1 0.2 0.3]
+            :nature-exponents [0.4 0.5 0.6]
+            :labor-exponents [0.7 0.8 0.9]}
+        wc-augmented (u/augment-wc wc)]
+    (is (= 3 (count (keys wc-augmented))))
+    (is (= 3 (count (:input-exponents wc-augmented))))
+    (is (= 3 (count (:nature-exponents wc-augmented))))
+    (is (= 3 (count (:labor-exponents wc-augmented))))))
+
+(deftest augment-cc
+  (let [cc {:utility-exponents [0.1 0.2 0.3]
+            :public-good-exponents [0.4 0.5 0.6]}
+        cc-augmented (u/augment-cc cc)]
+    (is (= 2 (count (keys cc-augmented))))
+    (is (= 3 (count (:utility-exponents cc-augmented))))
+    (is (= 3 (count (:public-good-exponents cc-augmented))))))

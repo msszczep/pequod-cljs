@@ -122,19 +122,10 @@
          :last-years-private-good-prices []
          :last-years-public-good-prices []}))
 
-(defn augment-wc [wc]
-  (assoc wc :input-exponents (util/augment-exponents :wc (:input-exponents wc))
-            :nature-exponents (util/augment-exponents :wc (:nature-exponents wc))
-            :labor-exponents (util/augment-exponents :wc (:labor-exponents wc))))
-
-(defn augment-cc [cc]
-  (assoc cc :utility-exponents (util/augment-exponents :cc (:utility-exponents cc))
-            :public-good-exponents (util/augment-exponents :cc (:public-good-exponents cc))))
-
 (defn augmented-reset [t]
   (assoc t :iteration 0
-           :ccs (mapv augment-cc (:ccs t))
-           :wcs (mapv augment-wc (:wcs t))
+           :ccs (mapv util/augment-cc (:ccs t))
+           :wcs (mapv util/augment-wc (:wcs t))
            :last-years-supply (:supply-list t)
            :last-years-private-good-prices (:private-good-prices t)
            :last-years-public-good-prices (:public-good-prices t)))
@@ -519,9 +510,6 @@
 
 (defn get-deltas [J price-delta pdlist]
   (max 0.001 (min price-delta (Math/abs (* price-delta (nth pdlist J))))))
-
-#_(defn get-deltas [J price-delta pdlist]
-  (max 0.001 (min price-delta (Math/abs (nth pdlist J)))))
 
 (defn update-surpluses-prices
   [type inputs prices wcs ccs natural-resources-supply labor-supply pdlist offset-1 offset-2 offset-3 offset-4]

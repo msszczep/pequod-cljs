@@ -33,3 +33,12 @@
         (interleave exponents)
         (partition 2)
         (map (fn [[a b]] (+ a b))))))
+
+(defn augment-wc [wc]
+  (assoc wc :input-exponents (augment-exponents :wc (:input-exponents wc))
+            :nature-exponents (augment-exponents :wc (:nature-exponents wc))
+            :labor-exponents (augment-exponents :wc (:labor-exponents wc))))
+
+(defn augment-cc [cc]
+  (assoc cc :utility-exponents (augment-exponents :cc (:utility-exponents cc))
+            :public-good-exponents (augment-exponents :cc (:public-good-exponents cc))))
