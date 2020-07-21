@@ -445,7 +445,6 @@
     (assoc cc :private-good-demands private-good-demands
               :public-good-demands public-good-demands)))
 
-
 (defn assign-new-proposal [production-inputs xs]
   (let [num-input-quantities (count (first production-inputs))
         num-nature-quantities (count (second production-inputs))

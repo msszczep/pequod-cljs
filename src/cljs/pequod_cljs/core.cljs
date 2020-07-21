@@ -122,14 +122,6 @@
          :last-years-private-good-prices []
          :last-years-public-good-prices []}))
 
-(defn augmented-reset [t]
-  (assoc t :iteration 0
-           :ccs (mapv util/augment-cc (:ccs t))
-           :wcs (mapv util/augment-wc (:wcs t))
-           :last-years-supply (:supply-list t)
-           :last-years-private-good-prices (:private-good-prices t)
-           :last-years-public-good-prices (:public-good-prices t)))
-
 ; TODO: don't hard code labor supply or nature supply
 (defn setup [t _ experiment]
   (let [intermediate-inputs (vec (range 1 (inc (t :intermediate-inputs))))
@@ -1020,7 +1012,7 @@
          [:td [:input {:type "button" :value "Show council"
            :on-click #(swap! globals update-turtle-council globals turtle-council-type turtle-id)}]]
          [:td [:input {:type "button" :value "Augmented reset"
-           :on-click #(swap! globals augmented-reset globals)}]]
+           :on-click #(swap! globals util/augmented-reset globals)}]]
          ]
         [:tr 
          [:td (str "WCs: " (count (get @globals :wcs)))]

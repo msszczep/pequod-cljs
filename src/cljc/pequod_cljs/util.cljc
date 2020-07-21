@@ -42,3 +42,11 @@
 (defn augment-cc [cc]
   (assoc cc :utility-exponents (augment-exponents :cc (:utility-exponents cc))
             :public-good-exponents (augment-exponents :cc (:public-good-exponents cc))))
+
+(defn augmented-reset [t]
+  (assoc t :iteration 0
+           :ccs (mapv augment-cc (:ccs t))
+           :wcs (mapv augment-wc (:wcs t))
+           :last-years-supply (:supply-list t)
+           :last-years-private-good-prices (:private-good-prices t)
+           :last-years-public-good-prices (:public-good-prices t)))

@@ -127,3 +127,22 @@
     (is (= 2 (count (keys cc-augmented))))
     (is (= 3 (count (:utility-exponents cc-augmented))))
     (is (= 3 (count (:public-good-exponents cc-augmented))))))
+
+(deftest augmented-reset
+  (let [t {:iteration 12
+           :ccs [{:utility-exponents [0.1 0.2 0.3]
+                  :public-good-exponents [0.4 0.5 0.6]}]
+           :wcs [{:input-exponents [0.1 0.2 0.3]
+                  :nature-exponents [0.4 0.5 0.6]
+                  :labor-exponents [0.7 0.8 0.9]}]
+           :supply-list [1 2 3]
+           :private-good-prices [4 5 6]
+           :public-good-prices [7 8 9]}
+        t-augmented (u/augmented-reset t)]
+    (is (= 0 (:iteration t-augmented)))
+    (is (= (:supply-list t) 
+           (:last-years-supply t-augmented)))
+    (is (= (:private-good-prices t) 
+           (:last-years-private-good-prices t-augmented)))
+    (is (= (:public-good-prices t) 
+           (:last-years-public-good-prices t-augmented)))))
