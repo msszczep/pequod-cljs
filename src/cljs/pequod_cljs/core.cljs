@@ -287,24 +287,6 @@
      "ex075" ex075/wcs
       ex006/wcs))))))
 
-(defn consume [private-goods private-good-prices public-goods public-good-prices num-of-ccs cc]
-  (let [utility-exponents (cc :utility-exponents)
-        public-good-exponents (cc :public-good-exponents)
-        income (cc :income)
-        private-good-demands (mapv (fn [private-good]
-                              (/ (* income (nth utility-exponents (dec private-good)))
-                                 (* (apply + (concat utility-exponents public-good-exponents))
-                                    (nth private-good-prices (dec private-good)))))
-                              private-goods)
-        public-good-demands (mapv (fn [public-good]
-                                    (/ (* income (nth public-good-exponents (dec public-good)))
-                                       (* (apply + (concat utility-exponents public-good-exponents))
-                                          (/ (nth public-good-prices (dec public-good))
-                                             num-of-ccs))))
-                                  public-goods)]
-    (assoc cc :private-good-demands private-good-demands
-              :public-good-demands public-good-demands)))
-
 (defn assign-new-proposal [production-inputs xs]
   (let [num-input-quantities (count (first production-inputs))
         num-nature-quantities (count (second production-inputs))
@@ -731,7 +713,7 @@
 
 (defn iterate-plan [t]
   (let [threshold-report-prev (if (zero? (:iteration t)) [] (:threshold-report t))
-        t2 (assoc t :ccs (map (partial consume (t :private-goods) (t :private-good-prices) (t :public-good-types) (t :public-good-prices) (count (t :ccs)))
+        t2 (assoc t :ccs (map (partial util/consume (t :private-goods) (t :private-good-prices) (t :public-good-types) (t :public-good-prices) (count (t :ccs)))
                               (t :ccs))
                     :wcs (map (partial proposal (t :private-good-prices) (t :intermediate-good-prices) (t :nature-prices) (t :labor-prices) (t :public-good-prices))
                               (t :wcs)))

@@ -146,3 +146,20 @@
            (:last-years-private-good-prices t-augmented)))
     (is (= (:public-good-prices t) 
            (:last-years-public-good-prices t-augmented)))))
+
+(deftest consume
+  (let [private-goods [1 2]
+        private-good-prices [700 700]
+        public-goods [1 2]
+        public-good-prices [700 700]
+        num-of-ccs 2
+        cc {:utility-exponents [0.1 0.2]
+            :public-good-exponents [0.3 0.4]
+            :income 5000}]
+    (is (= (u/consume private-goods private-good-prices public-goods public-good-prices num-of-ccs cc)
+           {:utility-exponents [0.1 0.2],
+            :public-good-exponents [0.3 0.4],
+            :income 5000,
+            :private-good-demands
+             [0.7142857142857143 1.4285714285714286],
+            :public-good-demands [4.285714285714286 5.714285714285714]}))))

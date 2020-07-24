@@ -50,3 +50,21 @@
            :last-years-supply (:supply-list t)
            :last-years-private-good-prices (:private-good-prices t)
            :last-years-public-good-prices (:public-good-prices t)))
+
+(defn consume [private-goods private-good-prices public-goods public-good-prices num-of-ccs cc]
+  (let [utility-exponents (cc :utility-exponents)
+        public-good-exponents (cc :public-good-exponents)
+        income (cc :income)
+        private-good-demands (mapv (fn [private-good]
+                              (/ (* income (nth utility-exponents (dec private-good)))
+                                 (* (apply + (concat utility-exponents public-good-exponents))
+                                    (nth private-good-prices (dec private-good)))))
+                              private-goods)
+        public-good-demands (mapv (fn [public-good]
+                                    (/ (* income (nth public-good-exponents (dec public-good)))
+                                       (* (apply + (concat utility-exponents public-good-exponents))
+                                          (/ (nth public-good-prices (dec public-good))
+                                             num-of-ccs))))
+                                  public-goods)]
+    (assoc cc :private-good-demands private-good-demands
+              :public-good-demands public-good-demands)))
