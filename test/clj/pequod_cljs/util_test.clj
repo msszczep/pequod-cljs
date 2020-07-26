@@ -163,3 +163,7 @@
             :private-good-demands
              [0.7142857142857143 1.4285714285714286],
             :public-good-demands [4.285714285714286 5.714285714285714]}))))
+
+(deftest mean
+  (let [ns [2 3 5 7 8] ]
+    (is (= 5 (u/mean ns)))))

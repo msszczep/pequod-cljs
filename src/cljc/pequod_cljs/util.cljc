@@ -68,3 +68,7 @@
                                   public-goods)]
     (assoc cc :private-good-demands private-good-demands
               :public-good-demands public-good-demands)))
+
+(defn mean [L]
+  (/ (reduce + L) (count L)))
+

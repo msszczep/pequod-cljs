@@ -350,7 +350,6 @@
      :nature-quantities nature-qs
      :labor-quantities labor-qs}))
 
-
 (defn solution-4 [a s c k ps b λ p-i]
   (let [[b1 b2 b3 b4] b
         [p1 p2 p3 p4] (flatten ps)
@@ -370,7 +369,6 @@
      :input-quantities input-qs
      :nature-quantities nature-qs
      :labor-quantities labor-qs}))
-
 
 (defn solution-5 [a s c k ps b λ p-i]
   (let [[b1 b2 b3 b4 b5] b
@@ -393,7 +391,6 @@
       :input-quantities input-qs
       :nature-quantities nature-qs
       :labor-quantities labor-qs}))
-
 
 (defn solution-6 [a s c k ps b λ p-i]
   (let [[b1 b2 b3 b4 b5 b6] b
@@ -418,7 +415,6 @@
       :input-quantities input-qs
       :nature-quantities nature-qs
       :labor-quantities labor-qs}))
-
 
 (defn solution-7 [a s c k ps b λ p-i]
   (let [[b1 b2 b3 b4 b5 b6 b7] b
@@ -445,7 +441,6 @@
       :input-quantities input-qs
       :nature-quantities nature-qs
       :labor-quantities labor-qs}))
-
 
 (defn solution-8 [a s c k ps b λ p-i]
   (let [[b1 b2 b3 b4 b5 b6 b7 b8] b
@@ -474,7 +469,6 @@
       :input-quantities input-qs
       :nature-quantities nature-qs
       :labor-quantities labor-qs}))
-
 
 (defn get-input-quantity [f ii [production-inputs input-quantities]]
   (->> ii
@@ -606,17 +600,14 @@
         8 (merge wc (solution-8 a s c k ps b λ p-i))
         (str "unexpected input-count value: " input-count-r)))))
 
-(defn mean [L]
-  (/ (reduce + L) (count L)))
-
 (defn update-price-deltas [supply-list demand-list surplus-list]
-  (let [supply-list-means (map mean supply-list)
-        demand-list-means (map mean demand-list)
-        surplus-list-means (map mean surplus-list)
+  (let [supply-list-means (map util/mean supply-list)
+        demand-list-means (map util/mean demand-list)
+        surplus-list-means (map util/mean surplus-list)
         averaged-s-and-d (->> (interleave supply-list-means
                                           demand-list-means)
                               (partition 2)
-                              (map mean))]
+                              (map util/mean))]
     (->> (interleave surplus-list-means averaged-s-and-d)
          (partition 2)
          (mapv #(Math/abs (/ (first %) (last %)))))))
@@ -629,7 +620,7 @@
     (let [averaged-s-and-d (->> (interleave (flatten supply-list)
                                            (flatten demand-list))
                                 (partition 2)
-                                (mapv mean))]
+                                (mapv util/mean))]
       (->> (interleave (flatten surplus-list) averaged-s-and-d)
            (partition 2)
            (mapv #(/ (first %) (last %)))
@@ -670,7 +661,7 @@
           labor-quantity (mapv (fn [n] (sum-input-quantities all-quantities n :labor-quantity)) labors-to-use)
           public-good-demands
                      (mapv (fn [public-good]
-                             (mean (map #(nth (:public-good-demands %) (dec public-good))
+                             (util/mean (map #(nth (:public-good-demands %) (dec public-good))
                                          (t :ccs))))
                            (t :public-good-types))]
       [private-good-demands
@@ -736,7 +727,7 @@
         gdp-lyp-1 (compute-gdp (:last-years-supply t2) (:last-years-private-good-prices t2) (:last-years-public-good-prices t2))
         gdp-typ-pi (* 100 (/ (- gdp-typ-2 gdp-typ-1) gdp-typ-1))
         gdp-lyp-pi (* 100 (/ (- gdp-lyp-2 gdp-lyp-1) gdp-lyp-1))
-        gdp-avg-pi (mean [gdp-typ-pi gdp-lyp-pi])]
+        gdp-avg-pi (util/mean [gdp-typ-pi gdp-lyp-pi])]
     (assoc t2 :private-good-prices private-good-prices
               :private-good-surpluses private-good-surpluses
               :private-good-new-deltas private-good-new-deltas
@@ -787,12 +778,6 @@
        (mapv nil? [private-goods-check im-goods-check nature-check labor-check public-good-check])]
       )))
 
-(defn total-surplus [surplus-list]
-  (->> surplus-list
-       flatten
-       (map Math/abs)
-       (reduce +)))
-
 (defn adjust-delta [price-delta raise-or-lower]
   (let [price-delta-adjustment-fn
          (if (= raise-or-lower "raise") + -)
@@ -805,7 +790,6 @@
                 (gstring/format "%.2f"))]
     {:price-delta pd
      :delta-delay delta-delay}))
-
 
 (defn rest-of-to-do [t]
   (let [[threshold-met? threshold-granular] (check-surpluses t)
@@ -871,21 +855,6 @@
 
 ;; -------------------------
 ;; Views-
-
-(defn check-quantities [[id input-quantities nature-quantities labor-quantities]]
-  (let [i (apply + input-quantities)
-        n (apply + nature-quantities)
-        l (apply + labor-quantities)]
-   (< 5 i)))
-
-(defn sum-quantities [[id input-quantities nature-quantities labor-quantities input-exponents nature-exponents labor-exponents]]
-  (let [i (apply + input-quantities)
-        n (apply + nature-quantities)
-        l (apply + labor-quantities)
-        ie (apply + input-exponents)
-        ne (apply + nature-exponents)
-        le (apply + labor-exponents)]
-    [id (+ ie ne le) (+ i n l)]))
 
 (defn truncate-number [n]
   (gstring/format "%.3f" n))
@@ -1015,7 +984,6 @@
          (mapv truncate-number)
          (partition-all 10)
          (mapv (partial into [])))))
-
 
 (defn show-color [threshold-report-excerpt]
   (let [tre (first threshold-report-excerpt)
