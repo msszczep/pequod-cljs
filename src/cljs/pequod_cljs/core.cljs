@@ -106,7 +106,6 @@
 
          :threshold-report         []
          :threshold-report-prev    []
-         :threshold-met?           false
          :pdlist                   []
          :delta-delay              0
          :price-deltas             []
@@ -756,28 +755,6 @@
               :gdp1 gdp-lyp-pi
               :gdp-pi gdp-avg-pi)))
 
-(defn check-surpluses [t]
-  (letfn [(check-producers [surpluses supplies inputs]
-            (some #(> (Math/abs (nth surpluses (dec %)))
-                      (* (:surplus-threshold t) (nth supplies (dec %))))
-                    inputs))
-          (check-supplies [surpluses supply inputs surplus-threshold]
-            (some #(> (Math/abs (nth surpluses (dec %)))
-                      (* surplus-threshold (nth supply (dec %))))
-                    inputs))
-          (get-producers [wcs industry]
-            (filter #(= industry (% :industry))) wcs)]
-    (let [surplus-threshold (:surplus-threshold t)
-          [private-good-supply im-supply _ _ public-good-supply] (get-supply-list t)
-          private-goods-check (check-producers (:private-good-surpluses t) private-good-supply (:private-goods t))
-          im-goods-check (check-producers (:intermediate-good-surpluses t) im-supply (:intermediate-inputs t))
-          nature-check (check-supplies (:nature-surpluses t) (:natural-resources-supply t) (:nature-types t) surplus-threshold)
-          labor-check (check-supplies (:labor-surpluses t) (:labor-supply t) (:labor-types t) surplus-threshold)
-          public-good-check (check-producers (:public-good-surpluses t) public-good-supply (:public-good-types t))]
-      [(every? nil? [private-goods-check im-goods-check nature-check labor-check public-good-check])
-       (mapv nil? [private-goods-check im-goods-check nature-check labor-check public-good-check])]
-      )))
-
 (defn adjust-delta [price-delta raise-or-lower]
   (let [price-delta-adjustment-fn
          (if (= raise-or-lower "raise") + -)
@@ -792,8 +769,7 @@
      :delta-delay delta-delay}))
 
 (defn rest-of-to-do [t]
-  (let [[threshold-met? threshold-granular] (check-surpluses t)
-        delta-delay (:delta-delay t)
+  (let [delta-delay (:delta-delay t)
         #_{price-delta :price-delta
          delta-delay :delta-delay} 
 #_(if (and (< surplus-total 100)
@@ -810,9 +786,7 @@
                                       :delta-delay delta-delay})
         delta-delay (if (pos? delta-delay)
                       (dec delta-delay) delta-delay)
-        t-updated (assoc t :threshold-met? threshold-met?
-                           :threshold-granular threshold-granular
-                           :delta-delay delta-delay)]
+        t-updated (assoc t :delta-delay delta-delay)]
     t-updated))
 
 (defn proceed [t]
