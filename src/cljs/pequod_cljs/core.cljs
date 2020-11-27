@@ -138,7 +138,6 @@
                :nature-types nature-types
                :labor-types labor-types
                :public-good-types public-good-types
-               :surplus-threshold 0.05
                :ccs (util/add-ids
                       (case @experiment
                         "ex006" ex006/ccs
@@ -942,7 +941,6 @@
         [:tr 
          [:td (str "WCs: " (count (get @globals :wcs)))]
          [:td (str "CCs: " (count (get @globals :ccs)))]
-         [:td (str "TH: " (get @globals :surplus-threshold))]
          [:td (str "A-GDP TY: " (truncate-number (str (get @globals :gdp2))))]
          [:td (str "A-GDP LY: " (truncate-number (str (get @globals :gdp1))))]
          [:td (str "A-GDP AVG: " (truncate-number (str (get @globals :gdp-pi))))]

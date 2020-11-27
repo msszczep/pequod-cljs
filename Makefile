@@ -8,6 +8,9 @@ core:
 csv:
 	emacs src/clj/pequod_cljs/csvgen.clj &
 
+test:
+	lein test
+
 # make councils NAMESPACE=ex001
 councils:
 	lein run -m pequod-cljs.gen $(NAMESPACE) > src/cljs/pequod_cljs/$(NAMESPACE).cljs

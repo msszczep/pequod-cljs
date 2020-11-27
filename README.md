@@ -73,7 +73,6 @@ Below the row of buttons, there are a number of additional values abbreviated an
 
 * `WCs`: A count of the number of worker councils loaded into the program
 * `CCs`: A count of the number of consumer councils loaded into the program
-* `TH`: The convergence threshold loaded into the program
 * `A-GDP TY:` The gross domestic product for this year (the current sequence of iterations)
 * `A-GDP LY:` The gross domestic product for last year (this activates once the "Augumented reset" button is clicked)
 * `A-GDP AVG:` The average of the two gross domestic product calculations, when applicable
@@ -96,7 +95,7 @@ for that category are below 3%
 * red otherwise
 
 To reset the app, simply refresh the page.  Note that iterations only proceed in one trajectory; if you 
-want to "rewind" you must refresh the page and repeat the process.
+want to "rewind", you must refresh the page and repeat the process.
 
 ## Using the Command Line
 
@@ -105,9 +104,9 @@ participatory planning process.
 
 To use `csvgen` from the command line, run:
 
-`lein run -m pequod-cljs.csvgen <namespace>`
+`lein run -m pequod-cljs.csvgen [namespace]`
 
-...where `<namespace>` is the namespace of the data file whose contents you're using for the iteration.  
+...where `[namespace]` is the namespace of the data file whose contents you're using for the iteration.
 Note: `csvgen` uses `.clj` source files in the `src/clj/pequod_cljs/` directory, and `csvgen` delivers 
 its output to STDOUT, so it is advisable to redirect the output into a file, as in:
 
@@ -116,6 +115,64 @@ its output to STDOUT, so it is advisable to redirect the output into a file, as 
 The output, from left to right, is the iteration, threshold color, all the collective metrics presented
 in the pequod-cljs webapp, one column at a time, along with the effort score and output score of all
 councils, both for a given "year" and an augmented "year".
+
+There is a parameter in the `-main` function in `csvgen.clj` called `toothaches?`.  If you set `toothaches?` to `true`,
+you artificially augment the results forcing increasing returns to scale.
+
+## Generating/using new experiments for the webapp
+
+To generate new experiments, use the command:
+
+```
+lein run -m pequod-cljs.gen [namespace] > [namespace].cljs
+```
+
+where `[namespace>]` is the name of the namespace and the file to generate.
+
+The parameters for generating workers councils and consumer councils may be themselves adjusted in the files:
+
+```
+src/clj/pequod_cljs/wcs.clj
+```
+
+and
+
+```
+src/clj/pequod_cljs/ccs.clj
+```
+
+You can adjust the number of councils generated with the calls to `create-ccs-bulk` and `create-wcs-bulk` as seen in the
+file:
+
+```
+src/clj/pequod_cljs/gen.clj
+```
+
+The number of worker councils is determined in each of three arguments for each of three "industries" (public goods, private
+goods, intermediate goods) in `create-wcs-bulk`.  The number of consumer councils is the value of the first argument in
+`create-ccs-bulk`.
+
+The newly-created experiment(s) can then be invoked in either of two ways:
+
+1.  Through the webapp, by placed the experiment with a `.cljs` extension in the `src/cljs/pequod_cljs` directory
+and updating the `src/cljs/pequod_cljs/core.cljs` file.  `core.cljs` would need three changes: adding in the namespace,
+adding the invocation of the new namespace in the `wcs` data and `ccs` data in the `setup` function, and adding in an option
+for the namespace in the experimentation dropdown in the `all-buttons` function.
+
+2.  Through the `csvgen` utility, by placed the experiment renamed with a `.clj` extension in the `src/clj/pequod_cljs` directory
+and updating the `src/clj/pequod_cljs/csvgen.clj` file.  `csvgen.clj` would need two changes: adding in the namespace,
+and adding the invocation of the `wcs` data and `ccs` data in the `setup` function.
+
+## Experiments from _Democratic Economic Planning_
+
+This software package was used to generate and test experiments referred to in the book _Democratic Economic Planning_
+by Robin Hahnel (Routledge, 2021).  You can download the files:
+
+[http://www.szcz.org/depexperiments/](http://www.szcz.org/depexperiments)
+
+If you wish to use the file in this application, download the files you wish to use from the link above, use `gunzip`
+to uncompress the files, place them in the appropriate directory and make the adjustments as noted above for using new
+experiments.
 
 ## Figwheel
 
@@ -133,10 +190,10 @@ lein do clean, run
 
 ## Tests
 
-To run [cljs.test](https://github.com/clojure/clojurescript/blob/master/src/main/cljs/cljs/test.cljs) tests, please use
+To run the automated tests in pequod-cljs.util-test, run:
 
 ```
-lein doo
+lein test
 ```
 
 
