@@ -64,21 +64,8 @@
               :source-map true
               :optimizations :none
               :pretty-print  true}}
-            :test
-            {:source-paths ["src/cljs" "src/cljc" "test/cljs"]
-             :compiler {:main pequod-cljs.doo-runner
-                        :asset-path "/js/out"
-                        :output-to "target/test.js"
-                        :output-dir "target/cljstest/public/js/out"
-                        :optimizations :whitespace
-                        :pretty-print true}}
-
-
             }
    }
-   :doo {:build "test"
-         :alias {:default [:firefox]}
-         :paths {:karma "/home/mitchells/Desktop/pequod-v/pequod-cljs/node_modules/karma/bin/karma"}}
 
   :figwheel
   {:http-server-root "public"
@@ -90,7 +77,6 @@
    :ring-handler pequod-cljs.handler/app}
 
 
-
   :profiles {:dev {:repl-options {:init-ns pequod-cljs.repl}
                    :dependencies [[cider/piggieback "0.3.8"]
                                   [binaryage/devtools "0.9.10"]
@@ -100,14 +86,10 @@
                                   [figwheel-sidecar "0.5.16"]
                                   [nrepl "0.4.4"]
                                   [cider/piggieback "0.3.8"]
-                                  [pjstadig/humane-test-output "0.8.3"]
-                                  
- ]
+                                  [pjstadig/humane-test-output "0.8.3"]]
 
                    :source-paths ["env/dev/clj"]
-                   :plugins [[lein-figwheel "0.5.16"]
-                             [lein-doo "0.1.10"]
-]
+                   :plugins [[lein-figwheel "0.5.16"]]
 
                    :injections [(require 'pjstadig.humane-test-output)
                                 (pjstadig.humane-test-output/activate!)]
