@@ -127,7 +127,7 @@ To generate new experiments, use the command:
 lein run -m pequod-cljs.gen [namespace] > [namespace].cljs
 ```
 
-where `[namespace>]` is the name of the namespace and the file to generate.
+where `[namespace]` is the name of the namespace and the file to generate.
 
 The parameters for generating workers councils and consumer councils may be themselves adjusted in the files:
 
