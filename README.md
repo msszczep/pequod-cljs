@@ -2,7 +2,7 @@
 
 This is the pequod-cljs project -- a computerized simulation of some of the main components of a non-market, non-command-planning, democratically-planned economy known as a "participatory economy".
 
-To learn more, please visit [https://www.participatoryeconomics.info](https://www.participatoryeconomics.info).
+To learn more, please visit [https://www.participatoryeconomy.org](https://www.participatoryeconomy.org).
 
 This project is written in the Clojure and Clojurescript programming languages, and is based on, and named for, a similar project called Pequod (an abbreviation for "Participatory Planning Procedure Prototype").  Pequod began as [a project in the Netlogo programming language](https://github.com/msszczep/pequod2), and [as a project exclusively in the Clojure programming language](https://github.com/msszczep/pequod-clj).
 
