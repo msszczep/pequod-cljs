@@ -196,4 +196,10 @@ To run the automated tests in pequod-cljs.util-test, run:
 lein test
 ```
 
+## Update package-lock.json
 
+The Javascript libraries referenced in the `package-lock.json` file can be updated with this command:
+
+```
+npm install --package-lock-only [LIBRARY_NAME_GOES_HERE] 
+```
